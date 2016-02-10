@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -e
+
+function die() {
+  echo $1
+  exit 1
+}
+
+LANGPACK=$1
+
+test -n "$LANGPACK" || die "Usage: $0 <LangPack>"
+test -d $LANGPACK && die "LangPack $LANGPACK already exists."
+
+for d in bin template examples; do
+  mkdir -p $LANGPACK/$d
+done
+
+# Create stubs for executable bin files
+for x in install-deps pipe build; do
+  cat <<EOF > $LANGPACK/bin/$x
+#!/bin/bash
+
+# This executable does not need to be a bash script
+# It merely needs to follow the spec for bin/$x
+
+# If you want this file to be a binary executable
+# Include source and instructions for building this file
+# and add bin/$x to .gitignore
+
+echo "$x not yet implemented"
+exit 1
+EOF
+
+  chmod +x $LANGPACK/bin/$x
+done
+
+
+cat <<EOF > $LANGPACK/template/README.md
+# $LANGPACK LangPack
+
+This is an Algorithmia LangPack for running $LANGPACK algorithms.
+
+# Building locally
+
+TODO: Explain how to manually build an algorithm locally for this LangPack.
+EOF
+
+cat <<EOF > $LANGPACK/.gitignore
+algorithm.zip
+EOF
+
+touch $LANGPACK/template/.gitignore

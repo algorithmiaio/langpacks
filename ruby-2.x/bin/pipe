@@ -1,0 +1,50 @@
+#!/bin/env ruby
+
+require 'json'
+require 'base64'
+
+def pipe_loop
+  require_relative "#{Dir.pwd}/src/algorithm.rb" # TODO: would be nice to know algoname
+  STDIN.each_line do |line|
+    request = JSON.parse(line)
+    result = call_algorithm(request)
+    File.open('/tmp/algoout', 'w') do |algoout|
+      # TODO: figure out how we want to write the result
+      algoout.puts(result)
+    end
+  end
+end
+
+def call_algorithm(request)
+  puts request
+  if request['body'].length == 0
+      STDERR.puts('WTF?')
+  elsif request['body'].length == 1
+    body = request['body'][0]
+    case body['content_type']
+      when 'text', 'json'
+        return apply(body['data'])
+      when 'binary'
+        bytes = Base64.decode64(body['data'])
+        return apply(bytes)
+      else
+        puts "Invalid content_type: #{}"
+        return nil
+    end
+  else # MULTIPART
+    parts = request['body'].map do |part|
+      case body['content_type']
+        when 'text', 'json'
+          return body['data']
+        when 'binary'
+          return Base64.decode64(body['data'])
+        else
+          puts 'Invalid content_type...' #TODO
+          return nil
+      end
+    end
+    return apply(*parts)
+  end
+end
+
+pipe_loop

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+# TODO: install ruby 2.x
+# gem install bundler
+
+echo "install-deps not yet implemented"
+exit 1
+

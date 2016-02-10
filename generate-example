@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+function die() {
+  echo $1
+  exit 1
+}
+
+LANGPACK=$1
+USERNAME=$1
+ALGONAME=$1
+
+test -n "$LANGPACK" || die "Usage: $0 <LangPack> <username> <algoname>"
+test -n "$USERNAME" || die "Usage: $0 <LangPack> <username> <algoname>"
+test -n "$ALGONAME" || die "Usage: $0 <LangPack> <username> <algoname>"
+test -d $LANGPACK || die "LangPack $LANGPACK does not exist."
+
+die "TODO: Generate example from template. replace __username__ and __algoname_"
