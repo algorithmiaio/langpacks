@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+cargo build --release
+mkdir -p target/bin
+
+# Prepare algorithm.zip
+cp target/release/pipe target/bin/pipe
+cd target && zip -m algorithm.zip bin/pipe && cd ..
+mv target/algorithm.zip algorithm.zip
