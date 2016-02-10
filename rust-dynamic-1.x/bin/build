@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+cargo build --release
+cd target/release && zip algorithm.zip libalgorithm.so

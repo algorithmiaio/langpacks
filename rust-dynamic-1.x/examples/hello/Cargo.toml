@@ -1,0 +1,18 @@
+[package]
+name = "hello"
+version = "0.1.0"
+license = "MIT"
+
+description = "Sample hello world algorithm"
+
+[lib]
+# Must be a dylib named 'algorithm' for the rust runner to be able to execute it
+name = "algorithm"
+crate-type = ["dylib"]
+
+[dependencies]
+
+
+[dependencies.algorithmia]
+version = "*"
+#git = "https://github.com/anowell/algorithmia_rust.git"
