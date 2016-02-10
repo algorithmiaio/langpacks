@@ -20,7 +20,7 @@ Each LangPack currently has a rudimentary `hello` sample algorithm. Running it i
 2. Read `bin/build` - figure out what you need to do to build the sample hello app (no need to create algorithm.zip)
 3. Create the "algoout" pipe and tail it: `mkfifo /tmp/algoout && tail -f /tmp/algoout`
 4. Run the `pipe` executable. It listens on STDIN until EOF (Ctrl-d).
-5. Paste a sample request json blob. [text.json](sample-input/text.json) is probably the only one that works right now
+5. Paste a sample request json blob. [text.json](sample-input/text.json) is the best tested. Only "text" types work in rust, but all sample inputs should work in ruby (though the hello algorithm can't handle json-object)
 6. Maybe, just maybe, if you did all that just right, and if the planets are aligned, you might see a "Hello ..." message on the algout pipe that you're tailing
 
 ## Wanna contribute?
