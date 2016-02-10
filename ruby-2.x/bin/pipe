@@ -16,35 +16,18 @@ def pipe_loop
 end
 
 def call_algorithm(request)
-  puts request
-  if request['body'].length == 0
-      STDERR.puts('WTF?')
-  elsif request['body'].length == 1
-    body = request['body'][0]
-    case body['content_type']
+  parts = request['body'].map do |part|
+    case part['content_type']
       when 'text', 'json'
-        return apply(body['data'])
+        part['data']
       when 'binary'
-        bytes = Base64.decode64(body['data'])
-        return apply(bytes)
+        Base64.decode64(part['data'])
       else
-        puts "Invalid content_type: #{}"
-        return nil
+        STDERR.puts 'Invalid content_type...' #TODO
+        nil
     end
-  else # MULTIPART
-    parts = request['body'].map do |part|
-      case body['content_type']
-        when 'text', 'json'
-          return body['data']
-        when 'binary'
-          return Base64.decode64(body['data'])
-        else
-          puts 'Invalid content_type...' #TODO
-          return nil
-      end
-    end
-    return apply(*parts)
   end
+  return apply(*parts)
 end
 
 pipe_loop
