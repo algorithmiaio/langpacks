@@ -1,0 +1,15 @@
+[package]
+name = "hello"
+version = "0.1.0"
+license = "MIT"
+description = "Sample hello world algorithm"
+
+[[bin]]
+name = "langpack-server"
+
+[dependencies]
+base64 = "0.1.0"
+serde_json = "0.7.*"
+hyper = "0.7.*"
+time = "0.1.*"
+libc = "0.2.*"
