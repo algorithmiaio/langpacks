@@ -172,7 +172,7 @@ impl Handler for LangServer {
 
 fn main() {
     let handler = LangServer::new();
-    let listener = Server::http("127.0.0.1:3000").unwrap().handle(handler).unwrap();
+    let listener = Server::http("0.0.0.0:3000").unwrap().handle(handler).unwrap();
     println!("Listening on port 3000.");
 
 
