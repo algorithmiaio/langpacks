@@ -2,9 +2,12 @@
 
 set -e
 
-# TODO: install ruby 2.x
-# gem install bundler
+DEBIAN_FRONTEND=noninteractive
 
-echo "install-deps not yet implemented"
-exit 1
+apt-add-repository ppa:brightbox/ruby-ng
+apt-get -y update
+sudo apt-get install -y ruby2.2 ruby2.2-dev
+
+gem install bundler --no-rdoc --no-ri
+
 

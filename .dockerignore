@@ -1,0 +1,5 @@
+.git
+ruby*
+rust*
+target/debug
+src
