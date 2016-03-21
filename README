@@ -7,6 +7,8 @@ Any LangPack that adheres to the LangPack spec can be served as an algorithm via
 
 ## Building LangServer(s)
 
+Disclaimer: The intent was to prototype langserver in rust (because I knew it better), but finally write it in go (lower barrier to entry), but it turned into an official project before the rewrite happened. So, for now: start by installing [latest stable rust](https://www.rust-lang.org/downloads.html), and then:
+
 ```
 cargo build --release
 docker build -t algorithmia/langserver .
