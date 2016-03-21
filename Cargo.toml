@@ -5,7 +5,7 @@ license = "MIT"
 description = "Sample hello world algorithm"
 
 [[bin]]
-name = "langpack-server"
+name = "langserver"
 
 [dependencies]
 base64 = "0.1.0"
