@@ -1,4 +1,0 @@
-#!/bin/bash
-
-echo "install-deps not yet implemented"
-exit 1
