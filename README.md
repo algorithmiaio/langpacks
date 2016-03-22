@@ -13,12 +13,6 @@ LangPack: A language specific package the encompasses language-specific system d
 
 LangServer: A server that emulates a light-weight version of the Algorithmia API for any `bin/pipe` that adheres to the LangPack spec.
 
-## LangPacks
-
-TODO: Add spec and guide on what langpacks exist
-
-Any LangPack that adheres to the LangPack spec can be served as an algorithm via a LangServer
-
 ## Building LangServer(s)
 
 Disclaimer: The intent was to prototype langserver in rust (because I knew it better), but finally write it in go (lower barrier to entry), but it turned into an official project before the rewrite happened. So, for now: start by installing [latest stable rust](https://www.rust-lang.org/downloads.html), and then:
