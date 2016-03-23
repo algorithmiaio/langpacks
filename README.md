@@ -25,7 +25,7 @@ docker build -t algorithmia/langserver .
 Then the container for individual containers can be built
 
 ```
-docker build -t algorithmia/langserver-ruby ruby-2.x
+docker build -t algorithmia/langserver-ruby ruby
 ```
 
 ## Running LangServer
