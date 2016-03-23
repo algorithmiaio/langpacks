@@ -22,13 +22,13 @@ impl LangRunner {
     pub fn new() -> LangRunner {
         let mut path = env::current_dir().expect("Failed to get working directory");
         path.push("bin/pipe");
-        println!("Running {:?}", path);
-        let mut child = Command::new(path)
+        let mut child = Command::new(&path)
                                 .stdin(Stdio::piped())
                                 .stdout(Stdio::piped())
                                 .stderr(Stdio::null())
                                 .spawn()
                                 .unwrap_or_else(|e| { panic!("failed to execute child: {}", e) });
+        println!("Running PID {} {:?}", child.id(), path);
 
         let stdin = child.stdin.take().expect("Failed to open runner's STDIN");
         let stdout = child.stdout.take().expect("Failed to open runner's STDOUT");
