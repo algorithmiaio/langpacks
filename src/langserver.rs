@@ -47,7 +47,7 @@ impl LangServer {
                 let mut raw = String::new();
                 let _ = req.read_to_string(&mut raw).expect("Failed to read request");
                 Ok(ObjectBuilder::new()
-                    .insert("content_type", "text")
+                    .insert("content_type", "json")
                     .insert("data", Value::String(raw))
                     .unwrap())
             },
