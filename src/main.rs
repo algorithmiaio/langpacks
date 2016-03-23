@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate hyper;
 extern crate base64;
 extern crate serde_json;

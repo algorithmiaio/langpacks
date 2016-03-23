@@ -19,6 +19,8 @@ pub enum LangServerMode {
     Async(Url),
 }
 
+header! { (XRequestId, "X-Request-ID") => [String] }
+
 pub struct LangServer {
     runner: Arc<LangRunner>,
     mode: Arc<LangServerMode>,
@@ -71,7 +73,7 @@ impl LangServer {
 
     fn run_algorithm(&self, req: Request) -> Result<Option<String>, String> {
         // TODO: freak out if another request is in progress
-
+        let request_id = req.headers.get::<XRequestId>().map(|h| h.to_string()).unwrap_or("no-id".into());
         let input_value = self.build_input(req).expect("Failed to build algorithm input from request");
 
         // Get a lock on the child stdin/stdout handle
@@ -98,6 +100,7 @@ impl LangServer {
                   if let Err(err) = Client::new()
                                         .post(callback_url)
                                         .header(ContentType::json())
+                                        .header(XRequestId(request_id))
                                         .body(&response)
                                         .send() {
                       println!("Failed to send notification that request completed: {}", err);
