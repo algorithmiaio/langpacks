@@ -82,17 +82,20 @@ impl LangServer {
 
         let mut stdin = child_stdin.lock().expect("Failed to get lock on runner's STDIN");
 
-        // Start piping data -
+        // Start piping data
+        println!("Sending data to runner stdin");
         ser::to_writer(&mut *stdin, &input_value).expect("Failed to write input to runner's STDIN");
         stdin.write(b"\n").expect("Failed to write new line to runner's STDIN");
 
         let mode = self.mode.clone();
         match &*mode {
             &LangServerMode::Sync => {
+              println!("Waiting synchronously for algorithm to complete");
               let response = arc_runner.wait_for_response().expect("Failed waiting for response");
               Ok(Some(response))
             },
             &LangServerMode::Async(ref url) => {
+              println!("Waiting asynchronously for algorithm to complete");
               let callback_url = url.clone();
               let arc_runner = self.runner.clone();
               thread::spawn( move|| {

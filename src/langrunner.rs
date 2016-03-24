@@ -42,6 +42,8 @@ impl LangRunner {
               let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
               lines.push(line.expect("Failed to read line"));
             }
+            child.wait()
+                 .unwrap_or_else(|err| { panic!("failed to wait on child: {}", err) });
         });
 
         LangRunner{
@@ -51,12 +53,14 @@ impl LangRunner {
     }
 
     pub fn wait_for_response(&self) -> Result<String, String> {
+        println!("Opening algoout FIFO...");
         let start = PreciseTime::now();
 
         // Note: Opening a FIFO read-only pipe blocks until a writer opens it. Would be nice to open with O_NONBLOCK
         let algoout = File::open(ALGOOUT).expect("Failed to open ALGOOUT pipe");
 
         // Collect runner output from JSON stream - reads and deserializes the single next JSON Value on algout
+        println!("Deserializing algoout stream...");
         let mut algoout_stream: StreamDeserializer<Value, _> = StreamDeserializer::new(algoout.bytes());
         let mut output = algoout_stream.next().expect("Failed to read next JSON value from stream").expect("Failed to deserialize next JSON value from stream");
         let duration = start.to(PreciseTime::now());
