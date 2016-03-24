@@ -1,8 +1,0 @@
-#!/bin/bash
-
-set -e
-
-cargo build --release
-
-docker build -t algorithmia/langserver .
-docker build -t algorithmia/langserver-ruby ruby

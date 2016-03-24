@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+if [[ -f /tmp/algorithm.zip ]]; then
+  unzip -n /tmp/algorithm.zip
+elif [[ -d /tmp/algorithm ]]; then
+  # For bind-mounting during development
+  cp -rn /tmp/algorithm/. .
+fi
+
+if [[ -x bin/pipe ]]; then
+  exec /bin/langserver
+else
+  echo "Did not find executable $(pwd)/bin/pipe"
+  exit 1
+fi
