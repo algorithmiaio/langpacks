@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+DEBIAN_FRONTEND=noninteractive
+
+apt-get -y update
+sudo apt-get install -y python2.7 python2.7-dev
+
