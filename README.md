@@ -33,8 +33,9 @@ Note, unless using Docker user namespacing, don't be shocked if bind-mount writi
 The `init-langserver` script provides 2 ways to run an algorithm:
 
 #### Bind mount algorithm.zip to /tmp/algorithm.zip
+Note: Make sure you use the absolute path to the algorithm.zip.
 ```
-docker run --rm -it -v /path/to/algorithm.zip:/algorithmia/ -p 3000:3000 algorithmia/langserver-<lang>
+docker run --rm -it -v /path/to/algorithm.zip:/tmp/algorithm.zip -p 3000:3000 algorithmia/langserver-<lang>
 ```
 
 #### Bind mount algorithm directory to /tmp/algorithm
