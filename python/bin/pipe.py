@@ -4,13 +4,20 @@ import base64
 import json
 import sys
 import traceback
+from algorithm import apply
+#TODO from six.moves import input
 
 # TODO import the algorithm apply method so this doesn't crash
 
 FIFO_PATH = '/tmp/algoout'
 
 def main():
-    for line in sys.stdin:
+    while True:
+        try:
+            line = raw_input()
+        except EOFError:
+            break
+
         request = json.loads(line)
         response = get_response(request)
 
