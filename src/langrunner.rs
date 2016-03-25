@@ -1,11 +1,11 @@
-
+use serde::ser::Serialize;
 use serde_json::ser;
 use serde_json::de::StreamDeserializer;
 use serde_json::Value;
 use std::env;
-use std::io::{Read, BufRead, BufReader};
+use std::io::{Read, Write, BufRead, BufReader};
 use std::fs::File;
-use std::process::{Command, ChildStdin, Stdio};
+use std::process::{Command, Child, ChildStdin, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use time::PreciseTime;
@@ -14,8 +14,9 @@ const ALGOOUT: &'static str = "/tmp/algoout";
 
 
 pub struct LangRunner {
-    pub child_stdin: Mutex<ChildStdin>,
     pub child_stdout: Arc<Mutex<Vec<String>>>, //TODO: Option - we often don't care about stdout
+    child_stdin: Mutex<Option<ChildStdin>>,
+    child: Mutex<Child>,
 }
 
 impl LangRunner {
@@ -42,14 +43,28 @@ impl LangRunner {
               let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
               lines.push(line.expect("Failed to read line"));
             }
-            child.wait()
-                 .unwrap_or_else(|err| { panic!("failed to wait on child: {}", err) });
         });
 
         LangRunner{
-            child_stdin: Mutex::new(stdin),
+            child: Mutex::new(child),
+            child_stdin: Mutex::new(Some(stdin)),
             child_stdout: child_stdout,
         }
+    }
+
+
+    pub fn write<T: Serialize>(&self, input: &T) {
+        let mut stdin_lock = self.child_stdin.lock().expect("Failed to get stdin lock");
+        match stdin_lock.as_mut() {
+            Some(mut stdin) => {
+                println!("Sending data to runner stdin");
+                ser::to_writer(&mut stdin, &input).expect("Failed to write input to runner's STDIN");
+                stdin.write(b"\n").expect("Failed to write new line to runner's STDIN");
+            },
+            None => {
+                panic!("Child stdin has already been moved");
+            }
+        };
     }
 
     pub fn wait_for_response(&self) -> Result<String, String> {
@@ -57,6 +72,7 @@ impl LangRunner {
         let start = PreciseTime::now();
 
         // Note: Opening a FIFO read-only pipe blocks until a writer opens it. Would be nice to open with O_NONBLOCK
+        // TODO: make this non-blocking, because otherwise this is a potential deadlock if the runner crashes before opening ALGOOUT
         let algoout = File::open(ALGOOUT).expect("Failed to open ALGOOUT pipe");
 
         // Collect runner output from JSON stream - reads and deserializes the single next JSON Value on algout
@@ -93,5 +109,22 @@ impl LangRunner {
 
         let response = ser::to_string(&output).expect("Failed to serialize respons JSON");
         Ok(response)
+    }
+
+    pub fn wait_for_exit(&self) -> i32 {
+        {
+          // Mutably `take` child_stdin out of `self` and then let it go out of scope, resulting in EOF
+          let mut stdin_lock = self.child_stdin.lock().expect("Failed to take stdin lock");
+          let _drop_stdin = stdin_lock.take();
+          println!("Dropping runner stdin.");
+        }
+
+        // Now that stdin is closed, we can wait on child
+        // TODO: use wait_timeout instead: https://github.com/alexcrichton/wait-timeout
+        let mut child = self.child.lock().expect("Failed to get lock on child");
+        println!("Waiting for child to exit...");
+        let status = child.wait().expect("Failed to wait on child");
+        println!("Child exited with {:?}", &status);
+        status.code().expect("Failed to get exit code")
     }
 }

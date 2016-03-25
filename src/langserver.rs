@@ -4,8 +4,8 @@ use hyper::mime::{Mime, TopLevel, SubLevel};
 use hyper::header::ContentType;
 use hyper::server::{Handler, Request, Response};
 use hyper::status::StatusCode;
-use hyper::{Url, Get, Post};
-use serde_json::{ser, de};
+use hyper::{Url, Get, Post, Delete};
+use serde_json::de;
 use serde_json::Value;
 use serde_json::builder::ObjectBuilder;
 use std::io::{Read, Write};
@@ -69,24 +69,18 @@ impl LangServer {
         }
     }
 
-
-
     fn run_algorithm(&self, req: Request) -> Result<Option<String>, String> {
         // TODO: freak out if another request is in progress
+
         let request_id = req.headers.get::<XRequestId>().map(|h| h.to_string()).unwrap_or("no-id".into());
         let input_value = self.build_input(req).expect("Failed to build algorithm input from request");
 
-        // Get a lock on the child stdin/stdout handle
-        let arc_runner = self.runner.clone();
-        let ref child_stdin = arc_runner.child_stdin;
-
-        let mut stdin = child_stdin.lock().expect("Failed to get lock on runner's STDIN");
-
         // Start piping data
-        println!("Sending data to runner stdin");
-        ser::to_writer(&mut *stdin, &input_value).expect("Failed to write input to runner's STDIN");
-        stdin.write(b"\n").expect("Failed to write new line to runner's STDIN");
+        let arc_runner = self.runner.clone();
+        arc_runner.write(&input_value); // TODO: add error handling
 
+
+        // Wait for the algorithm to complete (either synchronously or asynchronously)
         let mode = self.mode.clone();
         match &*mode {
             &LangServerMode::Sync => {
@@ -113,6 +107,11 @@ impl LangServer {
             },
         }
     }
+
+    fn terminate(&self) -> i32 {
+        let arc_runner = self.runner.clone();
+        arc_runner.wait_for_exit()
+    }
 }
 
 impl Handler for LangServer {
@@ -126,6 +125,10 @@ impl Handler for LangServer {
                 Ok(Some(out)) => (StatusCode::Ok, out),
                 Ok(None) => (StatusCode::Accepted, jsonres!("Algorithm started.")),
                 Err(err) => (StatusCode::BadRequest, err),
+            },
+            Delete => {
+                let code = self.terminate();
+                (StatusCode::Ok, (format!("Runner exited: {}", code)))
             },
             _ => (StatusCode::MethodNotAllowed, jsonerr!("Method not allowed")),
         };
