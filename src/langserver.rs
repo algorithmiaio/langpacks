@@ -28,7 +28,7 @@ pub struct LangServer {
 
 impl LangServer {
     pub fn new(mode: LangServerMode) -> LangServer {
-        LangServer{
+        LangServer {
             runner: Arc::new(LangRunner::new()),
             mode: Arc::new(mode),
         }
@@ -40,31 +40,32 @@ impl LangServer {
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
                 let raw: Value = de::from_reader(req).expect("Failed to deserialize JSON request");
                 Ok(ObjectBuilder::new()
-                    .insert("content_type", "json")
-                    .insert("data", raw)
-                    .unwrap())
-            },
+                       .insert("content_type", "json")
+                       .insert("data", raw)
+                       .unwrap())
+            }
             // "text/plain"
             Some(&ContentType(Mime(TopLevel::Text, SubLevel::Plain, _))) => {
                 let mut raw = String::new();
                 let _ = req.read_to_string(&mut raw).expect("Failed to read request");
                 Ok(ObjectBuilder::new()
-                    .insert("content_type", "json")
-                    .insert("data", Value::String(raw))
-                    .unwrap())
-            },
+                       .insert("content_type", "json")
+                       .insert("data", Value::String(raw))
+                       .unwrap())
+            }
             // "application/octet-stream"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Ext(_), _))) => {
                 // TODO: verify sublevel is actually "octet-stream"
                 let mut raw: Vec<u8> = vec![];
                 let _ = req.read_to_end(&mut raw).expect("Failed to read request");
                 let b64_bytes = base64::u8en(&raw).expect("Failed encode request as base64");
-                let b64_string = String::from_utf8(b64_bytes).expect("Failed to create string from base64 bytes");
+                let b64_string = String::from_utf8(b64_bytes)
+                                     .expect("Failed to create string from base64 bytes");
                 Ok(ObjectBuilder::new()
-                    .insert("content_type", "binary")
-                    .insert("data", Value::String(b64_string))
-                    .unwrap())
-            },
+                       .insert("content_type", "binary")
+                       .insert("data", Value::String(b64_string))
+                       .unwrap())
+            }
             _ => Err(jsonerr!("Missing ContentType")),
         }
     }
@@ -72,8 +73,12 @@ impl LangServer {
     fn run_algorithm(&self, req: Request) -> Result<Option<String>, String> {
         // TODO: freak out if another request is in progress
 
-        let request_id = req.headers.get::<XRequestId>().map(|h| h.to_string()).unwrap_or("no-id".into());
-        let input_value = self.build_input(req).expect("Failed to build algorithm input from request");
+        let request_id = req.headers
+                            .get::<XRequestId>()
+                            .map(|h| h.to_string())
+                            .unwrap_or("no-id".into());
+        let input_value = self.build_input(req)
+                              .expect("Failed to build algorithm input from request");
 
         // Start piping data
         let arc_runner = self.runner.clone();
@@ -84,27 +89,29 @@ impl LangServer {
         let mode = self.mode.clone();
         match &*mode {
             &LangServerMode::Sync => {
-              println!("Waiting synchronously for algorithm to complete");
-              let response = arc_runner.wait_for_response().expect("Failed waiting for response");
-              Ok(Some(response))
-            },
+                println!("Waiting synchronously for algorithm to complete");
+                let response = arc_runner.wait_for_response().expect("Failed waiting for response");
+                Ok(Some(response))
+            }
             &LangServerMode::Async(ref url) => {
-              println!("Waiting asynchronously for algorithm to complete");
-              let callback_url = url.clone();
-              let arc_runner = self.runner.clone();
-              thread::spawn( move|| {
-                  let response = arc_runner.wait_for_response().expect("Failed waiting for response");
-                  if let Err(err) = Client::new()
-                                        .post(callback_url)
-                                        .header(ContentType::json())
-                                        .header(XRequestId(request_id))
-                                        .body(&response)
-                                        .send() {
-                      println!("Failed to send notification that request completed: {}", err);
-                  }
-              });
-              Ok(None)
-            },
+                println!("Waiting asynchronously for algorithm to complete");
+                let callback_url = url.clone();
+                let arc_runner = self.runner.clone();
+                thread::spawn(move || {
+                    let response = arc_runner.wait_for_response()
+                                             .expect("Failed waiting for response");
+                    if let Err(err) = Client::new()
+                                          .post(callback_url)
+                                          .header(ContentType::json())
+                                          .header(XRequestId(request_id))
+                                          .body(&response)
+                                          .send() {
+                        println!("Failed to send notification that request completed: {}",
+                                 err);
+                    }
+                });
+                Ok(None)
+            }
         }
     }
 
@@ -121,15 +128,17 @@ impl Handler for LangServer {
 
         let (status, output) = match req.method {
             Get => (StatusCode::Ok, jsonres!("LangServer alive.")),
-            Post => match self.run_algorithm(req) {
-                Ok(Some(out)) => (StatusCode::Ok, out),
-                Ok(None) => (StatusCode::Accepted, jsonres!("Algorithm started.")),
-                Err(err) => (StatusCode::BadRequest, err),
-            },
+            Post => {
+                match self.run_algorithm(req) {
+                    Ok(Some(out)) => (StatusCode::Ok, out),
+                    Ok(None) => (StatusCode::Accepted, jsonres!("Algorithm started.")),
+                    Err(err) => (StatusCode::BadRequest, err),
+                }
+            }
             Delete => {
                 let code = self.terminate();
                 (StatusCode::Ok, (format!("Runner exited: {:?}", code)))
-            },
+            }
             _ => (StatusCode::MethodNotAllowed, jsonerr!("Method not allowed")),
         };
 

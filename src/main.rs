@@ -25,10 +25,12 @@ use langserver::{LangServer, LangServerMode};
 fn main() {
     // Configure LangServer to respond sync (block until algo complete) or async (POST algo result back to URL)
     let mode = match env::var("NOTIFY_REQUEST_COMPLETE") {
-        Ok(notify_var) => match Url::parse(&notify_var) {
-          Ok(url) => LangServerMode::Async(url),
-          Err(err) => panic!("Failed to parse NOTIFY_REQUEST_COMPLETE as URL: {}", err),
-        },
+        Ok(notify_var) => {
+            match Url::parse(&notify_var) {
+                Ok(url) => LangServerMode::Async(url),
+                Err(err) => panic!("Failed to parse NOTIFY_REQUEST_COMPLETE as URL: {}", err),
+            }
+        }
         Err(env::VarError::NotPresent) => LangServerMode::Sync,
         Err(err) => panic!("Failed to parse NOTIFY_REQUEST_COMPLETE as URL: {}", err),
     };
@@ -41,11 +43,12 @@ fn main() {
     // Optionally notify another service that the LangServer is alive and serving requests
     if let Ok(url) = env::var("NOTIFY_STARTED") {
         if let Err(err) = Client::new()
-                                 .post(&url)
-                                 .header(ContentType::json())
-                                 .body(&jsonres!("Started"))
-                                 .send() {
-          println!("Failed to send notification that langserver started: {}", err);
+                              .post(&url)
+                              .header(ContentType::json())
+                              .body(&jsonres!("Started"))
+                              .send() {
+            println!("Failed to send notification that langserver started: {}",
+                     err);
         }
     }
 
