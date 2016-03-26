@@ -1,9 +1,11 @@
 #[macro_use]
 extern crate hyper;
+
 extern crate base64;
 extern crate serde;
 extern crate serde_json;
 extern crate time;
+extern crate wait_timeout;
 
 use hyper::client::Client;
 use hyper::header::ContentType;

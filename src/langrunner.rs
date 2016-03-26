@@ -8,7 +8,9 @@ use std::fs::File;
 use std::process::{Command, Child, ChildStdin, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 use time::PreciseTime;
+use wait_timeout::ChildExt;
 
 const ALGOOUT: &'static str = "/tmp/algoout";
 
@@ -111,7 +113,7 @@ impl LangRunner {
         Ok(response)
     }
 
-    pub fn wait_for_exit(&self) -> i32 {
+    pub fn wait_for_exit(&self) -> Option<i32> {
         {
           // Mutably `take` child_stdin out of `self` and then let it go out of scope, resulting in EOF
           let mut stdin_lock = self.child_stdin.lock().expect("Failed to take stdin lock");
@@ -120,11 +122,21 @@ impl LangRunner {
         }
 
         // Now that stdin is closed, we can wait on child
-        // TODO: use wait_timeout instead: https://github.com/alexcrichton/wait-timeout
-        let mut child = self.child.lock().expect("Failed to get lock on child");
-        println!("Waiting for child to exit...");
-        let status = child.wait().expect("Failed to wait on child");
-        println!("Child exited with {:?}", &status);
-        status.code().expect("Failed to get exit code")
+        println!("Waiting for runner to exit...");
+        let mut child = self.child.lock().expect("Failed to get lock on runner");
+        let status = child.wait_timeout(Duration::from_secs(3)).expect("Failed to wait on runner");
+        match status {
+            Some(exit) => {
+                println!("Runner exited: {:?}", &exit);
+                exit.code()
+            },
+            None => {
+                println!("Runner did not exit. Killing.");
+                if let Err(err) = child.kill() {
+                    println!("Failed to kill runner: {}", err);
+                }
+                None
+            }
+        }
     }
 }

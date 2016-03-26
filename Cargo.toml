@@ -9,7 +9,9 @@ name = "langserver"
 
 [dependencies]
 base64 = "0.1.0"
-serde_json = "0.7.*"
-hyper = "0.7.*"
-time = "0.1.*"
-libc = "0.2.*"
+hyper = "0.7"
+libc = "0.2"
+serde = "0.7"
+serde_json = "0.7"
+time = "0.1"
+wait-timeout = "0.1"

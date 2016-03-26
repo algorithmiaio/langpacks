@@ -108,7 +108,7 @@ impl LangServer {
         }
     }
 
-    fn terminate(&self) -> i32 {
+    fn terminate(&self) -> Option<i32> {
         let arc_runner = self.runner.clone();
         arc_runner.wait_for_exit()
     }
@@ -128,7 +128,7 @@ impl Handler for LangServer {
             },
             Delete => {
                 let code = self.terminate();
-                (StatusCode::Ok, (format!("Runner exited: {}", code)))
+                (StatusCode::Ok, (format!("Runner exited: {:?}", code)))
             },
             _ => (StatusCode::MethodNotAllowed, jsonerr!("Method not allowed")),
         };
