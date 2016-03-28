@@ -2,4 +2,4 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-exec python2.7 $DIR/../src/pipe.py
+PYTHONPATH=$PYTHONPATH:$DIR/../dependencies exec python2.7 $DIR/../src/pipe.py

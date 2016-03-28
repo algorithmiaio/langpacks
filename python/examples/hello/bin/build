@@ -2,4 +2,11 @@
 
 set -e
 
+DEPS_DIR=`pwd`/dependencies/
+mkdir $DEPS_DIR
+
+# We purposely don't use the --ignore-installed because we assume
+# that the runner and builder have the same python packages
+pip install -r requirements.txt --target $DEPS_DIR
+
 zip -r algorithm.zip .
