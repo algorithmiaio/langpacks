@@ -21,7 +21,6 @@ mod langserver;
 pub mod langrunner;
 use langserver::{LangServer, LangServerMode};
 
-
 fn main() {
     // Configure LangServer to respond sync (block until algo complete) or async (POST algo result back to URL)
     let mode = match env::var("NOTIFY_REQUEST_COMPLETE") {
@@ -36,8 +35,8 @@ fn main() {
     };
 
     // Start LangPack runner and server
-    let handler = LangServer::new(mode);
-    let listener = Server::http("0.0.0.0:3000").unwrap().handle(handler).unwrap();
+    let lang_server = LangServer::new(mode);
+    let _listener = Server::http("0.0.0.0:3000").unwrap().handle(lang_server).unwrap();
     println!("Listening on port 3000.");
 
     // Optionally notify another service that the LangServer is alive and serving requests
@@ -51,7 +50,4 @@ fn main() {
                      err);
         }
     }
-
-    // TODO: on sigterm, close listener, let listener guard fall out of scope, wait_with_timeout for child to exit
-    // listener.close();
 }

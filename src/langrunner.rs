@@ -2,6 +2,7 @@ use serde::ser::Serialize;
 use serde_json::ser;
 use serde_json::de::StreamDeserializer;
 use serde_json::Value;
+use std::collections::BTreeMap;
 use std::env;
 use std::io::{Read, Write, BufRead, BufReader};
 use std::fs::File;
@@ -9,11 +10,13 @@ use std::process::{Command, Child, ChildStdin, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
-use time::PreciseTime;
+use time::{self, PreciseTime};
 use wait_timeout::ChildExt;
 
 const ALGOOUT: &'static str = "/tmp/algoout";
 
+
+struct RunnerOutput(Value);
 
 pub struct LangRunner {
     pub child_stdout: Arc<Mutex<Vec<String>>>, // TODO: Option - we often don't care about stdout
@@ -82,11 +85,10 @@ impl LangRunner {
         println!("Deserializing algoout stream...");
         let mut algoout_stream: StreamDeserializer<Value, _> =
             StreamDeserializer::new(algoout.bytes());
-        let mut output = algoout_stream.next()
-                                       .expect("Failed to read next JSON value from stream")
-                                       .expect("Failed to deserialize next JSON value from stream");
+        let output = algoout_stream.next()
+                                   .expect("Failed to read next JSON value from stream")
+                                   .expect("Failed to deserialize next JSON value from stream");
         let duration = start.to(PreciseTime::now());
-        let duration_micro = duration.num_microseconds().unwrap() as f64 / 1_000_000f64;
 
         // Collect buffered stdout - grab lock on child_stdout, and join all the buffered lines
         let mut algo_stdout;
@@ -98,26 +100,15 @@ impl LangRunner {
             lines.clear();
         }
 
-        // Augment runner output
-        match output.as_object_mut() {
-            Some(map) => {
-                match map.get_mut("metadata") {
-                    Some(metadata) => {
-                        let metadata_obj = metadata.as_object_mut().unwrap();
-                        metadata_obj.insert(s!("duration"), Value::F64(duration_micro));
-                        if !algo_stdout.is_empty() {
-                            metadata_obj.insert(s!("stdout"), Value::String(algo_stdout));
-                        }
-                    }
-                    None => panic!("TODO: do we nee to augment error response?"),
-                }
-            }
-            None => panic!("Output not a valid structure"),
-        };
+        // Augment output with duration and stdout
+        let mut runner_output = RunnerOutput(output);
+        runner_output.set_duration(duration);
+        runner_output.set_stdout(algo_stdout);
 
-        let response = ser::to_string(&output).expect("Failed to serialize respons JSON");
+        let response = ser::to_string(&runner_output.0).expect("Failed to serialize respons JSON");
         Ok(response)
     }
+
 
     pub fn wait_for_exit(&self) -> Option<i32> {
         {
@@ -144,5 +135,38 @@ impl LangRunner {
                 None
             }
         }
+    }
+}
+
+
+impl RunnerOutput {
+    fn set_duration(&mut self, duration: time::Duration) {
+        let duration_micro = duration.num_microseconds().unwrap() as f64 / 1_000_000f64;
+        let mut metadata = self.metadata_mut();
+        metadata.insert(s!("duration"), Value::F64(duration_micro));
+    }
+
+    fn set_stdout(&mut self, stdout: String) {
+        if !stdout.is_empty() {
+            let mut metadata = self.metadata_mut();
+            metadata.insert(s!("stdout"), Value::String(stdout));
+        }
+    }
+
+    fn metadata_mut(&mut self) -> &mut BTreeMap<String, Value> {
+        let mut metadata = match self.0.as_object_mut() {
+            Some(map) => {
+                match map.contains_key("metadata") {
+                    true => map.get_mut("metadata").unwrap(),
+                    false => {
+                        let metadata = BTreeMap::new();
+                        map.insert(s!("metadata"), Value::Object(metadata));
+                        map.get_mut("metadata").expect("Failed to insert and retrieve metadata")
+                    }
+                }
+            }
+            None => panic!("Output not a valid structure"),
+        };
+        metadata.as_object_mut().expect("metadata is not an object")
     }
 }
