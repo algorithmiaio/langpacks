@@ -23,14 +23,14 @@ header! { (XRequestId, "X-Request-ID") => [String] }
 
 pub struct LangServer {
     runner: Arc<LangRunner>,
-    mode: Arc<LangServerMode>,
+    mode: LangServerMode,
 }
 
 impl LangServer {
     pub fn new(mode: LangServerMode) -> LangServer {
         LangServer {
             runner: Arc::new(LangRunner::new()),
-            mode: Arc::new(mode),
+            mode: mode,
         }
     }
 
@@ -86,14 +86,13 @@ impl LangServer {
 
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
-        let mode = self.mode.clone();
-        match &*mode {
-            &LangServerMode::Sync => {
+        match self.mode {
+            LangServerMode::Sync => {
                 println!("Waiting synchronously for algorithm to complete");
                 let response = arc_runner.wait_for_response().expect("Failed waiting for response");
                 Ok(Some(response))
             }
-            &LangServerMode::Async(ref url) => {
+            LangServerMode::Async(ref url) => {
                 println!("Waiting asynchronously for algorithm to complete");
                 let callback_url = url.clone();
                 let arc_runner = self.runner.clone();
