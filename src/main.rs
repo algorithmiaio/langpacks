@@ -7,11 +7,10 @@ extern crate serde_json;
 extern crate time;
 extern crate wait_timeout;
 
-use hyper::client::Client;
-use hyper::header::ContentType;
 use hyper::server::{Handler, Server};
 use hyper::Url;
 use std::env;
+use time::PreciseTime;
 
 macro_rules! s { ($x:expr) => ($x.to_string()); }
 macro_rules! jsonerr { ($x:expr) => (concat!(r#"{"error":{"message":""#, $x, r#""}}"#).to_owned()); }
@@ -19,9 +18,13 @@ macro_rules! jsonres { ($x:expr) => (concat!(r#"{"result":""#, $x, r#""}"#).to_o
 
 mod langserver;
 pub mod langrunner;
+pub mod notifier;
 use langserver::{LangServer, LangServerMode};
+use notifier::{Notifier, LoadNotification, LoadStatus};
 
 fn main() {
+    let start = PreciseTime::now();
+
     // Configure LangServer to respond sync (block until algo complete) or async (POST algo result back to URL)
     let mode = match env::var("NOTIFY_REQUEST_COMPLETE") {
         Ok(notify_var) => {
@@ -37,17 +40,17 @@ fn main() {
     // Start LangPack runner and server
     let lang_server = LangServer::new(mode);
     let _listener = Server::http("0.0.0.0:3000").unwrap().handle(lang_server).unwrap();
+    let duration = start.to(PreciseTime::now());
     println!("Listening on port 3000.");
 
     // Optionally notify another service that the LangServer is alive and serving requests
-    if let Ok(url) = env::var("NOTIFY_STARTED") {
-        if let Err(err) = Client::new()
-                              .post(&url)
-                              .header(ContentType::json())
-                              .body(&jsonres!("Started"))
-                              .send() {
-            println!("Failed to send notification that langserver started: {}",
-                     err);
+    if let Ok(url) = env::var("LOAD_COMPLETE") {
+        let notifier = Notifier::parse(&url).expect("LOAD_COMPLETE not a valid URL");
+        // TODO: fix error handling and don't always send Success
+        let message = LoadNotification::new(LoadStatus::Success, duration);
+        if let Err(err) = notifier.notify(message, None) {
+            println!("Failed to send LOAD_COMPLETE notification: {}", err);
+            // TODO: should we just exit at this point?
         }
     }
 }
