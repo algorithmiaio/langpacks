@@ -3,10 +3,25 @@
 set -e
 
 DEPS_DIR=`pwd`/dependencies/
-mkdir $DEPS_DIR
+REQUIREMENTS="requirements.txt"
+
+if [ -d $DEPS_DIR ]; then
+    echo "We already had some dependencies installed..."
+    if python2.7 bin/trim_requirements.py --input `pwd`/requirements.txt --output /tmp/new_requirements.txt --dependencies `pwd`/dependencies; then
+        echo "New requirements in /tmp/new_requirements.txt"
+        REQUIREMENTS="/tmp/new_requirements.txt"
+    else
+        echo "Failed! We are getting rid of all the dependencies and trying again"
+        rm -rf $DEPS_DIR
+    fi
+fi
 
 # We purposely don't use the --ignore-installed because we assume
 # that the runner and builder have the same python packages
-pip install -r requirements.txt --target $DEPS_DIR
+if [ -s $REQUIREMENTS ]; then
+    pip install -r $REQUIREMENTS --target $DEPS_DIR
+else
+    echo "There was nothing to install"
+fi
 
 zip -r algorithm.zip .
