@@ -9,6 +9,7 @@ use serde::{self, Serialize, Serializer};
 use std::env;
 use std::error::Error;
 
+#[derive(Clone)]
 pub struct Notifier {
     url: Url
 }

@@ -1,11 +1,10 @@
 use base64;
-use hyper::client::Client;
 use hyper::mime::{Mime, TopLevel, SubLevel};
-use hyper::header::ContentType;
+use hyper::header::{Headers, ContentType};
 use hyper::server::{Handler, Request, Response};
 use hyper::status::StatusCode;
-use hyper::{Url, Get, Post, Delete};
-use serde_json::de;
+use hyper::{Get, Post, Delete};
+use serde_json::{de, ser};
 use serde_json::Value;
 use serde_json::builder::ObjectBuilder;
 use std::io::{Read, Write};
@@ -13,10 +12,11 @@ use std::sync::Arc;
 use std::thread;
 
 use super::langrunner::LangRunner;
+use super::notifier::Notifier;
 
 pub enum LangServerMode {
     Sync,
-    Async(Url),
+    Async(Notifier),
 }
 
 header! { (XRequestId, "X-Request-ID") => [String] }
@@ -89,24 +89,23 @@ impl LangServer {
         match self.mode {
             LangServerMode::Sync => {
                 println!("Waiting synchronously for algorithm to complete");
-                let response = arc_runner.wait_for_response().expect("Failed waiting for response");
+                let runner_output = arc_runner.wait_for_response().expect("Failed waiting for response");
+                let response = ser::to_string(&runner_output).expect("Failed to serialize response JSON");
                 Ok(Some(response))
             }
-            LangServerMode::Async(ref url) => {
+            LangServerMode::Async(ref notif) => {
                 println!("Waiting asynchronously for algorithm to complete");
-                let callback_url = url.clone();
+
+                let notifier = notif.clone();
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
                     let response = arc_runner.wait_for_response()
                                              .expect("Failed waiting for response");
-                    if let Err(err) = Client::new()
-                                          .post(callback_url)
-                                          .header(ContentType::json())
-                                          .header(XRequestId(request_id))
-                                          .body(&response)
-                                          .send() {
-                        println!("Failed to send notification that request completed: {}",
-                                 err);
+
+                    let mut headers = Headers::new();
+                    headers.set(XRequestId(request_id));
+                    if let Err(err) = notifier.notify(response, Some(headers)) {
+                        println!("Failed to send REQUEST_COMPLETE notification: {}", err);
                     }
                 });
                 Ok(None)

@@ -8,7 +8,6 @@ extern crate time;
 extern crate wait_timeout;
 
 use hyper::server::{Handler, Server};
-use hyper::Url;
 use std::env;
 use time::PreciseTime;
 
@@ -26,20 +25,18 @@ fn main() {
     let start = PreciseTime::now();
 
     // Configure LangServer to respond sync (block until algo complete) or async (POST algo result back to URL)
-    let mode = match env::var("NOTIFY_REQUEST_COMPLETE") {
-        Ok(notify_var) => {
-            match Url::parse(&notify_var) {
-                Ok(url) => LangServerMode::Async(url),
-                Err(err) => panic!("Failed to parse NOTIFY_REQUEST_COMPLETE as URL: {}", err),
-            }
+    let mode = match env::var("REQUEST_COMPLETE") {
+        Ok(url) => {
+            let notifier = Notifier::parse(&url).expect("REQUEST_COMPLETE not a valid URL");
+            LangServerMode::Async(notifier)
         }
         Err(env::VarError::NotPresent) => LangServerMode::Sync,
-        Err(err) => panic!("Failed to parse NOTIFY_REQUEST_COMPLETE as URL: {}", err),
+        Err(err) => panic!("Failed to parse REQUEST_COMPLETE as URL: {}", err),
     };
 
     // Start LangPack runner and server
     let lang_server = LangServer::new(mode);
-    let _listener = Server::http("0.0.0.0:3000").unwrap().handle(lang_server).unwrap();
+    let mut listener = Server::http("0.0.0.0:3000").unwrap().handle(lang_server).unwrap();
     let duration = start.to(PreciseTime::now());
     println!("Listening on port 3000.");
 
@@ -50,7 +47,7 @@ fn main() {
         let message = LoadNotification::new(LoadStatus::Success, duration);
         if let Err(err) = notifier.notify(message, None) {
             println!("Failed to send LOAD_COMPLETE notification: {}", err);
-            // TODO: should we just exit at this point?
+            let _ = listener.close();
         }
     }
 }

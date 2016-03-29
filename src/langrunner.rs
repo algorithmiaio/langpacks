@@ -73,7 +73,7 @@ impl LangRunner {
         };
     }
 
-    pub fn wait_for_response(&self) -> Result<String, String> {
+    pub fn wait_for_response(&self) -> Result<Value, String> {
         println!("Opening algoout FIFO...");
         let start = PreciseTime::now();
 
@@ -105,8 +105,7 @@ impl LangRunner {
         runner_output.set_duration(duration);
         runner_output.set_stdout(algo_stdout);
 
-        let response = ser::to_string(&runner_output.0).expect("Failed to serialize respons JSON");
-        Ok(response)
+        Ok(runner_output.0)
     }
 
 
