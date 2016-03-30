@@ -13,7 +13,6 @@ use time::PreciseTime;
 
 macro_rules! s { ($x:expr) => ($x.to_string()); }
 macro_rules! jsonerr { ($x:expr) => (concat!(r#"{"error":{"message":""#, $x, r#""}}"#).to_owned()); }
-macro_rules! jsonres { ($x:expr) => (concat!(r#"{"result":""#, $x, r#""}"#).to_owned()); }
 
 mod langserver;
 pub mod langrunner;
