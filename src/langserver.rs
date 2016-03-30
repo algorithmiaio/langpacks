@@ -125,11 +125,11 @@ impl Handler for LangServer {
         println!("{} (start)", route);
 
         let (status, output) = match req.method {
-            Get => (StatusCode::Ok, jsonres!("LangServer alive.")),
+            Get => (StatusCode::Ok, s!(r#""LangServer alive.""#)),
             Post => {
                 match self.run_algorithm(req) {
                     Ok(Some(out)) => (StatusCode::Ok, out),
-                    Ok(None) => (StatusCode::Accepted, jsonres!("Algorithm started.")),
+                    Ok(None) => (StatusCode::Accepted, s!(r#""Algorithm started.""#)),
                     Err(err) => (StatusCode::BadRequest, err),
                 }
             }
