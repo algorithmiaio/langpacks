@@ -49,10 +49,10 @@ pub struct LoadNotification {
 }
 
 impl LoadNotification {
-    pub fn new(load_status: LoadStatus, load_time: Duration) -> LoadNotification {
+    pub fn new(load_status: &LoadStatus, load_time: Duration) -> LoadNotification {
         let (load, error) = match load_status {
-            LoadStatus::Success => ("Success", None),
-            LoadStatus::Failure(err) => ("Failure", Some(err)),
+            &LoadStatus::Success => ("Success", None),
+            &LoadStatus::Failure(ref err) => ("Failure", Some(err.clone())),
         };
         LoadNotification {
             slot_id: env::var("SLOT_ID").ok(),
