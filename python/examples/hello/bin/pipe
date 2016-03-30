@@ -1,6 +1,18 @@
 #!/bin/bash
 
+set -e
+
+if [[ $LANGUAGE_VERSION == "python2" ]]; then
+    PYTHON="python2.7"
+elif [[ $LANGUAGE_VERSION == "python3" ]]; then
+    PYTHON="python3.4"
+else
+    echo "A python version needs to be specified"
+    exit 1
+fi
+
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ln -s $DIR/../dependencies /home/algo/.local
-exec python2.7 $DIR/../src/pipe.py
+exec $PYTHON $DIR/../src/pipe.py

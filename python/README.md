@@ -1,7 +1,7 @@
 # Python LangPack
 
 How to make a new algorithm:
-docker run --rm -it -v `pwd`/dependencies:/home/algo/.local -v `pwd`:/tmp/build algorithmia/langbuilder-python
+docker run --rm -it -v `pwd`/dependencies:/home/algo/.local -v `pwd`:/tmp/build -e LANGUAGE_VERSION=[python2 | python3] algorithmia/langbuilder-python
     - Make sure to make the dependencies directory before running this
 
 How to run that algorithm:

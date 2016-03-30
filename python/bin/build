@@ -2,6 +2,15 @@
 
 set -e
 
-pip install -r requirements.txt --user
+if [[ "$LANGUAGE_VERSION" == "python2" ]]; then
+    PIP="pip"
+elif [[ "$LANGUAGE_VERSION" == "python3" ]]; then
+    PIP="pip3"
+else
+    echo "A python version needs to be specified"
+    exit 1
+fi
+
+$PIP install -r requirements.txt --user
 
 zip -r algorithm.zip .
