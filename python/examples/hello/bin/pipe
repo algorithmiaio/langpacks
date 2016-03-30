@@ -11,6 +11,10 @@ else
     exit 1
 fi
 
+if [ -e "/home/algo/.local" ]; then
+    echo "Making the link will fail"
+    exit 1
+fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
