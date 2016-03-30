@@ -51,7 +51,7 @@ pub struct LoadNotification {
 impl LoadNotification {
     pub fn new(load_status: LoadStatus, load_time: Duration) -> LoadNotification {
         let (load, error) = match load_status {
-            LoadStatus::Success => ("Sucess", None),
+            LoadStatus::Success => ("Success", None),
             LoadStatus::Failure(err) => ("Failure", Some(err)),
         };
         LoadNotification {
