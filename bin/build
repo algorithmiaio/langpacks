@@ -2,7 +2,7 @@
 
 set -e
 
-LANGS=(ruby python)
+LANGS=(ruby python javascript)
 
 function build_base_images {
 	cargo build --release
