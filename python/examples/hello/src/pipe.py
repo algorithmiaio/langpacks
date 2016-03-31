@@ -33,6 +33,7 @@ def get_response(request):
         result = call_algorithm(request)
         if isinstance(result, bytearray):
             content_type = 'binary'
+            result = base64.b64encode(result)
         else:
             content_type = 'json'
 
@@ -56,7 +57,7 @@ def call_algorithm(request):
     if request['content_type'] in ['text', 'json']:
         data = request['data']
     elif request['content_type'] == 'binary':
-        data = base64.b64decode(request['data'])
+        data = bytearray(base64.b64decode(request['data']))
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
 
