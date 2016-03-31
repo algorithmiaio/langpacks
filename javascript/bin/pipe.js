@@ -1,31 +1,31 @@
 const readline = require('readline');
+const fs = require('fs');
+const FIFO_PATH = '/tmp/algoout';
 
-
-main();
-
-function main() {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-
-    rl.on('line', (line) => {
-        request = JSON.parse(line);
-        response = get_response(request);
-
-        console.log('You just typed: ' + request);
-        rl.write('REPLACE WITH NEW LINE');
-    });
-
-    console.log("Starting");
-}
-
-function get_response(request) {
+function get_response(line) {
     try {
+        request = JSON.parse(line);
         result = call_algorithm(request);
-    } catch (err) {
-        console.log(`Got an error ${err}`);
+        content_type = 'json';
+
+        if (Buffer.isBuffer(result)) {
+            result = result.toString('base64');
+            content_type = 'binary';
+        }
+
+        response = {
+            result: result,
+            metadata: {
+                content_type: content_type
+            }
+        };
+    } catch (e) {
+        response = {
+            message: e.toString(),
+            stacktrace: e.stack
+        }
     }
+    return response;
 }
 
 function call_algorithm(request) {
@@ -33,15 +33,39 @@ function call_algorithm(request) {
         throw new Error('Request needs to be an object');
     }
 
+    if (!('data' in request)) {
+        throw new Error('data was not in request');
+    }
+
     if ('content_type' in request) {
         if (request['content_type'] === 'text' || request['content_type'] === 'json') {
             data = request['data'];
         } else if (request['content_type'] === 'binary') {
-            data = request['data'];
+            data = new Buffer(request['data'], 'base64');
         } else {
             throw new Error('Invalid content_type: ' + request['content_type']);
         }
+        return apply(data);
     } else {
         throw new Error('content_type was not in the request');
     }
+}
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+rl.on('line', (line) => {
+    response = get_response(line);
+    fd = fs.openSync(FIFO_PATH, 'a');
+    fs.writeSync(fd, JSON.stringify(response));
+    fs.writeSync(fd, '\n');
+    fs.fsyncSync(fd);
+    fs.closeSync(fd);
+    rl.write('REPLACE WITH NEW LINE');
+});
+
+function apply(data) {
+    return "Hello " + data
 }
