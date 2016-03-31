@@ -12,6 +12,11 @@ def pipe_loop
       else
         'json'
       end
+      result = if result.encoding == 'binary' then
+        Base64.encode64(result)
+      else
+        result
+      end
       { :result => result, :metadata => { :content_type => content_type}}
     rescue Exception => e
       { :error => { :message => e.message, :stacktrace => e.backtrace.join("\n") }}
