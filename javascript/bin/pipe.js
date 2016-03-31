@@ -43,7 +43,12 @@ const rl = readline.createInterface({
 });
 
 var alreadyWorking = false;
-function algoCallback(error, result) {
+function algoCallback(calledAlready, error, result) {
+    if (calledAlready[0]) {
+        return; // Stop right away if this has been called already
+    }
+    calledAlready[0] = true;
+
     if (error) {
         stacktrace = "[None]";
         if (error instanceof Error) {
@@ -81,6 +86,6 @@ function algoCallback(error, result) {
 rl.on('line', (line) => {
     if (!alreadyWorking && line.length > 0) {
         alreadyWorking = true;
-        start_call(line, algoCallback);
+        start_call(line, algoCallback.bind(null /*this*/, [false]));
     }
 });
