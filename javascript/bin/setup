@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+DEBIAN_FRONTEND=noninteractive
+
+apt-get -y update
+
+# Getting node and npm
+apt-get install -y curl
+curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+apt-get install -y nodejs
+npm install npm -g
