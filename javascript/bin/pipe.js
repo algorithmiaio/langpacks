@@ -56,14 +56,19 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
+var alreadyWorking = false;
 rl.on('line', (line) => {
-    response = get_response(line);
-    fd = fs.openSync(FIFO_PATH, 'a');
-    fs.writeSync(fd, JSON.stringify(response));
-    fs.writeSync(fd, '\n');
-    fs.fsyncSync(fd);
-    fs.closeSync(fd);
-    rl.write('REPLACE WITH NEW LINE');
+    if (!alreadyWorking && line.length > 0) {
+        alreadyWorking = true;
+        response = get_response(line);
+        fd = fs.openSync(FIFO_PATH, 'a');
+        fs.writeSync(fd, JSON.stringify(response));
+        fs.writeSync(fd, '\n');
+        // Flushing here causes errors...
+        fs.closeSync(fd);
+        rl.write('\n');
+        alreadyWorking = false;
+    }
 });
 
 function apply(data) {
