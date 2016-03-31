@@ -1,3 +1,4 @@
+const Algorithm = require("../src/algorithm.js");
 const readline = require('readline');
 const fs = require('fs');
 const FIFO_PATH = '/tmp/algoout';
@@ -45,7 +46,7 @@ function call_algorithm(request) {
         } else {
             throw new Error('Invalid content_type: ' + request['content_type']);
         }
-        return apply(data);
+        return Algorithm.apply(data);
     } else {
         throw new Error('content_type was not in the request');
     }
@@ -70,7 +71,3 @@ rl.on('line', (line) => {
         alreadyWorking = false;
     }
 });
-
-function apply(data) {
-    return "Hello " + data
-}
