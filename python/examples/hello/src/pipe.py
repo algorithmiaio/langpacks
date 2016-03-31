@@ -56,7 +56,7 @@ def call_algorithm(request):
     if request['content_type'] in ['text', 'json']:
         data = request['data']
     elif request['content_type'] == 'binary':
-        data = base64.b64encode(request['data'])
+        data = base64.b64decode(request['data'])
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
 
