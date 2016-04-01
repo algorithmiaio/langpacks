@@ -13,8 +13,9 @@ use std::time::Duration;
 use time::{self, PreciseTime};
 use wait_timeout::ChildExt;
 
-const ALGOOUT: &'static str = "/tmp/algoout";
+use super::error::Error;
 
+const ALGOOUT: &'static str = "/tmp/algoout";
 
 struct RunnerOutput(Value);
 
@@ -25,69 +26,91 @@ pub struct LangRunner {
 }
 
 impl LangRunner {
-    pub fn new() -> LangRunner {
-        let mut path = env::current_dir().expect("Failed to get working directory");
+    pub fn start() -> Result<LangRunner, Error> {
+        let mut path = try!(env::current_dir());
         path.push("bin/pipe");
-        let mut child = Command::new(&path)
+
+        let mut child = try!(Command::new(&path)
                             .stdin(Stdio::piped())
                             .stdout(Stdio::piped())
                             .stderr(Stdio::null())
-                            .spawn()
-                            .unwrap_or_else(|e| panic!("failed to execute child: {}", e));
-        println!("Running PID {} {:?}", child.id(), path);
+                            .spawn());
 
-        let stdin = child.stdin.take().expect("Failed to open runner's STDIN");
-        let stdout = child.stdout.take().expect("Failed to open runner's STDOUT");
+        println!("Running PID {}: {}", child.id(), path.to_string_lossy());
+
+        let stdin = try!(child.stdin.take()
+            .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN")))
+        );
+        let stdout = try!(child.stdout.take()
+            .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT")))
+        );
 
         let child_stdout = Arc::new(Mutex::new(Vec::new()));
 
         let arc_stdout = child_stdout.clone();
         thread::spawn(move || {
             let reader = BufReader::new(stdout);
-            for line in reader.lines() {
-                let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
-                lines.push(line.expect("Failed to read line"));
+            for line_result in reader.lines() {
+                match line_result {
+                    Ok(line) => match arc_stdout.lock() {
+                        Ok(mut lines) => lines.push(line),
+                        Err(err) => println!("Failed to get lock on stdout lines: {}", err),
+                    },
+                    Err(err) => println!("Failed to read line: {}", err),
+                }
             }
         });
 
-        LangRunner {
+        Ok(LangRunner {
             child: Mutex::new(child),
             child_stdin: Mutex::new(Some(stdin)),
             child_stdout: child_stdout,
-        }
+        })
     }
 
 
-    pub fn write<T: Serialize>(&self, input: &T) {
+    pub fn write<T: Serialize>(&self, input: &T) -> Result<(), Error> {
         let mut stdin_lock = self.child_stdin.lock().expect("Failed to get stdin lock");
         match stdin_lock.as_mut() {
             Some(mut stdin) => {
                 println!("Sending data to runner stdin");
-                ser::to_writer(&mut stdin, &input)
-                    .expect("Failed to write input to runner's STDIN");
-                stdin.write(b"\n").expect("Failed to write new line to runner's STDIN");
+                try!(ser::to_writer(&mut stdin, &input));
+                try!(stdin.write(b"\n"));
+                Ok(())
             }
             None => {
-                panic!("Child stdin has already been moved");
+                Err(Error::Unexpected("cannot write to closed runner stdin".to_owned()))
             }
-        };
+        }
     }
 
-    pub fn wait_for_response(&self) -> Result<Value, String> {
-        println!("Opening algoout FIFO...");
+    pub fn wait_for_response(&self) -> Result<Value, Error> {
+        println!("Opening /tmp/algoout FIFO...");
         let start = PreciseTime::now();
 
         // Note: Opening a FIFO read-only pipe blocks until a writer opens it. Would be nice to open with O_NONBLOCK
         // TODO: make this non-blocking, because otherwise this is a potential deadlock if the runner crashes before opening ALGOOUT
-        let algoout = File::open(ALGOOUT).expect("Failed to open ALGOOUT pipe");
+        let algoout = try!(File::open(ALGOOUT));
 
         // Collect runner output from JSON stream - reads and deserializes the single next JSON Value on algout
         println!("Deserializing algoout stream...");
         let mut algoout_stream: StreamDeserializer<Value, _> =
             StreamDeserializer::new(algoout.bytes());
-        let output = algoout_stream.next()
-                                   .expect("Failed to read next JSON value from stream")
-                                   .expect("Failed to deserialize next JSON value from stream");
+
+        // try to read next json value, then try to deserialize
+        let output = match algoout_stream.next() {
+            Some(next) => match next {
+                Ok(out) => out,
+                Err(err) => {
+                    println!("Failed to deserialize next JSON value from stream: {}", err);
+                    return Err(err.into());
+                }
+            },
+            None => {
+                return Err(Error::Unexpected("No more JSON to read from the stream".to_owned()));
+            }
+        };
+
         let duration = start.to(PreciseTime::now());
 
         // Collect buffered stdout - grab lock on child_stdout, and join all the buffered lines
@@ -136,7 +159,6 @@ impl LangRunner {
         }
     }
 }
-
 
 impl RunnerOutput {
     fn set_duration(&mut self, duration: time::Duration) {

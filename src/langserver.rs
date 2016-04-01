@@ -7,10 +7,12 @@ use hyper::{Get, Post, Delete};
 use serde_json::{de, ser};
 use serde_json::Value;
 use serde_json::builder::ObjectBuilder;
+use std::error::Error as StdError;
 use std::io::{Read, Write};
 use std::sync::Arc;
 use std::thread;
 
+use super::error::Error;
 use super::langrunner::LangRunner;
 use super::notifier::Notifier;
 
@@ -29,7 +31,7 @@ pub struct LangServer {
 impl LangServer {
     pub fn new(mode: LangServerMode) -> LangServer {
         LangServer {
-            runner: Arc::new(LangRunner::new()),
+            runner: Arc::new(LangRunner::start().expect("Failed to start LangRunner")),
             mode: mode,
         }
     }
@@ -70,7 +72,7 @@ impl LangServer {
         }
     }
 
-    fn run_algorithm(&self, req: Request) -> Result<Option<String>, String> {
+    fn run_algorithm(&self, req: Request) -> Result<Option<String>, Error> {
         // TODO: freak out if another request is in progress
 
         let request_id = req.headers
@@ -82,15 +84,18 @@ impl LangServer {
 
         // Start piping data
         let arc_runner = self.runner.clone();
-        arc_runner.write(&input_value); // TODO: add error handling
-
+        if let Err(err) = arc_runner.write(&input_value) {
+            println!("Failed write to runner stdin");
+            return Err(err);
+            // TODO: don't actually return, still need to async send result
+        }
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
         match self.mode {
             LangServerMode::Sync => {
                 println!("Waiting synchronously for algorithm to complete");
-                let runner_output = arc_runner.wait_for_response().expect("Failed waiting for response");
-                let response = ser::to_string(&runner_output).expect("Failed to serialize response JSON");
+                let runner_output = try!(arc_runner.wait_for_response()); //.expect("Failed waiting for response");
+                let response = try!(ser::to_string(&runner_output));
                 Ok(Some(response))
             }
             LangServerMode::Async(ref notif) => {
@@ -99,9 +104,7 @@ impl LangServer {
                 let notifier = notif.clone();
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
-                    let response = arc_runner.wait_for_response()
-                                             .expect("Failed waiting for response");
-
+                    let response = arc_runner.wait_for_response().expect("Failed waiting for response");
                     let mut headers = Headers::new();
                     headers.set(XRequestId(request_id));
                     if let Err(err) = notifier.notify(response, Some(headers)) {
@@ -130,7 +133,13 @@ impl Handler for LangServer {
                 match self.run_algorithm(req) {
                     Ok(Some(out)) => (StatusCode::Ok, out),
                     Ok(None) => (StatusCode::Accepted, s!(r#""Algorithm started.""#)),
-                    Err(err) => (StatusCode::BadRequest, err),
+                    Err(err) => {
+                        println!("Request Failed: {}", err);
+                        match err.cause() {
+                            Some(cause) => (StatusCode::BadRequest, format!("{} - {}", err.description(), cause)),
+                            None => (StatusCode::BadRequest, err.description().to_owned()),
+                        }
+                    }
                 }
             }
             Delete => {

@@ -57,7 +57,7 @@ fn main() {
 fn load_complete(status: LoadStatus, duration: Duration) -> Result<(), Error> {
     // Optionally notify another service that the LangServer is alive and serving requests
     if let Ok(url) = env::var("LOAD_COMPLETE") {
-        let notifier = Notifier::parse(&url).expect("LOAD_COMPLETE not a valid URL");
+        let notifier = try!(Notifier::parse(&url));
 
         let message = LoadNotification::new(&status, duration);
         try!(notifier.notify(message, None));

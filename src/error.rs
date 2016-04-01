@@ -1,6 +1,5 @@
 use std::error::Error as StdError;
-use std;
-use hyper;
+use {std, hyper, serde_json};
 
 // quick_error generates a lot of the standard error boilerplate
 quick_error! {
@@ -14,10 +13,33 @@ quick_error! {
         }
 
         /// Errors reading environment variables
-        VarError(err: std::env::VarError) {
+        EnvVarError(err: std::env::VarError) {
             from()
             description(err.description())
             cause(err)
+        }
+
+        /// Errors serialize type to JSON
+        SerdeError(err: serde_json::error::Error) {
+            from()
+            description(err.description())
+            cause(err)
+        }
+
+        IoError(err: std::io::Error) {
+            from()
+            description(err.description())
+            cause(err)
+        }
+
+        /// Errors parsing URLs
+        UrlParseError(err: String) {
+            description(err)
+        }
+
+
+        Unexpected(err: String) {
+            description(err)
         }
 
     }

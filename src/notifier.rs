@@ -1,4 +1,3 @@
-use hyper;
 use hyper::client::Client;
 use hyper::client::response::Response;
 use hyper::header::{Headers, ContentType};
@@ -7,7 +6,8 @@ use time::Duration;
 use serde_json::ser;
 use serde::{self, Serialize, Serializer};
 use std::env;
-use std::error::Error;
+use std::error::Error as StdError;
+use super::error::Error;
 
 #[derive(Clone)]
 pub struct Notifier {
@@ -15,15 +15,15 @@ pub struct Notifier {
 }
 
 impl Notifier {
-    pub fn parse(url: &str) -> Result<Notifier, String> {
+    pub fn parse(url: &str) -> Result<Notifier, Error> {
         match Url::parse(url) {
             Ok(parsed_url) => Ok(Notifier {  url: parsed_url }),
-            Err(err) => Err(err.description().to_owned()),
+            Err(err) => Err(Error::UrlParseError(err.description().to_owned())),
         }
     }
 
-    pub fn notify<S: Serialize>(&self, message: S, headers: Option<Headers>) -> hyper::error::Result<Response> {
-        let body = ser::to_string(&message).expect("Could not serialize LoadNotification");
+    pub fn notify<S: Serialize>(&self, message: S, headers: Option<Headers>) -> Result<Response, Error> {
+        let body = try!(ser::to_string(&message));
 
         // TODO: handle retry
         let response = Client::new()
@@ -35,7 +35,7 @@ impl Notifier {
         if let Err(ref err) = response {
             println!("Failed to send notification: {}", err);
         }
-        response
+        response.map_err(|e| e.into())
     }
 }
 
