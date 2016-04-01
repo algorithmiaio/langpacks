@@ -43,20 +43,20 @@ pub enum LoadStatus { Success, Failure(String) }
 
 pub struct LoadNotification {
     slot_id: Option<String>,
-    load: String,
+    status: String,
     error: Option<String>,
     load_time: f64,
 }
 
 impl LoadNotification {
     pub fn new(load_status: &LoadStatus, load_time: Duration) -> LoadNotification {
-        let (load, error) = match load_status {
-            &LoadStatus::Success => ("Success", None),
-            &LoadStatus::Failure(ref err) => ("Failure", Some(err.clone())),
+        let (status, error) = match load_status {
+            &LoadStatus::Success => ("Successful", None),
+            &LoadStatus::Failure(ref err) => ("Failed", Some(err.clone())),
         };
         LoadNotification {
             slot_id: env::var("SLOT_ID").ok(),
-            load: load.to_owned(),
+            status: status.to_owned(),
             error: error,
             load_time: load_time.num_microseconds().unwrap() as f64 / 1_000_000f64,
         }
@@ -73,7 +73,7 @@ struct LoadNotificationMapVisitor<'a> { value: &'a LoadNotification }
 impl<'a> serde::ser::MapVisitor for LoadNotificationMapVisitor<'a> {
     fn visit<S: Serializer>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error> {
         try!(serializer.serialize_map_elt("slot_id", &self.value.slot_id));
-        try!(serializer.serialize_map_elt("load", &self.value.load));
+        try!(serializer.serialize_map_elt("status", &self.value.status));
         try!(serializer.serialize_map_elt("load_time", &self.value.load_time));
         if let Some(ref error) = self.value.error {
             try!(serializer.serialize_map_elt("error", error));
