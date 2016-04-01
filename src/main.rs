@@ -32,9 +32,9 @@ fn main() {
     let listener = get_mode().and_then(|mode| {
         // Start LangPack runner and server
         let lang_server = LangServer::new(mode);
-        let listener = Server::http("0.0.0.0:3000")
+        let listener = Server::http("0.0.0.0:9999")
                               .and_then(|s| s.handle(lang_server));
-        println!("Listening on port 3000.");
+        println!("Listening on port 9999.");
         listener.map_err(|err| err.into())
     });
 
