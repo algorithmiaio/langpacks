@@ -21,8 +21,6 @@ pub enum LangServerMode {
     Async(Notifier),
 }
 
-header! { (XRequestId, "X-Request-ID") => [String] }
-
 pub struct LangServer {
     runner: Arc<LangRunner>,
     mode: LangServerMode,
@@ -72,13 +70,16 @@ impl LangServer {
         }
     }
 
+    fn get_proxied_headers(&self, req: &Request) -> Headers {
+        req.headers.iter()
+            .filter(|h| h.name().starts_with("X-"))
+            .collect()
+    }
+
     fn run_algorithm(&self, req: Request) -> Result<Option<String>, Error> {
         // TODO: freak out if another request is in progress
 
-        let request_id = req.headers
-                            .get::<XRequestId>()
-                            .map(|h| h.to_string())
-                            .unwrap_or("no-id".into());
+        let headers = self.get_proxied_headers(&req);
         let input_value = self.build_input(req)
                               .expect("Failed to build algorithm input from request");
 
@@ -105,8 +106,7 @@ impl LangServer {
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
                     let response = arc_runner.wait_for_response().expect("Failed waiting for response");
-                    let mut headers = Headers::new();
-                    headers.set(XRequestId(request_id));
+
                     if let Err(err) = notifier.notify(response, Some(headers)) {
                         println!("Failed to send REQUEST_COMPLETE notification: {}", err);
                     }
