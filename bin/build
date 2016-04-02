@@ -20,6 +20,7 @@ function build_lang_images {
     echo "=====Begin building langbuilder-$lang====="
 		docker build -f Dockerfile.builder -t algorithmia/langbuilder-$lang .
     echo "=====Finished building langserver-$lang====="
+	cd ..
 	done
 }
 
