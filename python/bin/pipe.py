@@ -2,10 +2,11 @@ import base64
 import json
 import sys
 import traceback
-from algorithm import apply
 from six.moves import input
 
-# TODO import the algorithm apply method so this doesn't crash
+import sys
+sys.path.append("./")
+from src.algorithm import apply
 
 FIFO_PATH = '/tmp/algoout'
 

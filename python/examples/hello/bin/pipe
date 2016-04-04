@@ -19,4 +19,4 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ln -s $DIR/../dependencies /home/algo/.local
-exec $PYTHON $DIR/../src/pipe.py
+exec $PYTHON $DIR/pipe.py
