@@ -10,7 +10,7 @@ use serde_json::builder::ObjectBuilder;
 use std::error::Error as StdError;
 use std::io::{Read, Write};
 use std::sync::Arc;
-use std::thread;
+use std::{process, thread};
 
 use super::error::Error;
 use super::langrunner::LangRunner;
@@ -126,6 +126,8 @@ impl Handler for LangServer {
     fn handle(&self, req: Request, mut res: Response) {
         let route = format!("{} {}", req.method, req.uri);
         println!("{} (start)", route);
+        let mut terminate = false;
+
 
         let (status, output) = match req.method {
             // Route for checking that LangServer is alive
@@ -149,6 +151,7 @@ impl Handler for LangServer {
             // Route for terminating the managed algorithm
             Delete => {
                 let code = self.terminate();
+                terminate = true;
                 (StatusCode::Ok, (format!("Runner exited: {:?}", code)))
             }
 
@@ -160,5 +163,9 @@ impl Handler for LangServer {
         res.headers_mut().set(ContentType::json());
         *res.status_mut() = status;
         res.send(output.as_bytes()).unwrap();
+
+        if terminate {
+            process::exit(0);
+        }
     }
 }
