@@ -70,8 +70,8 @@ impl LangServer {
         }
     }
 
-    fn get_proxied_headers(&self, req: &Request) -> Headers {
-        req.headers.iter()
+    fn get_proxied_headers(&self, headers: &Headers) -> Headers {
+        headers.iter()
             .filter(|h| h.name().starts_with("X-"))
             .collect()
     }
@@ -79,23 +79,22 @@ impl LangServer {
     fn run_algorithm(&self, req: Request) -> Result<Option<String>, Error> {
         // TODO: freak out if another request is in progress
 
-        let headers = self.get_proxied_headers(&req);
+        let headers = self.get_proxied_headers(&req.headers);
         let input_value = self.build_input(req)
                               .expect("Failed to build algorithm input from request");
 
         // Start piping data
         let arc_runner = self.runner.clone();
         if let Err(err) = arc_runner.write(&input_value) {
-            println!("Failed write to runner stdin");
+            println!("Failed write to runner stdin: {}", err);
             return Err(err);
-            // TODO: don't actually return, still need to async send result
         }
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
         match self.mode {
             LangServerMode::Sync => {
                 println!("Waiting synchronously for algorithm to complete");
-                let runner_output = try!(arc_runner.wait_for_response()); //.expect("Failed waiting for response");
+                let runner_output = try!(arc_runner.wait_for_response());
                 let response = try!(ser::to_string(&runner_output));
                 Ok(Some(response))
             }
@@ -123,12 +122,16 @@ impl LangServer {
 }
 
 impl Handler for LangServer {
+
     fn handle(&self, req: Request, mut res: Response) {
         let route = format!("{} {}", req.method, req.uri);
         println!("{} (start)", route);
 
         let (status, output) = match req.method {
+            // Route for checking that LangServer is alive
             Get => (StatusCode::Ok, s!(r#""LangServer alive.""#)),
+
+            // Route for calling the managed algorithm
             Post => {
                 match self.run_algorithm(req) {
                     Ok(Some(out)) => (StatusCode::Ok, out),
@@ -142,10 +145,14 @@ impl Handler for LangServer {
                     }
                 }
             }
+
+            // Route for terminating the managed algorithm
             Delete => {
                 let code = self.terminate();
                 (StatusCode::Ok, (format!("Runner exited: {:?}", code)))
             }
+
+            // All other routes
             _ => (StatusCode::MethodNotAllowed, jsonerr!("Method not allowed")),
         };
 
