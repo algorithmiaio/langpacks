@@ -20,7 +20,7 @@ const ALGOOUT: &'static str = "/tmp/algoout";
 struct RunnerOutput(Value);
 
 pub struct LangRunner {
-    pub child_stdout: Arc<Mutex<Vec<String>>>, // TODO: Option - we often don't care about stdout
+    child_stdout: Arc<Mutex<Vec<String>>>,
     child_stdin: Mutex<Option<ChildStdin>>,
     child: Mutex<Child>,
 }
@@ -59,6 +59,7 @@ impl LangRunner {
                     Err(err) => println!("Failed to read line: {}", err),
                 }
             }
+
         });
 
         Ok(LangRunner {
@@ -89,7 +90,6 @@ impl LangRunner {
         let start = PreciseTime::now();
 
         // Note: Opening a FIFO read-only pipe blocks until a writer opens it. Would be nice to open with O_NONBLOCK
-        // TODO: make this non-blocking, because otherwise this is a potential deadlock if the runner crashes before opening ALGOOUT
         let algoout = try!(File::open(ALGOOUT));
 
         // Collect runner output from JSON stream - reads and deserializes the single next JSON Value on algout
