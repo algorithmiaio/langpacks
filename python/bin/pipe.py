@@ -48,8 +48,11 @@ def get_response(request):
         _, _, exc_traceback = sys.exc_info()
 
         response = {
-            'message': str(e),
-            'stacktrace': traceback.format_exc(exc_traceback)
+            'error': {
+                'message': str(e),
+                'stacktrace': traceback.format_exc(exc_traceback),
+                'error_type': 'AlgorithmError'
+            }
         }
 
     return response

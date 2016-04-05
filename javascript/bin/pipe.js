@@ -56,8 +56,11 @@ function algoCallback(calledAlready, error, result) {
         }
 
         response = {
-            message: error.toString(),
-            stacktrace: stacktrace
+            error: {
+                message: error.toString(),
+                stacktrace: stacktrace,
+                error_type: 'AlgorithmError'
+            }
         }
     } else {
         content_type = 'json';
