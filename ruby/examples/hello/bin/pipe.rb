@@ -19,7 +19,7 @@ def pipe_loop
       end
       { :result => result, :metadata => { :content_type => content_type}}
     rescue Exception => e
-      { :error => { :message => e.message, :stacktrace => e.backtrace.join("\n") }}
+      { :error => { :message => e.message, :stacktrace => e.backtrace.join("\n"), :error_type => e.class.name }}
     end
 
     # Add final newline delimeter and flush stdout before writing back response
