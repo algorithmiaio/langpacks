@@ -16,6 +16,7 @@ use wait_timeout::ChildExt;
 use super::error::Error;
 
 const ALGOOUT: &'static str = "/tmp/algoout";
+const UNKNOWN_EXIT: i32 = -99;
 
 struct RunnerOutput(Value);
 
@@ -23,6 +24,7 @@ pub struct LangRunner {
     child_stdout: Arc<Mutex<Vec<String>>>,
     child_stdin: Mutex<Option<ChildStdin>>,
     child: Mutex<Child>,
+    exit_status: Mutex<Option<i32>>,
 }
 
 impl LangRunner {
@@ -66,6 +68,7 @@ impl LangRunner {
             child: Mutex::new(child),
             child_stdin: Mutex::new(Some(stdin)),
             child_stdout: child_stdout,
+            exit_status: Mutex::new(None),
         })
     }
 
@@ -89,7 +92,7 @@ impl LangRunner {
         println!("Opening /tmp/algoout FIFO...");
         let start = PreciseTime::now();
 
-        // Note: Opening a FIFO read-only pipe blocks until a writer opens it. Would be nice to open with O_NONBLOCK
+        // Note: Opening a FIFO read-only pipe blocks until a writer opens it.
         let algoout = try!(File::open(ALGOOUT));
 
         // Collect runner output from JSON stream - reads and deserializes the single next JSON Value on algout
@@ -131,32 +134,82 @@ impl LangRunner {
         Ok(runner_output.0)
     }
 
+    pub fn wait_for_exit(&self) -> i32 {
+        loop {
+            if let Some(code) = self.check_exited() {
+                return code;
+            }
 
-    pub fn wait_for_exit(&self) -> Option<i32> {
+            thread::sleep(Duration::from_millis(500));
+        }
+    }
+
+    fn check_exited(&self) -> Option<i32> {
+        // Check if we've already stored the exit code
+        // Also holding lock on self.exit_status to ensure wait_timeout is called safely between threads
+        let mut exit_status = self.exit_status.lock().expect("Failed to take exit status lock");
+        if exit_status.is_some() {
+            return Some(exit_status.unwrap());
+        }
+
+        // Now let's do a short wait just to see if the process has exited
+        let mut child = self.child.lock().expect("Failed to get lock on runner");
+        match child.wait_timeout(Duration::from_millis(10)) {
+            Err(err) => {
+                println!("Error waiting for runner: {}", err);
+                *exit_status = Some(UNKNOWN_EXIT);
+                Some(UNKNOWN_EXIT)
+            }
+            Ok(Some(exit)) => {
+                println!("Runner exited: {:?}", &exit);
+                let code = exit.code().unwrap_or(UNKNOWN_EXIT);
+                *exit_status = Some(code);
+                Some(code)
+            }
+            Ok(None) => None // Still alive
+        }
+    }
+
+    pub fn stop(&self) -> i32 {
+        // Check if we've already stored the exit code
+        // Also holding lock on self.exit_status to ensure wait_timeout is called safely between threads
+        let mut exit_status = self.exit_status.lock().expect("Failed to take exit status lock");
+        if exit_status.is_some() {
+            return exit_status.unwrap();
+        }
+
         {
             // Mutably `take` child_stdin out of `self` and then let it go out of scope, resulting in EOF
             let mut stdin_lock = self.child_stdin.lock().expect("Failed to take stdin lock");
-            let _drop_stdin = stdin_lock.take();
-            println!("Dropping runner stdin.");
+            if let Some(_) = stdin_lock.take() {
+                println!("Dropping runner stdin.");
+            }
         }
 
         // Now that stdin is closed, we can wait on child
         println!("Waiting for runner to exit...");
         let mut child = self.child.lock().expect("Failed to get lock on runner");
-        let status = child.wait_timeout(Duration::from_secs(3)).expect("Failed to wait on runner");
-        match status {
-            Some(exit) => {
-                println!("Runner exited: {:?}", &exit);
-                exit.code()
+        let code = match child.wait_timeout(Duration::from_secs(3)) {
+            Err(err) => {
+                println!("Error waiting for runner: {}", err);
+                UNKNOWN_EXIT
             }
-            None => {
+            Ok(Some(exit)) => {
+                println!("Runner exited: {:?}", &exit);
+                exit.code().unwrap_or(UNKNOWN_EXIT)
+            }
+            Ok(None) => {
                 println!("Runner did not exit. Killing.");
                 if let Err(err) = child.kill() {
                     println!("Failed to kill runner: {}", err);
                 }
-                None
+                UNKNOWN_EXIT
             }
-        }
+        };
+
+        // Store the exit status
+        *exit_status = Some(code);
+        code
     }
 }
 

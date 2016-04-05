@@ -10,11 +10,13 @@ use serde_json::builder::ObjectBuilder;
 use std::error::Error as StdError;
 use std::io::{Read, Write};
 use std::sync::Arc;
+use std::time::Duration;
 use std::{process, thread};
 
 use super::error::Error;
 use super::langrunner::LangRunner;
 use super::notifier::Notifier;
+
 
 pub enum LangServerMode {
     Sync,
@@ -28,8 +30,19 @@ pub struct LangServer {
 
 impl LangServer {
     pub fn new(mode: LangServerMode) -> LangServer {
+        let runner = Arc::new(LangRunner::start().expect("Failed to start LangRunner"));
+
+        // Spawn a thread to watch for unexpected runner exit
+        let watched_runner = runner.clone();
+        thread::spawn(move || {
+            let code = watched_runner.wait_for_exit();
+            // Sleep just in case this exit was being handled by a terminate request
+            thread::sleep(Duration::from_millis(500));
+            process::exit(code);
+        });
+
         LangServer {
-            runner: Arc::new(LangRunner::start().expect("Failed to start LangRunner")),
+            runner: runner.clone(),
             mode: mode,
         }
     }
@@ -108,6 +121,8 @@ impl LangServer {
 
                     if let Err(err) = notifier.notify(response, Some(headers)) {
                         println!("Failed to send REQUEST_COMPLETE notification: {}", err);
+                        let code = arc_runner.stop();
+                        process::exit(code);
                     }
                 });
                 Ok(None)
@@ -115,9 +130,9 @@ impl LangServer {
         }
     }
 
-    fn terminate(&self) -> Option<i32> {
+    fn terminate(&self) -> i32 {
         let arc_runner = self.runner.clone();
-        arc_runner.wait_for_exit()
+        arc_runner.stop()
     }
 }
 
@@ -152,7 +167,7 @@ impl Handler for LangServer {
             Delete => {
                 let code = self.terminate();
                 terminate = true;
-                (StatusCode::Ok, (format!("Runner exited: {:?}", code)))
+                (StatusCode::Ok, (format!("Runner exited: {}", code)))
             }
 
             // All other routes
