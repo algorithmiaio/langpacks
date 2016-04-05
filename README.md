@@ -14,6 +14,7 @@ Disclaimer: The intent was to prototype langserver in rust (because I knew it be
 bin/build langserver # just builds the base langserver images (default)
 bin/build <lang>     # builds language-specific image (and deps)
 bin/build all        # builds all images for all langpacks
+bin/build single     # builds 1 image containing the langserver runner and running setup on all langpacks
 ```
 
 Note: the initial plan is to NOT use these images, but they are helpful for implementing and testing langpacks locally, as well as provide some "code documentation" for how setup/build/pipe/langserver all fit together.
