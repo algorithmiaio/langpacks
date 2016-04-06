@@ -1,0 +1,6 @@
+FROM algorithmia/langpack-single-base
+
+WORKDIR /tmp/build
+CMD ["bin/build"]
+
+USER algo

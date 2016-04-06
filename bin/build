@@ -29,8 +29,10 @@ function build_lang_images {
   done
 }
 
-function build_single_image {
+function build_single_images {
+  docker build -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
   docker build -f docker/Dockerfile.single-runner -t algorithmia/langserver-single .
+  docker build -f docker/Dockerfile.single-builder -t algorithmia/langbuilder-single .
 }
 
 case $1 in
@@ -39,7 +41,7 @@ case $1 in
     all )
         build_lang_images $LANGS  ;;
     single )
-        build_single_image ;;
+        build_single_images ;;
     * )
         build_lang_images $@;;
 esac

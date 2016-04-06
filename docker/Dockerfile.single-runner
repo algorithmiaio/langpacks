@@ -1,10 +1,4 @@
-FROM ubuntu:14.04
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    curl zip software-properties-common && \
-    rm -rf /var/lib/apt/lists/* && \
-    adduser --disabled-password --gecos "" algo
+FROM algorithmia/langpack-single-base
 
 RUN mkdir -p /opt/algorithm && \
     chown algo /opt/algorithm
@@ -16,20 +10,5 @@ RUN mkfifo /tmp/algoout && chown algo /tmp/algoout
 ADD bin/init-langserver /bin/
 ADD target/release/langserver /bin/
 CMD ["/bin/init-langserver"]
-
-# Python
-ADD python/bin/setup /tmp/
-RUN /tmp/setup --runtime && \
-    rm -rf /var/lib/apt/lists/*
-
-# Javascript
-ADD javascript/bin/setup /tmp/
-RUN /tmp/setup --runtime && \
-    rm -rf /var/lib/apt/lists/*
-
-# Ruby
-ADD ruby/bin/setup /tmp/
-RUN /tmp/setup --runtime && \
-    rm -rf /var/lib/apt/lists/*
 
 USER algo

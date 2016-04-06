@@ -1,0 +1,22 @@
+FROM ubuntu:14.04
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    curl zip software-properties-common && \
+    rm -rf /var/lib/apt/lists/* && \
+    adduser --disabled-password --gecos "" algo
+
+# Python
+ADD python/bin/setup /tmp/
+RUN /tmp/setup --runtime && \
+    rm -rf /var/lib/apt/lists/*
+
+# Javascript
+ADD javascript/bin/setup /tmp/
+RUN /tmp/setup --runtime && \
+    rm -rf /var/lib/apt/lists/*
+
+# Ruby
+ADD ruby/bin/setup /tmp/
+RUN /tmp/setup --runtime && \
+    rm -rf /var/lib/apt/lists/*
