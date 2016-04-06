@@ -33,19 +33,19 @@ impl LangRunner {
         path.push("bin/pipe");
 
         let mut child = try!(Command::new(&path)
-                            .stdin(Stdio::piped())
-                            .stdout(Stdio::piped())
-                            .stderr(Stdio::null())
-                            .spawn());
+                                 .stdin(Stdio::piped())
+                                 .stdout(Stdio::piped())
+                                 .stderr(Stdio::null())
+                                 .spawn());
 
         println!("Running PID {}: {}", child.id(), path.to_string_lossy());
 
-        let stdin = try!(child.stdin.take()
-            .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN")))
-        );
-        let stdout = try!(child.stdout.take()
-            .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT")))
-        );
+        let stdin = try!(child.stdin
+                              .take()
+                              .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN"))));
+        let stdout = try!(child.stdout
+                               .take()
+                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
 
         let child_stdout = Arc::new(Mutex::new(Vec::new()));
 
@@ -157,7 +157,7 @@ impl LangRunner {
                 *exit_status = Some(code);
                 Some(code)
             }
-            Ok(None) => None // Still alive
+            Ok(None) => None, // Still alive
         }
     }
 

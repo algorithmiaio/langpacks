@@ -47,8 +47,8 @@ impl LangServer {
         thread::spawn(move || {
             loop {
                 let status = {
-                   let r = watched_runner.lock().expect("Failed to lock runner");
-                   r.check_exited()
+                    let r = watched_runner.lock().expect("Failed to lock runner");
+                    r.check_exited()
                 };
 
                 // Sleep even if exited, in case this exit was being handled by another thread (e.g. terminate)
@@ -98,8 +98,8 @@ impl LangServer {
 
     fn get_proxied_headers(&self, headers: &Headers) -> Headers {
         headers.iter()
-            .filter(|h| h.name().starts_with("X-"))
-            .collect()
+               .filter(|h| h.name().starts_with("X-"))
+               .collect()
     }
 
     fn run_algorithm(&self, req: Request) -> Result<Option<String>, Error> {
@@ -151,7 +151,6 @@ impl LangServer {
 }
 
 impl Handler for LangServer {
-
     fn handle(&self, req: Request, mut res: Response) {
         let route = format!("{} {}", req.method, req.uri);
         println!("{} (start)", route);
@@ -170,7 +169,8 @@ impl Handler for LangServer {
                     Err(err) => {
                         println!("Request Failed: {}", err);
                         match err.cause() {
-                            Some(cause) => (StatusCode::BadRequest, format!("{} - {}", err.description(), cause)),
+                            Some(cause) => (StatusCode::BadRequest,
+                                            format!("{} - {}", err.description(), cause)),
                             None => (StatusCode::BadRequest, err.description().to_owned()),
                         }
                     }
