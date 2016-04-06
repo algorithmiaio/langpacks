@@ -12,7 +12,8 @@ name = "algorithm"
 
 
 [dependencies]
-rustc-serialize = "*"
+base64 = "0.1.1"
+rustc-serialize = "0.3.18"
 
 [dependencies.algorithmia]
 version = "*"
