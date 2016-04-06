@@ -12,9 +12,5 @@ name = "algorithm"
 
 
 [dependencies]
-base64 = "0.1.1"
 rustc-serialize = "0.3.18"
-
-[dependencies.algorithmia]
-version = "*"
-#git = "https://github.com/anowell/algorithmia_rust.git"
+algorithmia = "0.8.*"
