@@ -35,11 +35,25 @@ function build_single_images {
   docker build -f docker/Dockerfile.single-builder -t algorithmia/langbuilder-single .
 }
 
+function build_single_runner {
+  docker build -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
+  docker build -f docker/Dockerfile.single-runner -t algorithmia/langserver-single .
+}
+
+function build_single_builder {
+  docker build -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
+  docker build -f docker/Dockerfile.single-builder -t algorithmia/langbuilder-single .
+}
+
 case $1 in
     langserver )
         build_base_images ;;
     all )
         build_lang_images $LANGS  ;;
+    single-runner )
+        build_single_runner ;;
+    single-builder )
+        build_single_builder ;;
     single )
         build_single_images ;;
     * )
