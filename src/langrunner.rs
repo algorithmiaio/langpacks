@@ -22,7 +22,7 @@ struct RunnerOutput(Value);
 
 pub struct LangRunner {
     child_stdout: Arc<Mutex<Vec<String>>>,
-    child_stdin: Mutex<Option<ChildStdin>>,
+    child_stdin: Option<ChildStdin>,
     child: Mutex<Child>,
     exit_status: Mutex<Option<i32>>,
 }
@@ -61,21 +61,19 @@ impl LangRunner {
                     Err(err) => println!("Failed to read line: {}", err),
                 }
             }
-
         });
 
         Ok(LangRunner {
             child: Mutex::new(child),
-            child_stdin: Mutex::new(Some(stdin)),
+            child_stdin: Some(stdin),
             child_stdout: child_stdout,
             exit_status: Mutex::new(None),
         })
     }
 
 
-    pub fn write<T: Serialize>(&self, input: &T) -> Result<(), Error> {
-        let mut stdin_lock = self.child_stdin.lock().expect("Failed to get stdin lock");
-        match stdin_lock.as_mut() {
+    pub fn write<T: Serialize>(&mut self, input: &T) -> Result<(), Error> {
+        match self.child_stdin.as_mut() {
             Some(mut stdin) => {
                 println!("Sending data to runner stdin");
                 try!(ser::to_writer(&mut stdin, &input));
@@ -88,7 +86,10 @@ impl LangRunner {
         }
     }
 
-    pub fn wait_for_response(&self) -> Result<Value, Error> {
+    // Nothing in this function currently uses self mutably
+    //   but the borrow should be treated as mutable because to prevent multiple borrows
+    //   from races to consume ALGOOUT or the child_stdout buffer
+    pub fn wait_for_response(&mut self) -> Result<Value, Error> {
         println!("Opening /tmp/algoout FIFO...");
         let start = PreciseTime::now();
 
@@ -134,17 +135,7 @@ impl LangRunner {
         Ok(runner_output.0)
     }
 
-    pub fn wait_for_exit(&self) -> i32 {
-        loop {
-            if let Some(code) = self.check_exited() {
-                return code;
-            }
-
-            thread::sleep(Duration::from_millis(500));
-        }
-    }
-
-    fn check_exited(&self) -> Option<i32> {
+    pub fn check_exited(&self) -> Option<i32> {
         // Check if we've already stored the exit code
         // Also holding lock on self.exit_status to ensure wait_timeout is called safely between threads
         let mut exit_status = self.exit_status.lock().expect("Failed to take exit status lock");
@@ -170,7 +161,7 @@ impl LangRunner {
         }
     }
 
-    pub fn stop(&self) -> i32 {
+    pub fn stop(&mut self) -> i32 {
         // Check if we've already stored the exit code
         // Also holding lock on self.exit_status to ensure wait_timeout is called safely between threads
         let mut exit_status = self.exit_status.lock().expect("Failed to take exit status lock");
@@ -178,13 +169,10 @@ impl LangRunner {
             return exit_status.unwrap();
         }
 
-        {
-            // Mutably `take` child_stdin out of `self` and then let it go out of scope, resulting in EOF
-            let mut stdin_lock = self.child_stdin.lock().expect("Failed to take stdin lock");
-            if let Some(_) = stdin_lock.take() {
-                println!("Dropping runner stdin.");
-            }
-        }
+        // Mutably `take` child_stdin out of `self` and drop it
+        if let Some(_drop_stdin) = self.child_stdin.take() {
+            println!("Sending EOF to runner stdin.");
+        } // _drop_stdin goes out of scope here which results in EOF
 
         // Now that stdin is closed, we can wait on child
         println!("Waiting for runner to exit...");
