@@ -64,6 +64,7 @@ impl LangServer {
         match req.headers.get() {
             // "application/json"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
+                println!("Handling JSON input");
                 let raw: Value = de::from_reader(req).expect("Failed to deserialize JSON request");
                 Ok(ObjectBuilder::new()
                        .insert("content_type", "json")
@@ -72,16 +73,18 @@ impl LangServer {
             }
             // "text/plain"
             Some(&ContentType(Mime(TopLevel::Text, SubLevel::Plain, _))) => {
+                println!("Handling text input");
                 let mut raw = String::new();
                 let _ = req.read_to_string(&mut raw).expect("Failed to read request");
                 Ok(ObjectBuilder::new()
-                       .insert("content_type", "json")
+                       .insert("content_type", "text")
                        .insert("data", Value::String(raw))
                        .unwrap())
             }
             // "application/octet-stream"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Ext(_), _))) => {
                 // TODO: verify sublevel is actually "octet-stream"
+                println!("Handling binary input");
                 let mut raw: Vec<u8> = vec![];
                 let _ = req.read_to_end(&mut raw).expect("Failed to read request");
                 let b64_bytes = base64::u8en(&raw).expect("Failed encode request as base64");
