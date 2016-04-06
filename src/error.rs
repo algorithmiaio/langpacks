@@ -37,6 +37,11 @@ quick_error! {
             description(err)
         }
 
+        /// Error sending notification
+        NotificationError(response: hyper::client::Response) {
+            description("notification errror")
+            display("{}", response.status)
+        }
 
         Unexpected(err: String) {
             description(err)
