@@ -7,14 +7,14 @@ use algorithmia::algo::*;
 // All other implementation details here may be changed as desired
 pub fn apply<'a>(input: AlgoInput<'a>) -> Result<AlgoOutput, Box<std::error::Error>> {
     match input {
-        AlgoInput::Text(_text) => Ok(hello::greet(_text).into()),
+        AlgoInput::Text(_text) => Ok(__ALGO__::apply(_text).into()),
         AlgoInput::Json(_json) => Err("Unsupported input type: json".into()),
         AlgoInput::Binary(_bytes) => Err("Unsupported input type: bytes".into()),
     }
 }
 
-mod hello {
-    pub fn greet(name: &str) -> String {
+mod __ALGO__ {
+    pub fn apply(name: &str) -> String {
         format!("Hello {}", name)
     }
 }

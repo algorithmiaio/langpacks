@@ -1,0 +1,77 @@
+#!/bin/bash
+
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+LANG=$1
+EXAMPLE=${2:-hello}
+CMD=$3
+
+function die {
+  echo $1
+  exit 1
+}
+
+function usage {
+  echo "Usage: $0 <lang> [example]"
+  echo ""
+  echo "Example: $0 rust hello"
+  exit 0
+}
+
+test -n "$LANG" || usage
+
+template_path=$DIR/$LANG/template
+test -d $template_path || die "Template not found: $template_path"
+
+if [[ "$EXAMPLE" != "hello" ]]; then
+  example_path=$DIR/$LANG/examples/$EXAMPLE
+  test -d $example_path || die "Example not found: $example_path"
+fi
+
+function templatize_dir {
+  local relpath=$1
+  #echo "relpath=$relpath"
+  for f in `ls -a $template_path/$relpath`; do
+    #echo "f=$f"
+    if [[ "$f" == "." || "$f" == ".." ]]; then
+      continue
+    elif [[ -d "$template_path/$relpath/$f" ]]; then
+      rendered=`echo $f | sed "s/__ALGO__/$EXAMPLE/g"`
+      mkdir -p $temp_path/$relpath/$rendered
+      templatize_dir $relpath/$rendered
+    elif [[ -f "$relpath/$f" ]]; then
+      rendered=`echo $f | sed "s/__ALGO__/$EXAMPLE/g"`
+      cp -f $template_path/$relpath/$f $temp_path/$relpath/$rendered
+      sed -i "s/__ALGO__/$EXAMPLE/g" $temp_path/$relpath/$rendered
+    else
+      echo "Not sure what to do with: $template_path/$relpath/$f"
+    fi
+  done
+}
+
+temp_path=/tmp/algorithm
+
+# Create a marker and clean the directory any time we switch $LANG or $EXAMPLE
+if [[ ! -f "$temp_path/.${LANG}_${EXAMPLE}" ]]; then
+  echo "Cleaning $temp_path..."
+  mkdir -p $temp_path
+  find $temp_path -mindepth 1 -delete
+  touch $temp_path/.${LANG}_${EXAMPLE}
+fi
+
+# Templatize the directory per the $LANG template
+pushd $template_path > /dev/null
+echo "Creating '$EXAMPLE' from template"
+templatize_dir .
+popd > /dev/null
+
+# Copy/overwrite any specific files from the $EXAMPLE example
+if [[ "$EXAMPLE" != "hello" ]]; then
+  echo "Copying over example files..."
+  cp -fr $example_path/. $temp_path
+fi
+
+echo ""
+echo "Finished: '$LANG $EXAMPLE' example ready in $temp_path"
+
