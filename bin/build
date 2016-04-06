@@ -5,27 +5,32 @@ set -e
 LANGS=(ruby python javascript rust)
 
 function build_base_images {
-	cargo build --release
-  docker build -f Dockerfile.runner -t algorithmia/langserver .
-	docker build -f Dockerfile.builder -t algorithmia/langbuilder .
+  cargo build --release
+  docker build -f docker/Dockerfile.base-runner -t algorithmia/langserver .
+  docker build -f docker/Dockerfile.base-builder -t algorithmia/langbuilder .
 }
 
 function build_lang_images {
   build_base_images
   for lang in $@; do
     cd $lang
+    cp ../docker/Dockerfile.lang-{builder,runner} .
+
     echo "=====Begin building langserver-$lang====="
-		docker build -f Dockerfile.runner -t algorithmia/langserver-$lang .
+    docker build -f Dockerfile.lang-runner -t algorithmia/langserver-$lang .
     echo "=====Finished building langserver-$lang====="
+
     echo "=====Begin building langbuilder-$lang====="
-		docker build -f Dockerfile.builder -t algorithmia/langbuilder-$lang .
+		docker build -f Dockerfile.lang-builder -t algorithmia/langbuilder-$lang .
     echo "=====Finished building langserver-$lang====="
+
+    rm Dockerfile.lang-{builder,runner}
     cd ..
   done
 }
 
 function build_single_image {
-  docker build -f Dockerfile.single-runner -t algorithmia/langserver-single .
+  docker build -f docker/Dockerfile.single-runner -t algorithmia/langserver-single .
 }
 
 case $1 in
