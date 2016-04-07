@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-
-bundle install --path vendor/bundle
-zip -r algorithm.zip .

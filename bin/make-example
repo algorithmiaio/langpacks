@@ -5,7 +5,6 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 LANG=$1
 EXAMPLE=${2:-hello}
-CMD=$3
 
 function die {
   echo $1
@@ -29,6 +28,17 @@ if [[ "$EXAMPLE" != "hello" ]]; then
   test -d $example_path || die "Example not found: $example_path"
 fi
 
+function templatize_file {
+  sed -i "s/__ALGO__/$EXAMPLE/g" $1
+  sed -i "s/__USER__/$USER/g" $1
+}
+
+function templatize_string {
+  echo $f |
+    sed "s/__ALGO__/$EXAMPLE/g" |
+    sed "s/__USER__/$USER/g"
+}
+
 function templatize_dir {
   local relpath=$1
   #echo "relpath=$relpath"
@@ -37,13 +47,13 @@ function templatize_dir {
     if [[ "$f" == "." || "$f" == ".." ]]; then
       continue
     elif [[ -d "$template_path/$relpath/$f" ]]; then
-      rendered=`echo $f | sed "s/__ALGO__/$EXAMPLE/g"`
+      rendered=`templatize_string "$f"`
       mkdir -p $temp_path/$relpath/$rendered
       templatize_dir $relpath/$rendered
     elif [[ -f "$relpath/$f" ]]; then
-      rendered=`echo $f | sed "s/__ALGO__/$EXAMPLE/g"`
+      rendered=`templatize_string "$f"`
       cp -f $template_path/$relpath/$f $temp_path/$relpath/$rendered
-      sed -i "s/__ALGO__/$EXAMPLE/g" $temp_path/$relpath/$rendered
+      templatize_file $temp_path/$relpath/$rendered
     else
       echo "Not sure what to do with: $template_path/$relpath/$f"
     fi

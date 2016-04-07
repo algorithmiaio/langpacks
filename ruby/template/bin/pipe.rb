@@ -1,6 +1,9 @@
 require 'json'
 require 'base64'
-require_relative "#{Dir.pwd}/src/algorithm.rb" # TODO: would be nice to know algoname
+
+config_file = File.read("#{__dir__}/../algorithmia.conf")
+config = JSON.parse(config_file)
+require_relative "#{__dir__}/../src/#{config['algoname']}.rb"
 
 def pipe_loop
   STDIN.each_line do |line|
