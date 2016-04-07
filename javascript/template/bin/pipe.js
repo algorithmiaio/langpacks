@@ -63,8 +63,10 @@ function algoCallback(calledAlready, error, result) {
     } else {
         content_type = 'json';
         if (Buffer.isBuffer(result)) {
-            result = result.toString('base64');
             content_type = 'binary';
+            result = result.toString('base64');
+        } else if (typeof result === 'string') {
+            content_type = 'text';
         }
 
         response = {
