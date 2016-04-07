@@ -1,7 +1,7 @@
 {
   "name": "hello",
   "version": "0.1.0",
-  "author": "example <example@helloia.com>",
+  "author": "example <user+example@algorithmia.com>",
   "description": "Algorithmia Algorithm - example/hello",
   "main": "hello.js",
   "bin": {

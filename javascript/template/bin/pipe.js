@@ -1,6 +1,7 @@
-const Algorithm = require("../src/__ALGO__.js");
 const readline = require('readline');
 const fs = require('fs');
+const config = JSON.parse(fs.readFileSync(__dirname+'/../algorithmia.conf', 'utf8'));
+const Algorithm = require('../src/'+config.algoname+'.js');
 const FIFO_PATH = '/tmp/algoout';
 
 function start_call(line, cb) {

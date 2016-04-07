@@ -1,7 +1,7 @@
 {
   "name": "__ALGO__",
   "version": "0.1.0",
-  "author": "__USER__ <__USER__@algorithmia.com>",
+  "author": "__USER__ <user+__USER__@algorithmia.com>",
   "description": "Algorithmia Algorithm - __USER__/__ALGO__",
   "main": "__ALGO__.js",
   "bin": {
