@@ -36,7 +36,9 @@ def main():
 def get_response(request):
     try:
         result = call_algorithm(request)
-        if isinstance(result, bytearray):
+        if isinstance(result, six.string_types) or isinstance(result, six.text_type):
+            content_type = 'text'
+        elif isinstance(result, six.binary_type) or isinstance(result, bytearray):
             content_type = 'binary'
             result = base64.b64encode(result)
         else:
