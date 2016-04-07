@@ -13,8 +13,9 @@ function build_base_images {
 function build_lang_images {
   build_base_images
   for lang in $@; do
-    cd $lang
-    cp ../docker/Dockerfile.lang-{builder,runner} .
+    dockerdir=$(pwd)/docker
+    cd $lang/template
+    cp $dockerdir/Dockerfile.lang-{builder,runner} .
 
     echo "=====Begin building langserver-$lang====="
     docker build -f Dockerfile.lang-runner -t algorithmia/langserver-$lang .
@@ -25,7 +26,7 @@ function build_lang_images {
     echo "=====Finished building langserver-$lang====="
 
     rm Dockerfile.lang-{builder,runner}
-    cd ..
+    cd ../..
   done
 }
 

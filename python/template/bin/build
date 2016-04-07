@@ -11,16 +11,10 @@ else
     exit 1
 fi
 
-if [ -e "/home/algo/.local" ]; then
-    echo "Making the link will fail"
-    exit 1
-fi
-
 if [ ! -d "dependencies" ]; then
     mkdir dependencies
 fi
 
-ln -s `pwd`/dependencies /home/algo/.local
-$PIP install -r requirements.txt --user
+$PIP install -r requirements.txt --target=vendor
 
 zip -r algorithm.zip .

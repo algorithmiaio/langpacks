@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
+if [[ $LANGUAGE_VERSION == "python2" ]]; then
+    PYTHON="python2"
+elif [[ $LANGUAGE_VERSION == "python3" ]]; then
+    PYTHON="python3"
+else
+    echo "A python version needs to be specified"
+    exit 1
+fi
+
+export PYTHONPATH=$ROOTDIR/vendor
+exec $PYTHON $ROOTDIR/bin/pipe.py

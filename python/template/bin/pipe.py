@@ -4,9 +4,13 @@ import sys
 import traceback
 from six.moves import input
 
+with open('algorithmia.conf') as config_file:
+    config = json.load(config_file)
+
 import sys
 sys.path.append("./")
-from src.algorithm import apply
+
+algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
 
 FIFO_PATH = '/tmp/algoout'
 
@@ -65,7 +69,7 @@ def call_algorithm(request):
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
 
-    return apply(data)
+    return algorithm.apply(data)
 
 if __name__ == '__main__':
     main()

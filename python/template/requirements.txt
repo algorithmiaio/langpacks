@@ -1,3 +1,2 @@
 algorithmia>=1.0.0
 six
-numpy
