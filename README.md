@@ -11,10 +11,12 @@ This is work-in-progress tracking the [LangPack spec proposal](https://docs.goog
 Disclaimer: The intent was to prototype langserver in rust (because I knew it better), but finally write it in go (lower barrier to entry), but it turned into an official project before the rewrite happened. So, for now: start by installing [latest stable rust](https://www.rust-lang.org/downloads.html), and then:
 
 ```
-bin/build langserver # just builds the base langserver images (default)
-bin/build <lang>     # builds language-specific image (and deps)
-bin/build all        # builds all images for all langpacks
-bin/build single     # builds 1 image containing the langserver runner and running setup on all langpacks
+bin/build langserver     # just builds the base langserver images (default)
+bin/build <lang>         # builds language-specific image (and deps)
+bin/build all            # builds all images for all langpacks
+bin/build single-runner  # builds 1 image containing the langserver runner and running setup on all langpacks
+bin/build single-builder # builds 1 image containing the langserver builder and running setup on all langpacks
+bin/build single         # builds the single-runner and single-builder
 ```
 
 Note: the initial plan is to NOT use these images, but they are helpful for implementing and testing langpacks locally, as well as provide some "code documentation" for how setup/build/pipe/langserver all fit together.
