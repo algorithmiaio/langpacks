@@ -17,6 +17,14 @@ use super::error::Error;
 use super::langrunner::LangRunner;
 use super::notifier::Notifier;
 
+macro_rules! jsonres {
+    ($x:expr) => (concat!(r#"{"result":""#, $x, r#""}"#).to_owned());
+    ($x:expr, $($arg:tt)*) => (format!(concat!(r#"{{"result":""#, $x, r#""}}"#), $($arg)*));
+}
+macro_rules! jsonerr {
+    ($x:expr) => (concat!(r#"{"error":{"type":"SystemError","message":""#, $x, r#""}}"#).to_owned());
+    ($x:expr, $($arg:tt)*) => (format!(concat!(r#"{{"error":{{"type":"SystemError","message":""#, $x, r#""}}}}"#), $($arg)*));
+}
 
 pub enum LangServerMode {
     Sync,
@@ -162,18 +170,18 @@ impl Handler for LangServer {
 
         let (status, output) = match req.method {
             // Route for checking that LangServer is alive
-            Get => (StatusCode::Ok, s!(r#""LangServer alive.""#)),
+            Get => (StatusCode::Ok, jsonres!("LangServer alive.")),
 
             // Route for calling the managed algorithm
             Post => {
                 match self.run_algorithm(req) {
                     Ok(Some(out)) => (StatusCode::Ok, out),
-                    Ok(None) => (StatusCode::Accepted, s!(r#""Algorithm started.""#)),
+                    Ok(None) => (StatusCode::Accepted, jsonres!("Algorithm started.")),
                     Err(err) => {
                         println!("Request Failed: {}", err);
                         match err.cause() {
                             Some(cause) => (StatusCode::BadRequest,
-                                            format!("{} - {}", err.description(), cause)),
+                                            jsonerr!("{} - {}", err.description(), cause)),
                             None => (StatusCode::BadRequest, err.description().to_owned()),
                         }
                     }
@@ -184,7 +192,7 @@ impl Handler for LangServer {
             Delete => {
                 let code = self.terminate();
                 terminate = true;
-                (StatusCode::Ok, (format!("Runner exited: {}", code)))
+                (StatusCode::Ok, (jsonres!("Runner exited: {}", code)))
             }
 
             // All other routes
