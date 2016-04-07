@@ -3,6 +3,7 @@
 set -e
 
 LANGS=(ruby python javascript rust)
+ALGO_UID=${ALGO_UID:-$(id -u)}
 
 function build_base_images {
   cargo build --release
@@ -31,18 +32,18 @@ function build_lang_images {
 }
 
 function build_single_images {
-  docker build $@ -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
+  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
   docker build -f docker/Dockerfile.single-runner -t algorithmia/langserver-single .
   docker build -f docker/Dockerfile.single-builder -t algorithmia/langbuilder-single .
 }
 
 function build_single_runner {
-  docker build $@ -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
+  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
   docker build -f docker/Dockerfile.single-runner -t algorithmia/langserver-single .
 }
 
 function build_single_builder {
-  docker build $@ -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
+  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
   docker build -f docker/Dockerfile.single-builder -t algorithmia/langbuilder-single .
 }
 
@@ -52,14 +53,11 @@ case $1 in
     all )
         build_lang_images $LANGS  ;;
     single-runner )
-        shift;
-        build_single_runner $@;;
+        build_single_runner;;
     single-builder )
-        shift;
-        build_single_builder $@;;
+        build_single_builder;;
     single )
-        shift;
-        build_single_images $@;;
+        build_single_images;;
     * )
         build_lang_images $@;;
 esac
