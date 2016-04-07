@@ -14,7 +14,11 @@ use time::{Duration, PreciseTime};
 use std::error::Error as StdError;
 
 macro_rules! s { ($x:expr) => ($x.to_string()); }
-macro_rules! jsonerr { ($x:expr) => (concat!(r#"{"error":{"message":""#, $x, r#""}}"#).to_owned()); }
+macro_rules! jsonerr {
+    ($x:expr) => (concat!(
+        r#"{"error":{"type":"SystemError","message":""#, $x, r#""}}"#
+    ).to_owned());
+}
 
 mod langserver;
 pub mod error;
