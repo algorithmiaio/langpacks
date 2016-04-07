@@ -1,8 +1,8 @@
 [package]
-name = "hello"
-version = "0.1.0"
+name = "langserver"
+version = "0.5.0"
 license = "MIT"
-description = "Sample hello world algorithm"
+description = "LangServer runs LangPacks"
 
 [[bin]]
 name = "langserver"
@@ -10,7 +10,6 @@ name = "langserver"
 [dependencies]
 base64 = "0.1.0"
 hyper = "0.7"
-libc = "0.2"
 quick-error = "1.0.0"
 serde = "0.7"
 serde_json = "0.7"
