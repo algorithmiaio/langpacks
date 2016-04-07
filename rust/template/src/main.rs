@@ -100,7 +100,7 @@ fn serialize_output(output: Result<AlgoOutput, algorithmia::error::Error>) -> St
             json::encode(&AlgoSuccess::new(Json::Null, "json"))
         }
         Ok(AlgoOutput::Text(text)) => {
-            json::encode(&AlgoSuccess::new(Json::String(text), "json"))
+            json::encode(&AlgoSuccess::new(Json::String(text), "text"))
         }
         Ok(AlgoOutput::Json(json)) => {
             Json::from_str(&json)
