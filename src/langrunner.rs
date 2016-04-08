@@ -35,7 +35,6 @@ impl LangRunner {
         let mut child = try!(Command::new(&path)
                                  .stdin(Stdio::piped())
                                  .stdout(Stdio::piped())
-                                 .stderr(Stdio::null())
                                  .spawn());
 
         println!("Running PID {}: {}", child.id(), path.to_string_lossy());
