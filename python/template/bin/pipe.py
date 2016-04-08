@@ -2,6 +2,7 @@ import base64
 import json
 import sys
 import traceback
+import six
 from six.moves import input
 
 with open('algorithmia.conf') as config_file:
