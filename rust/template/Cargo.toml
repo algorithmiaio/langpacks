@@ -1,16 +1,14 @@
 [package]
-name = "hello"
-version = "0.1.0"
-license = "MIT"
-description = "Sample hello world algorithm"
+name = "__ALGO__"
+version = "0.0.1"
 
 # Do NOT change the [[bin]] and [lib] sections
 [[bin]]
 name = "pipe"
+path = "pipe/main.rs"
 [lib]
 name = "algorithm"
 
-
 [dependencies]
 rustc-serialize = "0.3.18"
-algorithmia = "0.8.*"
+algorithmia = "1.0"

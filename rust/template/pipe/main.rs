@@ -1,3 +1,7 @@
+/*
+* This file provides interop with the langserver
+*/
+
 extern crate algorithm;  // lib.rs builds into the 'algorithm' crate
 extern crate algorithmia;
 extern crate rustc_serialize;
