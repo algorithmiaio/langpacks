@@ -155,7 +155,7 @@ fn call_algorithm(stdin: String) -> std::result::Result<AlgoOutput, algorithmia:
     match (content_type, data) {
         ("text", &Json::String(ref text)) => algorithm::apply(AlgoInput::Text(&text)),
         ("binary", &Json::String(ref encoded)) => algorithm::apply(AlgoInput::Binary(&try!(encoded.from_base64()))),
-        ("json", &Json::String(ref json)) => algorithm::apply(AlgoInput::Json(Cow::Borrowed(json))),
+        ("json", _) => algorithm::apply(AlgoInput::Json(Cow::Owned(stdin))),
         (ct, _) => panic!("Unsupported input content_type: {}", ct),
     }
     .map_err(|e| {
