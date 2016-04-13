@@ -5,7 +5,7 @@ version = "0.0.1"
 # Do NOT change the [[bin]] and [lib] sections
 [[bin]]
 name = "pipe"
-path = "pipe/main.rs"
+path = "bin/pipe.rs"
 [lib]
 name = "algorithm"
 
