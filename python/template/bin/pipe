@@ -13,7 +13,7 @@ else
     exit 1
 fi
 
-export PYTHONPATH=$ROOTDIR/vendor
+export PYTHONPATH=$ROOTDIR/vendor/lib/python/
 export PATH=/opt/anaconda/bin:$PATH
 
 exec $PYTHON $ROOTDIR/bin/pipe.py

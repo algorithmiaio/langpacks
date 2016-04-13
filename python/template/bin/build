@@ -15,6 +15,6 @@ if [ ! -d "dependencies" ]; then
     mkdir dependencies
 fi
 
-$PIP install -r requirements.txt --target=vendor
+$PIP install -r requirements.txt --install-option "--home=`pwd`/vendor"
 
 zip -r algorithm.zip .
