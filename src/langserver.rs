@@ -1,6 +1,6 @@
 use base64;
 use hyper::mime::{Mime, TopLevel, SubLevel};
-use hyper::header::{Headers, ContentType};
+use hyper::header::{Headers, ContentType, Encoding, ContentEncoding};
 use hyper::server::{Handler, Request, Response};
 use hyper::status::StatusCode;
 use hyper::{Get, Post, Delete};
@@ -69,7 +69,31 @@ impl LangServer {
     }
 
     fn build_input(&self, mut req: Request) -> Result<Value, String> {
-        match req.headers.get() {
+        let mut mutable_headers: Headers = req.headers.clone();
+        let mut has_base64_content_encoding = false;
+        if mutable_headers.has::<ContentEncoding>() {
+            let content_encoding_header: &ContentEncoding = mutable_headers.get::<ContentEncoding>().expect("its there");
+            if content_encoding_header.len() != 1 {
+                return Err(jsonerr!("Too many ContentEncoding headers Error"));
+            }
+
+            match content_encoding_header.iter().next() {
+                Some(&Encoding::EncodingExt(ref encoding @ _)) => {
+                    if encoding == "base64" {
+                        has_base64_content_encoding = true;
+                    } else {
+                        return Err(jsonerr!("Unexpected ContentEncoding Error"));
+                    }
+                }
+                _ => return Err(jsonerr!("Multiple ContentEncoding Error")),
+            }
+        }
+
+        if has_base64_content_encoding {
+            mutable_headers.remove::<ContentEncoding>();
+        }
+
+        match mutable_headers.get() {
             // "application/json"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
                 println!("Handling JSON input");
@@ -95,12 +119,18 @@ impl LangServer {
                 println!("Handling binary input");
                 let mut raw: Vec<u8> = vec![];
                 let _ = req.read_to_end(&mut raw).expect("Failed to read request");
-                let b64_bytes = base64::u8en(&raw).expect("Failed encode request as base64");
-                let b64_string = String::from_utf8(b64_bytes)
-                                     .expect("Failed to create string from base64 bytes");
+
+                let result_string = if has_base64_content_encoding {
+                    String::from_utf8(raw).expect("Failed to stringify bytes")
+                } else {
+                    let b64_bytes = base64::u8en(&raw).expect("Failed encode request as base64");
+                    String::from_utf8(b64_bytes)
+                                         .expect("Failed to create string from base64 bytes")
+                };
+
                 Ok(ObjectBuilder::new()
                        .insert("content_type", "binary")
-                       .insert("data", Value::String(b64_string))
+                       .insert("data", Value::String(result_string))
                        .unwrap())
             }
             _ => Err(jsonerr!("Missing ContentType")),
