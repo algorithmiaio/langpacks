@@ -25,6 +25,7 @@ pub struct LangRunner {
     child_stdin: Option<ChildStdin>,
     child: Mutex<Child>,
     exit_status: Mutex<Option<i32>>,
+    sync: Mutex<()>, // used to synchronize algoout and stdout reading
 }
 
 impl LangRunner {
@@ -67,6 +68,7 @@ impl LangRunner {
             child_stdin: Some(stdin),
             child_stdout: child_stdout,
             exit_status: Mutex::new(None),
+            sync: Mutex::new(()),
         })
     }
 
@@ -85,51 +87,55 @@ impl LangRunner {
         }
     }
 
-    // Nothing in this function currently uses self mutably
-    //   but the borrow should be treated as mutable because to prevent multiple borrows
-    //   from races to consume ALGOOUT or the child_stdout buffer
-    pub fn wait_for_response(&mut self) -> Result<Value, Error> {
-        println!("Opening /tmp/algoout FIFO...");
-        let start = PreciseTime::now();
-
-        // Note: Opening a FIFO read-only pipe blocks until a writer opens it.
-        let algoout = try!(File::open(ALGOOUT));
-
-        // Collect runner output from JSON stream - reads and deserializes the single next JSON Value on algout
-        println!("Deserializing algoout stream...");
-        let mut algoout_stream: StreamDeserializer<Value, _> =
-            StreamDeserializer::new(algoout.bytes());
-
-        // try to read next json value, then try to deserialize
-        let output = match algoout_stream.next() {
-            Some(next) => match next {
-                Ok(out) => out,
-                Err(err) => {
-                    println!("Failed to deserialize next JSON value from stream: {}", err);
-                    return Err(err.into());
-                }
-            },
-            None => {
-                return Err(Error::Unexpected("No more JSON to read from the stream".to_owned()));
-            }
-        };
-
-        let duration = start.to(PreciseTime::now());
-
-        // Collect buffered stdout - grab lock on child_stdout, and join all the buffered lines
-        let mut algo_stdout;
+    // This consumes stdout without acquiring the sync lock
+    // Can be safely used if you have the sync lock
+    fn consume_stdout(&self) -> String {
         let arc_stdout = self.child_stdout.clone();
-        {
-            let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
-            algo_stdout = lines.join("\n");
-            let _ = algo_stdout.pop();
-            lines.clear();
-        }
+        let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
+        let mut algo_stdout = lines.join("\n");
+        let _ = algo_stdout.pop();
+        lines.clear();
+        algo_stdout
+    }
+
+    pub fn wait_for_response(&self) -> Result<Value, Error> {
+        let (duration, output, stdout) = {
+            // Begin synchronization to prevent multiple consumers of stdout/algoout in parallel
+            let _lock = self.sync.lock();
+            println!("Opening /tmp/algoout FIFO...");
+
+            // Note: Opening a FIFO read-only pipe blocks until a writer opens it.
+            let start = PreciseTime::now();
+            let algoout = try!(File::open(ALGOOUT));
+
+            // Collect runner output from JSON stream - reads and deserializes the single next JSON Value on algout
+            println!("Deserializing algoout stream...");
+            let mut algoout_stream: StreamDeserializer<Value, _> =
+                StreamDeserializer::new(algoout.bytes());
+
+            // try to read next json value, then try to deserialize
+            let output = match algoout_stream.next() {
+                Some(next) => match next {
+                    Ok(out) => out,
+                    Err(err) => {
+                        println!("Failed to deserialize next JSON value from stream: {}", err);
+                        return Err(err.into());
+                    }
+                },
+                None => {
+                    return Err(Error::Unexpected("No more JSON to read from the stream".to_owned()));
+                }
+            };
+
+            let duration = start.to(PreciseTime::now());
+            let stdout = self.consume_stdout();
+            (duration, output, stdout)
+        }; // End synchronization here
 
         // Augment output with duration and stdout
         let mut runner_output = RunnerOutput(output);
         runner_output.set_duration(duration);
-        runner_output.set_stdout(algo_stdout);
+        runner_output.set_stdout(stdout);
 
         Ok(runner_output.0)
     }

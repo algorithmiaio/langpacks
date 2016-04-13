@@ -9,7 +9,7 @@ use serde_json::Value;
 use serde_json::builder::ObjectBuilder;
 use std::error::Error as StdError;
 use std::io::{Read, Write};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use std::{process, thread};
 
@@ -32,7 +32,7 @@ pub enum LangServerMode {
 }
 
 pub struct LangServer {
-    runner: Arc<Mutex<LangRunner>>,
+    runner: Arc<RwLock<LangRunner>>,
     mode: LangServerMode,
 }
 
@@ -41,7 +41,7 @@ impl LangServer {
         let runner = LangRunner::start().expect("Failed to start LangRunner");
 
         let ls = LangServer {
-            runner: Arc::new(Mutex::new(runner)),
+            runner: Arc::new(RwLock::new(runner)),
             mode: mode,
         };
 
@@ -55,7 +55,7 @@ impl LangServer {
         thread::spawn(move || {
             loop {
                 let status = {
-                    let r = watched_runner.lock().expect("Failed to lock runner");
+                    let r = watched_runner.read().expect("Failed to lock runner");
                     r.check_exited()
                 };
 
@@ -150,16 +150,19 @@ impl LangServer {
 
         // Start piping data
         let arc_runner = self.runner.clone();
-        let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-        if let Err(err) = runner.write(&input_value) {
-            println!("Failed write to runner stdin: {}", err);
-            return Err(err);
+        {
+            let mut runner = arc_runner.write().expect("Failed to take lock on runner");
+            if let Err(err) = runner.write(&input_value) {
+                println!("Failed write to runner stdin: {}", err);
+                return Err(err);
+            }
         }
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
         match self.mode {
             LangServerMode::Sync => {
                 println!("Waiting synchronously for algorithm to complete");
+                let runner = arc_runner.read().expect("Failed to take lock on runner");
                 let runner_output = try!(runner.wait_for_response());
                 let response = try!(ser::to_string(&runner_output));
                 Ok(Some(response))
@@ -170,11 +173,12 @@ impl LangServer {
                 let notifier = notif.clone();
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
-                    let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
+                    let runner = arc_runner.read().expect("Failed to take lock on runner");
                     let response = runner.wait_for_response().expect("Failed waiting for response");
 
                     if let Err(err) = notifier.notify(response, Some(headers)) {
                         println!("Failed to send REQUEST_COMPLETE notification: {}", err);
+                        let mut runner = arc_runner.write().expect("Failed to take lock on runner");
                         let code = runner.stop();
                         process::exit(code);
                     }
@@ -186,7 +190,7 @@ impl LangServer {
 
     fn terminate(&self) -> i32 {
         let arc_runner = self.runner.clone();
-        let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
+        let mut runner = arc_runner.write().expect("Failed to take lock on runner");
         runner.stop()
     }
 }
