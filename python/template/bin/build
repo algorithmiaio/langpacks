@@ -13,4 +13,4 @@ fi
 
 $PIP install -r requirements.txt --install-option "--home=`pwd`/vendor"
 
-zip -r algorithm.zip .
+zip -r algorithm.zip *

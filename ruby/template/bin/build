@@ -3,4 +3,4 @@
 set -e
 
 bundle install --path vendor/bundle
-zip -r algorithm.zip .
+zip -r algorithm.zip *
