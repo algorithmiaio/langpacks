@@ -16,7 +16,6 @@ apt-get install -y python3.4 python3.4-dev
 apt-get install -y python3-pip
 pip3 install --upgrade pip
 
-
 # Install dependencies
 apt-get install -u -y unzip wget git-core \
     pkg-config libblas-dev liblapack-dev libpng-dev libjpeg8-dev libfreetype6-dev \
@@ -28,11 +27,18 @@ pip3 install sklearn
 pip install pandas
 pip3 install pandas
 
-# Install Anaconda Python - This version should work for both python 2.7 and 3.4
+# Install Anaconda for Python2
 wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda2-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
-bash Anaconda2-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda
-rm /opt/anaconda/bin/curl /opt/anaconda/bin/curl-config
-export PATH=/opt/anaconda/bin:$PATH
+bash Anaconda2-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda2
+rm /opt/anaconda2/bin/curl /opt/anaconda2/bin/curl-config
+export PATH=/opt/anaconda2/bin:$PATH
 
-pip install pylab pil-compat cvxopt python-dateutil joblib simplejson
+pip  install pylab pil-compat cvxopt python-dateutil joblib simplejson
+
+# Install Anaconda for Python3
+wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda3-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
+bash Anaconda3-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda3
+rm /opt/anaconda3/bin/curl /opt/anaconda3/bin/curl-config
+export PATH=/opt/anaconda3/bin:$PATH
+
 pip3 install pylab pil-compat cvxopt python-dateutil joblib simplejson

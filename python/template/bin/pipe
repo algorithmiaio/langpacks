@@ -6,14 +6,15 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 if [[ $LANGUAGE_VERSION == "python2" ]]; then
     PYTHON="python2"
+    export PATH=/opt/anaconda2/bin:$PATH
 elif [[ $LANGUAGE_VERSION == "python3" ]]; then
     PYTHON="python3"
+    export PATH=/opt/anaconda3/bin:$PATH
 else
     echo "A python version needs to be specified"
     exit 1
 fi
 
 export PYTHONPATH=$ROOTDIR/vendor/lib/python/
-export PATH=/opt/anaconda/bin:$PATH
 
 exec $PYTHON $ROOTDIR/bin/pipe.py
