@@ -1,7 +1,7 @@
 /*
 * This file provides interop with the langserver
 */
-extern crate algorithm;  // lib.rs builds into the 'algorithm' crate
+extern crate algorithm;  // src/lib.rs builds into the 'algorithm' crate
 extern crate algorithmia;
 extern crate rustc_serialize;
 
@@ -99,9 +99,6 @@ fn main() {
 
 fn serialize_output(output: Result<AlgoOutput, algorithmia::error::Error>) -> String {
     let json_result = match output {
-        Ok(AlgoOutput::Void) => {
-            json::encode(&AlgoSuccess::new(Json::Null, "json"))
-        }
         Ok(AlgoOutput::Text(text)) => {
             json::encode(&AlgoSuccess::new(Json::String(text), "text"))
         }

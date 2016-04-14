@@ -11,4 +11,4 @@ name = "algorithm"
 
 [dependencies]
 rustc-serialize = "0.3.18"
-algorithmia = "1.0"
+algorithmia = "1.1"
