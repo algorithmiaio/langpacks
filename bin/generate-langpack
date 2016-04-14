@@ -36,12 +36,52 @@ EOF
 done
 
 
+cat <<EOF > $LANGPACK/README.md
+# ${LANGPACK^} LangPack
+
+This LangPack provide support for building and running ${LANGPACK^} algorithms on the Algorithmia platform.
+
+## Building an algorithm
+```
+docker run --rm -it -v `pwd`:/tmp/build algorithmia/langbuilder-$LANGPACK
+```
+
+## Running an algorithm:
+```
+docker run --rm -it -v /path/to/algorithm.zip:/tmp/algorithm.zip -p 9999:9999 algorithmia/langserver-$LANGPACK
+```
+
+## Calling an algorithm
+```
+curl -s localhost:9999 -X POST -H 'Content-Type: text/plain' -d '<INPUT>'
+```
+EOF
+
+
 cat <<EOF > $LANGPACK/template/README.md
-# $LANGPACK LangPack
+# __ALGO__
 
-This is an Algorithmia LangPack for running $LANGPACK algorithms.
+This repo is hosted as a service on Algorithmia as [__USER__/__ALGO__](https://algorithmia.com/algorithms/__USER__/__ALGO__)
 
-# Building locally
+# Testing locally
 
-TODO: Explain how to manually build an algorithm locally for this LangPack.
+The project can be built with:
+
+```
+bin/build
+```
+
+The algorithm can be tested via the `bin/pipe` executable, or by managing `bin/pipe` with Langserver.
+
+To use `bin/pipe` directly, simply pipe data into it:
+
+```
+echo '{"content_type":"text", "data":"foo"}` | bin/pipe
+```
+
+To use langserver, start langserver from the root of this repo, and cURL it:
+
+```
+curl -X POST localhost:9999 -H 'Content-Type: text/plain' -d 'foo'
+```
 EOF
