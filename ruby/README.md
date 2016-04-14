@@ -1,7 +1,18 @@
-# Ruby Langpack
+# Ruby LangPack
 
-This Ruby LangPack is a great example of showcasing the minimalistic requirements to the current LangPack proposal.
+This LangPack provide support for building and running Ruby algorithms on the Algorithmia platform.
 
-The input parts of the runner spec (including multipart support) are implemented in barely 30 LOC.
+## Building an algorithm
+```
+docker run --rm -it -v `pwd`:/tmp/build algorithmia/langbuilder-ruby
+```
 
-Dynamic script-based runners really ought to feel this trivial to implement.
+## Running an algorithm:
+```
+docker run --rm -it -v /path/to/algorithm.zip:/tmp/algorithm.zip -p 9999:9999 algorithmia/langserver-ruby
+```
+
+## Calling an algorithm
+```
+curl -s localhost:9999 -X POST -H 'Content-Type: text/plain' -d '<INPUT>'
+```
