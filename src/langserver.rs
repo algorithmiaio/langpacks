@@ -7,14 +7,13 @@ use hyper::{Get, Post, Delete};
 use serde_json::{de, ser};
 use serde_json::Value;
 use serde_json::builder::ObjectBuilder;
-use std::error::Error as StdError;
 use std::io::{Read, Write};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{process, thread};
 
 use super::error::Error;
-use super::langrunner::LangRunner;
+use super::langrunner::{LangRunner, RunnerOutput};
 use super::notifier::Notifier;
 
 macro_rules! jsonres {
@@ -32,7 +31,7 @@ pub enum LangServerMode {
 }
 
 pub struct LangServer {
-    runner: Arc<RwLock<LangRunner>>,
+    runner: Arc<Mutex<LangRunner>>,
     mode: LangServerMode,
 }
 
@@ -41,7 +40,7 @@ impl LangServer {
         let runner = LangRunner::start().expect("Failed to start LangRunner");
 
         let ls = LangServer {
-            runner: Arc::new(RwLock::new(runner)),
+            runner: Arc::new(Mutex::new(runner)),
             mode: mode,
         };
 
@@ -49,32 +48,36 @@ impl LangServer {
         ls
     }
 
-
+    // Monitor runner - exit if exit is encountered
+    // Since this needs a lock on the runner, it won't run while we're calling the algorithm
     fn monitor_runner(&self) {
         let watched_runner = self.runner.clone();
         thread::spawn(move || {
             loop {
                 let status = {
-                    let r = watched_runner.read().expect("Failed to lock runner");
+                    let r = watched_runner.lock().expect("Failed to lock runner");
                     r.check_exited()
                 };
 
-                // Sleep even if exited, in case this exit was being handled by another thread (e.g. terminate)
+                // Sleep even if exited, to give a chance for outstanding reponse connections to complete
                 thread::sleep(Duration::from_millis(500));
+
                 if let Some(code) = status {
+                    println!("LangServer monitor thread detected exit: {}", code);
                     process::exit(code);
                 }
+
             }
         });
     }
 
-    fn build_input(&self, mut req: Request) -> Result<Value, String> {
+    fn build_input(&self, mut req: Request) -> Result<Value, Error> {
         let mut mutable_headers: Headers = req.headers.clone();
         let mut has_base64_content_encoding = false;
         if mutable_headers.has::<ContentEncoding>() {
             let content_encoding_header: &ContentEncoding = mutable_headers.get::<ContentEncoding>().expect("its there");
             if content_encoding_header.len() != 1 {
-                return Err(jsonerr!("Too many ContentEncoding headers Error"));
+                return Err(Error::BadRequest("Too many ContentEncoding headers Error".to_string()));
             }
 
             match content_encoding_header.iter().next() {
@@ -82,10 +85,10 @@ impl LangServer {
                     if encoding == "base64" {
                         has_base64_content_encoding = true;
                     } else {
-                        return Err(jsonerr!("Unexpected ContentEncoding Error"));
+                        return Err(Error::BadRequest(format!("Unexpected ContentEncoding {}", encoding)));
                     }
                 }
-                _ => return Err(jsonerr!("Multiple ContentEncoding Error")),
+                _ => return Err(Error::BadRequest("Multiple ContentEncoding Error".to_string())),
             }
         }
 
@@ -97,7 +100,7 @@ impl LangServer {
             // "application/json"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
                 println!("Handling JSON input");
-                let raw: Value = de::from_reader(req).expect("Failed to deserialize JSON request");
+                let raw: Value = try!(de::from_reader(req));
                 Ok(ObjectBuilder::new()
                        .insert("content_type", "json")
                        .insert("data", raw)
@@ -133,7 +136,7 @@ impl LangServer {
                        .insert("data", Value::String(result_string))
                        .unwrap())
             }
-            _ => Err(jsonerr!("Missing ContentType")),
+            _ => Err(Error::BadRequest("Missing ContentType".to_string())),
         }
     }
 
@@ -143,29 +146,41 @@ impl LangServer {
                .collect()
     }
 
-    fn run_algorithm(&self, req: Request) -> Result<Option<String>, Error> {
+    // Returns status, response string, and a boolean to indicate if the server should terminate
+    fn run_algorithm(&self, req: Request) -> (StatusCode, String, bool) {
         let headers = self.get_proxied_headers(&req.headers);
-        let input_value = self.build_input(req)
-                              .expect("Failed to build algorithm input from request");
+        let input_value = match self.build_input(req) {
+            Ok(v) => v,
+            Err(err) => {
+                return (StatusCode::BadRequest,
+                        jsonerr!("Failed to build algorithm input from request: {}", err),
+                        false);
+            }
+        };
 
         // Start piping data
         let arc_runner = self.runner.clone();
-        {
-            let mut runner = arc_runner.write().expect("Failed to take lock on runner");
-            if let Err(err) = runner.write(&input_value) {
-                println!("Failed write to runner stdin: {}", err);
-                return Err(err);
-            }
+        let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
+        if let Err(err) = runner.write(&input_value) {
+            println!("Failed write to runner stdin: {}", err);
+            return (StatusCode::BadRequest,
+                    jsonerr!("Failed to write to runner stdin: {}", err),
+                    false);
         }
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
         match self.mode {
             LangServerMode::Sync => {
                 println!("Waiting synchronously for algorithm to complete");
-                let runner = arc_runner.read().expect("Failed to take lock on runner");
-                let runner_output = try!(runner.wait_for_response());
-                let response = try!(ser::to_string(&runner_output));
-                Ok(Some(response))
+                let (status_code, output, terminate) = match runner.wait_for_response_or_exit() {
+                    RunnerOutput::Completed(output) => (StatusCode::Ok, output, false),
+                    RunnerOutput::Exited(output) => (StatusCode::Ok, output, true),
+                };
+
+                match ser::to_string(&output) {
+                    Ok(response) => (status_code, response, terminate),
+                    Err(err) => (StatusCode::InternalServerError, jsonerr!("Failed to encode RunnerOutput: {}", err), true)
+                }
             }
             LangServerMode::Async(ref notif) => {
                 println!("Waiting asynchronously for algorithm to complete");
@@ -173,27 +188,34 @@ impl LangServer {
                 let notifier = notif.clone();
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
-                    let runner = arc_runner.read().expect("Failed to take lock on runner");
-                    let response = runner.wait_for_response().expect("Failed waiting for response");
+                    let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
+                    let (output, mut terminate) = match runner.wait_for_response_or_exit() {
+                        RunnerOutput::Completed(output) => (output, false),
+                        RunnerOutput::Exited(output) => (output, true),
+                    };
 
-                    if let Err(err) = notifier.notify(response, Some(headers)) {
+                    if let Err(err) = notifier.notify(output, Some(headers)) {
                         println!("Failed to send REQUEST_COMPLETE notification: {}", err);
-                        let mut runner = arc_runner.write().expect("Failed to take lock on runner");
+                        terminate = true;
+                    }
+                    if terminate {
                         let code = runner.stop();
                         process::exit(code);
                     }
                 });
-                Ok(None)
+                (StatusCode::Accepted, jsonres!("Algorithm started."), false)
             }
         }
     }
 
     fn terminate(&self) -> i32 {
         let arc_runner = self.runner.clone();
-        let mut runner = arc_runner.write().expect("Failed to take lock on runner");
+        let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
         runner.stop()
     }
 }
+
+
 
 impl Handler for LangServer {
     fn handle(&self, req: Request, mut res: Response) {
@@ -208,18 +230,9 @@ impl Handler for LangServer {
 
             // Route for calling the managed algorithm
             Post => {
-                match self.run_algorithm(req) {
-                    Ok(Some(out)) => (StatusCode::Ok, out),
-                    Ok(None) => (StatusCode::Accepted, jsonres!("Algorithm started.")),
-                    Err(err) => {
-                        println!("Request Failed: {}", err);
-                        match err.cause() {
-                            Some(cause) => (StatusCode::BadRequest,
-                                            jsonerr!("{} - {}", err.description(), cause)),
-                            None => (StatusCode::BadRequest, err.description().to_owned()),
-                        }
-                    }
-                }
+                let (code, res, term) = self.run_algorithm(req);
+                terminate = term;
+                (code, res)
             }
 
             // Route for terminating the managed algorithm

@@ -43,6 +43,16 @@ quick_error! {
             display("{}", response.status)
         }
 
+        BadRequest(err: String) {
+            description("bad request")
+            display("bad request: {}", err)
+        }
+
+        UnexpectedExit(code: i32) {
+            description("unexpected exit")
+            display("exited with code {}", code)
+        }
+
         Unexpected(err: String) {
             description(err)
         }
