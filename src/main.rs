@@ -5,12 +5,11 @@ extern crate base64;
 extern crate hyper;
 extern crate serde;
 extern crate serde_json;
-extern crate time;
 extern crate wait_timeout;
 
 use hyper::server::{Handler, Server};
 use std::env;
-use time::{Duration, PreciseTime};
+use std::time::{Duration, Instant};
 use std::error::Error as StdError;
 
 macro_rules! s { ($x:expr) => ($x.to_string()); }
@@ -25,7 +24,7 @@ use langserver::{LangServer, LangServerMode};
 use notifier::{Notifier, LoadNotification, LoadStatus};
 
 fn main() {
-    let start = PreciseTime::now();
+    let start = Instant::now();
 
     let listener = get_mode().and_then(|mode| {
         // Start LangPack runner and server
@@ -35,7 +34,7 @@ fn main() {
         listener.map_err(|err| err.into())
     });
 
-    let duration = start.to(PreciseTime::now());
+    let duration = start.elapsed();
 
     match listener {
         Ok(mut listener) => {

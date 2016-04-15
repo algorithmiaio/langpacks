@@ -11,8 +11,7 @@ use std::{process, thread};
 use std::process::{Command, Child, ChildStdin, Stdio};
 use std::sync::{Arc, Mutex, RwLock};
 use std::sync::mpsc::{channel, Sender, Receiver};
-use std::time::Duration;
-use time::{self, PreciseTime};
+use std::time::{Duration, Instant};
 use wait_timeout::ChildExt;
 
 use super::error::Error;
@@ -109,7 +108,7 @@ impl LangRunner {
     pub fn wait_for_response_or_exit(&mut self) -> RunnerOutput {
         let tx = self.tx.clone();
 
-        let start = PreciseTime::now();
+        let start = Instant::now();
         thread::spawn(move || {
             if let Err(err) = tx.send(get_next_algoout_value()) {
                 println!("FATAL: Channel receiver disconnected unexpectedly: {}", err);
@@ -119,7 +118,7 @@ impl LangRunner {
 
         // Block until receiving message from `get_next_algoout_value` or the monitor thread
         let received = self.rx.recv().expect("Channel sender disconnected unexpectedly");
-        let duration = start.to(PreciseTime::now());
+        let duration = start.elapsed();
 
         let mut runner_output = match received {
             Ok(response) => RunnerOutput::Completed(response),
@@ -305,10 +304,10 @@ impl RunnerOutput {
         }
     }
 
-    fn set_duration(&mut self, duration: time::Duration) {
-        let duration_micro = duration.num_microseconds().unwrap() as f64 / 1_000_000f64;
+    fn set_duration(&mut self, duration: Duration) {
+        let duration_float = duration.as_secs() as f64 + (duration.subsec_nanos() as f64 / 1_000_000_000f64);
         let mut metadata = self.metadata_mut();
-        metadata.insert(s!("duration"), Value::F64(duration_micro));
+        metadata.insert(s!("duration"), Value::F64(duration_float));
     }
 
     fn set_stdout(&mut self, stdout: String) {

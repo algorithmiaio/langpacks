@@ -1,10 +1,10 @@
 use hyper::client::Client;
 use hyper::header::{Headers, ContentType};
 use hyper::Url;
-use time::Duration;
+use std::time::Duration;
 use serde_json::ser;
 use serde::{self, Serialize, Serializer};
-use std::{self, env, thread};
+use std::{env, thread};
 use std::error::Error as StdError;
 use super::error::Error;
 
@@ -53,7 +53,7 @@ impl Notifier {
                 return Err(err);
             }
             println!("Will retry notification (#{})", i);
-            thread::sleep(std::time::Duration::from_secs(1));
+            thread::sleep(Duration::from_secs(1));
             i = i + 1;
         }
         Ok(())
@@ -82,7 +82,7 @@ impl LoadNotification {
             slot_id: env::var("SLOT_ID").ok(),
             status: status.to_owned(),
             error: error,
-            load_time: load_time.num_microseconds().unwrap() as f64 / 1_000_000f64,
+            load_time: load_time.as_secs() as f64 + (load_time.subsec_nanos() as f64 / 1_000_000_000f64),
         }
     }
 }
