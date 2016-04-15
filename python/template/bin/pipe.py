@@ -37,9 +37,7 @@ def main():
 def get_response(request):
     try:
         result = call_algorithm(request)
-        if isinstance(result, six.string_types) or isinstance(result, six.text_type):
-            content_type = 'text'
-        elif isinstance(result, six.binary_type) or isinstance(result, bytearray):
+        if isinstance(result, six.binary_type) or isinstance(result, bytearray):
             content_type = 'binary'
             result = base64.b64encode(result)
 
@@ -47,6 +45,8 @@ def get_response(request):
             # json serialized so we need to turn this into a string.
             if not isinstance(result, six.string_types):
                 result = str(result, 'utf-8')
+        elif isinstance(result, six.string_types) or isinstance(result, six.text_type):
+            content_type = 'text'
         else:
             content_type = 'json'
 
