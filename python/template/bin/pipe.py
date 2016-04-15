@@ -42,6 +42,11 @@ def get_response(request):
         elif isinstance(result, six.binary_type) or isinstance(result, bytearray):
             content_type = 'binary'
             result = base64.b64encode(result)
+
+            # In python 3, the encoded result is a byte array which cannot be
+            # json serialized so we need to turn this into a string.
+            if not isinstance(result, six.string_types):
+                result = str(result, 'utf-8')
         else:
             content_type = 'json'
 
@@ -68,7 +73,7 @@ def call_algorithm(request):
     if request['content_type'] in ['text', 'json']:
         data = request['data']
     elif request['content_type'] == 'binary':
-        data = bytearray(base64.b64decode(request['data']))
+        data = bytes(base64.b64decode(request['data']))
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
 
