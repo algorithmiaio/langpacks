@@ -23,14 +23,14 @@ def main():
             break
 
         request = json.loads(line)
-        response = get_response(request)
+        response_string = get_response(request)
 
         # Add final newline delimeter and flush stdout before writing back response
         sys.stdout.write('\n')
         sys.stdout.flush()
 
         with open(FIFO_PATH, 'w') as f:
-            f.write(json.dumps(response))
+            f.write(response_string)
             f.write('\n')
 
 
@@ -45,24 +45,24 @@ def get_response(request):
         else:
             content_type = 'json'
 
-        response = {
+        response_string = json.dumps({
             'result': result,
             'metadata': {
                 'content_type': content_type
             }
-        }
+        })
     except Exception as e:
         _, _, exc_traceback = sys.exc_info()
 
-        response = {
+        response_string = json.dumps({
             'error': {
                 'message': str(e),
                 'stacktrace': traceback.format_exc(exc_traceback),
                 'error_type': 'AlgorithmError'
             }
-        }
+        })
 
-    return response
+    return response_string
 
 def call_algorithm(request):
     if request['content_type'] in ['text', 'json']:
