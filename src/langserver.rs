@@ -75,7 +75,8 @@ impl LangServer {
         let mut mutable_headers: Headers = req.headers.clone();
         let mut has_base64_content_encoding = false;
         if mutable_headers.has::<ContentEncoding>() {
-            let content_encoding_header: &ContentEncoding = mutable_headers.get::<ContentEncoding>().expect("its there");
+            let content_encoding_header: &ContentEncoding =
+                mutable_headers.get::<ContentEncoding>().expect("its there");
             if content_encoding_header.len() != 1 {
                 return Err(Error::BadRequest("Too many ContentEncoding headers Error".to_string()));
             }
@@ -85,7 +86,8 @@ impl LangServer {
                     if encoding == "base64" {
                         has_base64_content_encoding = true;
                     } else {
-                        return Err(Error::BadRequest(format!("Unexpected ContentEncoding {}", encoding)));
+                        return Err(Error::BadRequest(format!("Unexpected ContentEncoding {}",
+                                                             encoding)));
                     }
                 }
                 _ => return Err(Error::BadRequest("Multiple ContentEncoding Error".to_string())),
@@ -127,8 +129,7 @@ impl LangServer {
                     String::from_utf8(raw).expect("Failed to stringify bytes")
                 } else {
                     let b64_bytes = base64::u8en(&raw).expect("Failed encode request as base64");
-                    String::from_utf8(b64_bytes)
-                                         .expect("Failed to create string from base64 bytes")
+                    String::from_utf8(b64_bytes).expect("Failed to create string from base64 bytes")
                 };
 
                 Ok(ObjectBuilder::new()
@@ -179,7 +180,9 @@ impl LangServer {
 
                 match ser::to_string(&output) {
                     Ok(response) => (status_code, response, terminate),
-                    Err(err) => (StatusCode::InternalServerError, jsonerr!("Failed to encode RunnerOutput: {}", err), true)
+                    Err(err) => (StatusCode::InternalServerError,
+                                 jsonerr!("Failed to encode RunnerOutput: {}", err),
+                                 true),
                 }
             }
             LangServerMode::Async(ref notif) => {

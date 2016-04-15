@@ -52,8 +52,7 @@ fn get_next_algoout_value() -> Result<Value, Error> {
 
     // Read and deserialize the single next JSON Value on ALGOOUT
     println!("Deserializing algoout stream...");
-    let mut algoout_stream: StreamDeserializer<Value, _> =
-        StreamDeserializer::new(algoout.bytes());
+    let mut algoout_stream: StreamDeserializer<Value, _> = StreamDeserializer::new(algoout.bytes());
     match algoout_stream.next() {
         Some(next) => match next {
             Ok(out) => Ok(out),
@@ -62,7 +61,7 @@ fn get_next_algoout_value() -> Result<Value, Error> {
                 Err(err.into())
             }
         },
-        None => Err(Error::Unexpected("No more JSON to read from the stream".to_owned()))
+        None => Err(Error::Unexpected("No more JSON to read from the stream".to_owned())),
     }
 }
 
@@ -111,7 +110,7 @@ impl LangRunner {
         let tx = self.tx.clone();
 
         let start = PreciseTime::now();
-        thread::spawn(move|| {
+        thread::spawn(move || {
             if let Err(err) = tx.send(get_next_algoout_value()) {
                 println!("FATAL: Channel receiver disconnected unexpectedly: {}", err);
                 process::exit(UNKNOWN_EXIT); // Don't want to just panic a single thread and hang
@@ -127,12 +126,12 @@ impl LangRunner {
             Err(err) => {
                 println!("Wait encountered an error: {}", err);
                 let error_obj = ObjectBuilder::new()
-                    .insert("message", Value::String(err.to_string()))
-                    .insert("error_type", Value::String("SystemError".to_string()))
-                    .unwrap();
+                                    .insert("message", Value::String(err.to_string()))
+                                    .insert("error_type", Value::String("SystemError".to_string()))
+                                    .unwrap();
                 let obj = ObjectBuilder::new().insert("error", error_obj).unwrap();
                 RunnerOutput::Exited(obj)
-            },
+            }
         };
 
         let stdout = {
@@ -155,7 +154,9 @@ impl LangRunner {
         match self.check_exited() {
             Some(code) => code,
             None => {
-                let mut runner = self.runner.write().expect("Failed to acquire write lock on runner");
+                let mut runner = self.runner
+                                     .write()
+                                     .expect("Failed to acquire write lock on runner");
                 runner.stop()
             }
         }
@@ -230,7 +231,7 @@ impl LangRunnerProcess {
         algo_stdout
     }
 
-     pub fn check_exited(&self) -> Option<i32> {
+    pub fn check_exited(&self) -> Option<i32> {
         // Check if we've already stored the exit code
         // Also holding lock on self.exit_status to ensure wait_timeout is called safely between threads
         let mut exit_status = self.exit_status.lock().expect("Failed to take exit status lock");
@@ -294,7 +295,6 @@ impl LangRunnerProcess {
         *exit_status = Some(code);
         code
     }
-
 }
 
 impl RunnerOutput {
