@@ -3,16 +3,14 @@
 set -e
 
 if [[ "$LANGUAGE_VERSION" == "python2" ]]; then
-    PIP="pip"
     export PATH=/opt/anaconda2/bin:$PATH
 elif [[ "$LANGUAGE_VERSION" == "python3" ]]; then
-    PIP="pip3"
     export PATH=/opt/anaconda3/bin:$PATH
 else
     echo "A python version needs to be specified"
     exit 1
 fi
 
-$PIP install -r requirements.txt --install-option "--home=`pwd`/vendor"
+pip install -r requirements.txt --install-option "--home=`pwd`/vendor"
 
 zip -r algorithm.zip *
