@@ -1,0 +1,13 @@
+FROM algorithmia/langpacks:algorithmia-langpack-single-base
+
+# For each lang, run `setup`
+RUN ( for lang in /tmp/*; do \
+        echo "Running $lang setup"; \
+        $lang/setup || exit; \
+    done ) && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp/build
+CMD ["bin/build"]
+
+USER algo
