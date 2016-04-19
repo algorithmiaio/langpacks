@@ -32,18 +32,18 @@ function build_lang_images {
 }
 
 function build_single_images {
-  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia-langpack-single-base .
+  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
   docker build -f docker/Dockerfile.single-runner -t algorithmia/langserver-single .
   docker build -f docker/Dockerfile.single-builder -t algorithmia/langbuilder-single .
 }
 
 function build_single_runner {
-  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia-langpack-single-base .
+  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
   docker build -f docker/Dockerfile.single-runner -t algorithmia/langserver-single .
 }
 
 function build_single_builder {
-  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia-langpack-single-base .
+  docker build --build-arg ALGO_UID=$ALGO_UID -f docker/Dockerfile.single-base -t algorithmia/langpack-single-base .
   docker build -f docker/Dockerfile.single-builder -t algorithmia/langbuilder-single .
 }
 

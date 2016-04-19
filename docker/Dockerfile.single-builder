@@ -1,4 +1,4 @@
-FROM algorithmia-langpack-single-base
+FROM algorithmia/langpack-single-base
 
 # For each lang, run `setup`
 RUN ( for lang in /tmp/*; do \
