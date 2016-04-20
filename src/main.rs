@@ -21,7 +21,7 @@ pub mod notifier;
 
 use error::Error;
 use langserver::{LangServer, LangServerMode};
-use notifier::{Notifier, LoadNotification, LoadStatus};
+use notifier::{Notifier, StatusNotification, HealthStatus};
 
 fn main() {
     let start = Instant::now();
@@ -38,23 +38,23 @@ fn main() {
 
     match listener {
         Ok(mut listener) => {
-            let _ = load_complete(LoadStatus::Success, duration).or_else(|_| listener.close());
+            let _ = load_complete(HealthStatus::Success, duration).or_else(|_| listener.close());
         }
         Err(ref err) => {
             println!("Failed to load: {}", err);
-            let status = LoadStatus::Failure(err.description().to_owned());
+            let status = HealthStatus::Failure(err.description().to_owned());
             let _ = load_complete(status, duration);
         }
     };
 }
 
 
-fn load_complete(status: LoadStatus, duration: Duration) -> Result<(), Error> {
+fn load_complete(status: HealthStatus, duration: Duration) -> Result<(), Error> {
     // Optionally notify another service that the LangServer is alive and serving requests
-    if let Ok(url) = env::var("LOAD_COMPLETE") {
+    if let Ok(url) = env::var("STATUS_UPDATE") {
         let notifier = try!(Notifier::parse(&url));
 
-        let message = LoadNotification::new(&status, duration);
+        let message = StatusNotification::new(&status, duration);
         try!(notifier.notify(message, None));
     }
     Ok(())

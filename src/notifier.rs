@@ -60,25 +60,25 @@ impl Notifier {
     }
 }
 
-pub enum LoadStatus {
+pub enum HealthStatus {
     Success,
-    Failure(String),
+    Failure(String)
 }
 
-pub struct LoadNotification {
+pub struct StatusNotification {
     slot_id: Option<String>,
     status: String,
     error: Option<String>,
     load_time: f64,
 }
 
-impl LoadNotification {
-    pub fn new(load_status: &LoadStatus, load_time: Duration) -> LoadNotification {
+impl StatusNotification {
+    pub fn new(load_status: &HealthStatus, load_time: Duration) -> StatusNotification {
         let (status, error) = match load_status {
-            &LoadStatus::Success => ("Successful", None),
-            &LoadStatus::Failure(ref err) => ("Failed", Some(err.clone())),
+            &HealthStatus::Success => ("Successful", None),
+            &HealthStatus::Failure(ref err) => ("Failed", Some(err.clone())),
         };
-        LoadNotification {
+        StatusNotification {
             slot_id: env::var("SLOT_ID").ok(),
             status: status.to_owned(),
             error: error,
@@ -88,15 +88,15 @@ impl LoadNotification {
 }
 
 // JSON boilerplate - until compiler plugins are stable to just annotate with #[derive(Serialize)]
-impl Serialize for LoadNotification {
+impl Serialize for StatusNotification {
     fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
-        serializer.serialize_map(LoadNotificationMapVisitor { value: self })
+        serializer.serialize_map(StatusNotificationMapVisitor { value: self })
     }
 }
-struct LoadNotificationMapVisitor<'a> {
-    value: &'a LoadNotification,
+struct StatusNotificationMapVisitor<'a> {
+    value: &'a StatusNotification,
 }
-impl<'a> serde::ser::MapVisitor for LoadNotificationMapVisitor<'a> {
+impl<'a> serde::ser::MapVisitor for StatusNotificationMapVisitor<'a> {
     fn visit<S: Serializer>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error> {
         try!(serializer.serialize_map_elt("slot_id", &self.value.slot_id));
         try!(serializer.serialize_map_elt("status", &self.value.status));
