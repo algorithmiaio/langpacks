@@ -37,6 +37,7 @@ pub struct LangRunner {
 // Struct to manage the `bin/pipe` process
 struct LangRunnerProcess {
     stdout: Arc<Mutex<Vec<String>>>,
+    stderr: Arc<Mutex<Vec<String>>>,
     stdin: Option<ChildStdin>,
     child: Mutex<Child>,
     exit_status: Mutex<Option<i32>>,
@@ -123,10 +124,14 @@ impl LangRunner {
         let mut runner_output = match received {
             Ok(response) => RunnerOutput::Completed(response),
             Err(err) => {
+                let error_type = match err {
+                    Error::UnexpectedExit(_) => "SystemExit",
+                    _ => "SystemError",
+                };
                 println!("Wait encountered an error: {}", err);
                 let error_obj = ObjectBuilder::new()
                                     .insert("message", Value::String(err.to_string()))
-                                    .insert("error_type", Value::String("SystemError".to_string()))
+                                    .insert("error_type", Value::String(error_type.into()))
                                     .unwrap();
                 let obj = ObjectBuilder::new().insert("error", error_obj).unwrap();
                 RunnerOutput::Exited(obj)
@@ -180,8 +185,12 @@ impl LangRunnerProcess {
         let stdout = try!(child.stdout
                                .take()
                                .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
+        let stderr = try!(child.stdout
+                               .take()
+                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
 
         let child_stdout = Arc::new(Mutex::new(Vec::new()));
+        let child_stderr = Arc::new(Mutex::new(Vec::new()));
 
         // Spawn a thread to collect algorithm stdout
         let arc_stdout = child_stdout.clone();
@@ -198,10 +207,26 @@ impl LangRunnerProcess {
             }
         });
 
+        // Spawn a thread to collect algorithm stderr
+        let arc_stderr = child_stderr.clone();
+        thread::spawn(move || {
+            let reader = BufReader::new(stderr);
+            for line_result in reader.lines() {
+                match line_result {
+                    Ok(line) => match arc_stderr.lock() {
+                        Ok(mut lines) => lines.push(line),
+                        Err(err) => println!("Failed to get lock on stderr lines: {}", err),
+                    },
+                    Err(err) => println!("Failed to read line: {}", err),
+                }
+            }
+        });
+
         Ok(LangRunnerProcess {
             child: Mutex::new(child),
             stdin: Some(stdin),
             stdout: child_stdout,
+            stderr: child_stderr,
             exit_status: Mutex::new(None),
         })
     }
@@ -230,6 +255,18 @@ impl LangRunnerProcess {
         }
         lines.clear();
         algo_stdout
+    }
+
+    // This returns and clears the buffered stderr
+    pub fn consume_stderr(&self) -> String {
+        let arc_stderr = self.stderr.clone();
+        let mut lines = arc_stderr.lock().expect("Failed to get lock on stderr lines");
+        let mut algo_stderr = lines.join("\n");
+        if algo_stderr.chars().last() == Some('\n') {
+            let _ = algo_stderr.pop();
+        }
+        lines.clear();
+        algo_stderr
     }
 
     pub fn check_exited(&self) -> Option<i32> {
