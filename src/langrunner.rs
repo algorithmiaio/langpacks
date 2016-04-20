@@ -225,7 +225,9 @@ impl LangRunnerProcess {
         let arc_stdout = self.stdout.clone();
         let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
         let mut algo_stdout = lines.join("\n");
-        let _ = algo_stdout.pop();
+        if algo_stdout.chars().last() == Some('\n') {
+            let _ = algo_stdout.pop();
+        }
         lines.clear();
         algo_stdout
     }
