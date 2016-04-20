@@ -138,14 +138,15 @@ impl LangRunner {
             }
         };
 
-        let stdout = {
+        let (stdout, stderr) = {
             let runner = self.runner.read().expect("Failed to acquire read lock on runner");
-            runner.consume_stdout()
+            (runner.consume_stdout(), runner.consume_stderr())
         };
 
         // Augment output with duration and stdout
         runner_output.set_duration(duration);
         runner_output.set_stdout(stdout);
+        runner_output.set_stderr(stderr);
         runner_output
     }
 
@@ -353,6 +354,13 @@ impl RunnerOutput {
         if !stdout.is_empty() {
             let mut metadata = self.metadata_mut();
             metadata.insert(s!("stdout"), Value::String(stdout));
+        }
+    }
+
+    fn set_stderr(&mut self, stderr: String) {
+        if !stderr.is_empty() {
+            let mut metadata = self.metadata_mut();
+            metadata.insert(s!("stderr"), Value::String(stderr));
         }
     }
 
