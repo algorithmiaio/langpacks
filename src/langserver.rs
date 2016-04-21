@@ -52,6 +52,10 @@ impl LangServer {
     // Monitor runner - exit if exit is encountered
     // Since this needs a lock on the runner, it won't run while we're calling the algorithm
     fn monitor_runner(&self, notify_exited: Option<Notifier>) {
+        let is_async = match self.mode {
+            LangServerMode::Sync => false,
+            LangServerMode::Async(ref notif) => true,
+        };
         let watched_runner = self.runner.clone();
         thread::spawn(move || {
             loop {
@@ -62,14 +66,16 @@ impl LangServer {
 
                 if let Some(code) = status {
                     println!("LangServer monitor thread detected exit: {}", code);
-                    if let Some(notifier) = notify_exited {
+                    if let Some(ref notifier) = notify_exited {
                         let health_status = HealthStatus::Failure(Error::UnexpectedExit(code));
                         let r = watched_runner.lock().expect("Failed to lock runner");
                         let (stdout, stderr) = r.consume_stdio();
                         let message = StatusMessage::new(health_status, Duration::new(0,0), stdout, stderr);
                         let _ = notifier.notify(message, None);
                     }
-                    process::exit(code);
+                    if !is_async {
+                        process::exit(code);
+                    }
                 }
 
                 thread::sleep(Duration::from_millis(500));
@@ -198,11 +204,12 @@ impl LangServer {
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
                     let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-                    let (output, mut terminate) = match runner.wait_for_response_or_exit() {
-                        RunnerOutput::Completed(output) => (output, false),
-                        RunnerOutput::Exited(output) => (output, true),
+                    let output  = match runner.wait_for_response_or_exit() {
+                        RunnerOutput::Completed(output) => output,
+                        RunnerOutput::Exited(output) => output,
                     };
 
+                    let mut terminate = false;
                     if let Err(err) = notifier.notify(output, Some(headers)) {
                         println!("Failed to send REQUEST_COMPLETE notification: {}", err);
                         terminate = true;
