@@ -33,11 +33,15 @@ def main():
             f.write(response_string)
             f.write('\n')
 
+def is_binary(arg):
+    if six.PY3:
+        return isinstance(arg, base64.bytes_types)
+    return isinstance(arg, bytearray)
 
 def get_response(request):
     try:
         result = call_algorithm(request)
-        if isinstance(result, six.binary_type) or isinstance(result, bytearray):
+        if is_binary(result):
             content_type = 'binary'
             result = base64.b64encode(result)
 
@@ -69,11 +73,16 @@ def get_response(request):
 
     return response_string
 
+def wrap_binary_data(data):
+    if six.PY3:
+        return bytes(data)
+    return bytearray(data)
+
 def call_algorithm(request):
     if request['content_type'] in ['text', 'json']:
         data = request['data']
     elif request['content_type'] == 'binary':
-        data = bytes(base64.b64decode(request['data']))
+        data = wrap_binary_data(base64.b64decode(request['data']))
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
 
