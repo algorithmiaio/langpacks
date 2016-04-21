@@ -3,11 +3,10 @@ use hyper::header::{Headers, ContentType};
 use hyper::Url;
 use std::time::Duration;
 use serde_json::ser;
-use serde::{self, Serialize, Serializer};
-use std::{env, thread};
+use serde::Serialize;
+use std::thread;
 use std::error::Error as StdError;
 use super::error::Error;
-use super::response::ResponseMetadata;
 
 #[derive(Clone)]
 pub struct Notifier {
@@ -66,50 +65,4 @@ pub enum HealthStatus {
     Failure(Error)
 }
 
-pub struct StatusNotification {
-    slot_id: Option<String>,
-    status: String,
-    metadata: ResponseMetadata,
-    error: Option<Error>,
-}
-
-impl StatusNotification {
-    pub fn new(load_status: HealthStatus, load_time: Duration, stdout: Option<String>, stderr: Option<String>) -> StatusNotification {
-        let (status, error) = match load_status {
-            HealthStatus::Success => ("Successful", None),
-            HealthStatus::Failure(err) => ("Failed", Some(err)),
-        };
-        StatusNotification {
-            slot_id: env::var("SLOT_ID").ok(),
-            status: status.to_owned(),
-            error: error,
-            metadata: ResponseMetadata {
-                duration: load_time.as_secs() as f64 + (load_time.subsec_nanos() as f64 / 1_000_000_000f64),
-                stdout: stdout,
-                stderr: stderr,
-            }
-        }
-    }
-}
-
-// JSON boilerplate for StatusNotification - until #[derive(Serialize)] is stabilized
-impl Serialize for StatusNotification {
-    fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
-        serializer.serialize_map(StatusNotificationMapVisitor { value: self })
-    }
-}
-struct StatusNotificationMapVisitor<'a> {
-    value: &'a StatusNotification,
-}
-impl<'a> serde::ser::MapVisitor for StatusNotificationMapVisitor<'a> {
-    fn visit<S: Serializer>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error> {
-        try!(serializer.serialize_map_elt("slot_id", &self.value.slot_id));
-        try!(serializer.serialize_map_elt("status", &self.value.status));
-        try!(serializer.serialize_map_elt("metadata", &self.value.metadata));
-        if let Some(ref error) = self.value.error {
-            try!(serializer.serialize_map_elt("error", error));
-        }
-        Ok(None)
-    }
-}
 

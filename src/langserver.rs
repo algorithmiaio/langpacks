@@ -14,8 +14,8 @@ use std::{process, thread};
 
 use super::error::Error;
 use super::langrunner::LangRunner;
-use super::response::RunnerOutput;
-use super::notifier::{Notifier, HealthStatus, StatusNotification};
+use super::message::{RunnerOutput, StatusMessage};
+use super::notifier::{Notifier, HealthStatus};
 
 macro_rules! jsonres {
     ($x:expr) => (concat!(r#"{"result":""#, $x, r#""}"#).to_owned());
@@ -66,7 +66,7 @@ impl LangServer {
                         let health_status = HealthStatus::Failure(Error::UnexpectedExit(code));
                         let r = watched_runner.lock().expect("Failed to lock runner");
                         let (stdout, stderr) = r.consume_stdio();
-                        let message = StatusNotification::new(health_status, Duration::new(0,0), Some(stdout), Some(stderr));
+                        let message = StatusMessage::new(health_status, Duration::new(0,0), Some(stdout), Some(stderr));
                         let _ = notifier.notify(message, None);
                     }
                     process::exit(code);

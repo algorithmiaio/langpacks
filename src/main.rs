@@ -17,11 +17,12 @@ mod langserver;
 pub mod error;
 pub mod langrunner;
 pub mod notifier;
-pub mod response;
+pub mod message;
 
 use error::Error;
 use langserver::{LangServer, LangServerMode};
-use notifier::{Notifier, StatusNotification, HealthStatus};
+use notifier::{Notifier, HealthStatus};
+use message::StatusMessage;
 
 fn main() {
     let start = Instant::now();
@@ -52,7 +53,7 @@ fn main() {
 fn load_complete(status: HealthStatus, duration: Duration) -> Result<(), Error> {
     // Optionally notify another service that the LangServer is alive and serving requests
     if let Some(notifier) = get_status_notifier() {
-        let message = StatusNotification::new(status, duration, None, None);
+        let message = StatusMessage::new(status, duration, None, None);
         try!(notifier.notify(message, None));
     }
     Ok(())

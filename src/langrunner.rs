@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 use wait_timeout::ChildExt;
 
 use super::error::Error;
-use super::response::{ErrorResponse, RunnerOutput};
+use super::message::{ErrorMessage, RunnerOutput};
 
 const ALGOOUT: &'static str = "/tmp/algoout";
 const UNKNOWN_EXIT: i32 = -99;
@@ -119,7 +119,7 @@ impl LangRunner {
             Ok(response) => RunnerOutput::Completed(response),
             Err(err) => {
                 println!("Wait encountered an error: {}", err);
-                let response = ErrorResponse::from_error(err);
+                let response = ErrorMessage::from_error(err);
                 RunnerOutput::Exited(to_value(&response))
             }
         };
