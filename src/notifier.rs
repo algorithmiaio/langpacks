@@ -7,6 +7,7 @@ use serde::{self, Serialize, Serializer};
 use std::{env, thread};
 use std::error::Error as StdError;
 use super::error::Error;
+use super::response::ResponseMetadata;
 
 #[derive(Clone)]
 pub struct Notifier {
@@ -62,32 +63,36 @@ impl Notifier {
 
 pub enum HealthStatus {
     Success,
-    Failure(String)
+    Failure(Error)
 }
 
 pub struct StatusNotification {
     slot_id: Option<String>,
     status: String,
-    error: Option<String>,
-    load_time: f64,
+    metadata: ResponseMetadata,
+    error: Option<Error>,
 }
 
 impl StatusNotification {
-    pub fn new(load_status: &HealthStatus, load_time: Duration) -> StatusNotification {
+    pub fn new(load_status: HealthStatus, load_time: Duration) -> StatusNotification {
         let (status, error) = match load_status {
-            &HealthStatus::Success => ("Successful", None),
-            &HealthStatus::Failure(ref err) => ("Failed", Some(err.clone())),
+            HealthStatus::Success => ("Successful", None),
+            HealthStatus::Failure(err) => ("Failed", Some(err)),
         };
         StatusNotification {
             slot_id: env::var("SLOT_ID").ok(),
             status: status.to_owned(),
             error: error,
-            load_time: load_time.as_secs() as f64 + (load_time.subsec_nanos() as f64 / 1_000_000_000f64),
+            metadata: ResponseMetadata {
+                duration: load_time.as_secs() as f64 + (load_time.subsec_nanos() as f64 / 1_000_000_000f64),
+                stdout: None,
+                stderr: None,
+            }
         }
     }
 }
 
-// JSON boilerplate - until compiler plugins are stable to just annotate with #[derive(Serialize)]
+// JSON boilerplate for StatusNotification - until #[derive(Serialize)] is stabilized
 impl Serialize for StatusNotification {
     fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
         serializer.serialize_map(StatusNotificationMapVisitor { value: self })
@@ -100,10 +105,11 @@ impl<'a> serde::ser::MapVisitor for StatusNotificationMapVisitor<'a> {
     fn visit<S: Serializer>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error> {
         try!(serializer.serialize_map_elt("slot_id", &self.value.slot_id));
         try!(serializer.serialize_map_elt("status", &self.value.status));
-        try!(serializer.serialize_map_elt("load_time", &self.value.load_time));
+        try!(serializer.serialize_map_elt("metadata", &self.value.metadata));
         if let Some(ref error) = self.value.error {
             try!(serializer.serialize_map_elt("error", error));
         }
         Ok(None)
     }
 }
+

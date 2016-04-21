@@ -10,7 +10,6 @@ extern crate wait_timeout;
 use hyper::server::{Handler, Server};
 use std::env;
 use std::time::{Duration, Instant};
-use std::error::Error as StdError;
 
 macro_rules! s { ($x:expr) => ($x.to_string()); }
 
@@ -18,6 +17,7 @@ mod langserver;
 pub mod error;
 pub mod langrunner;
 pub mod notifier;
+pub mod response;
 
 use error::Error;
 use langserver::{LangServer, LangServerMode};
@@ -28,7 +28,7 @@ fn main() {
 
     let listener = get_mode().and_then(|mode| {
         // Start LangPack runner and server
-        let lang_server = LangServer::new(mode);
+        let lang_server = LangServer::new(mode, get_status_notifier());
         let listener = Server::http("0.0.0.0:9999").and_then(|s| s.handle(lang_server));
         println!("Listening on port 9999.");
         listener.map_err(|err| err.into())
@@ -40,9 +40,9 @@ fn main() {
         Ok(mut listener) => {
             let _ = load_complete(HealthStatus::Success, duration).or_else(|_| listener.close());
         }
-        Err(ref err) => {
+        Err(err) => {
             println!("Failed to load: {}", err);
-            let status = HealthStatus::Failure(err.description().to_owned());
+            let status = HealthStatus::Failure(err);
             let _ = load_complete(status, duration);
         }
     };
@@ -51,10 +51,8 @@ fn main() {
 
 fn load_complete(status: HealthStatus, duration: Duration) -> Result<(), Error> {
     // Optionally notify another service that the LangServer is alive and serving requests
-    if let Ok(url) = env::var("STATUS_UPDATE") {
-        let notifier = try!(Notifier::parse(&url));
-
-        let message = StatusNotification::new(&status, duration);
+    if let Some(notifier) = get_status_notifier() {
+        let message = StatusNotification::new(status, duration);
         try!(notifier.notify(message, None));
     }
     Ok(())
@@ -70,5 +68,13 @@ fn get_mode() -> Result<LangServerMode, Error> {
         }
         Err(env::VarError::NotPresent) => Ok(LangServerMode::Sync),
         Err(err) => Err(err.into()),
+    }
+}
+
+fn get_status_notifier() -> Option<Notifier> {
+    match env::var("STATUS_UPDATE") {
+        Ok(url) => Some(Notifier::parse(&url).expect("STATUS_UPDATE not a valid URL")),
+        Err(env::VarError::NotPresent) => None,
+        Err(err) => panic!("Error reading STATUS_UPDATE: {}", err),
     }
 }

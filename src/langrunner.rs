@@ -1,9 +1,7 @@
 use serde::ser::Serialize;
-use serde_json::builder::ObjectBuilder;
-use serde_json::ser;
+use serde_json::{ser, to_value};
 use serde_json::de::StreamDeserializer;
 use serde_json::Value;
-use std::collections::BTreeMap;
 use std::env;
 use std::io::{Read, Write, BufRead, BufReader};
 use std::fs::File;
@@ -15,14 +13,10 @@ use std::time::{Duration, Instant};
 use wait_timeout::ChildExt;
 
 use super::error::Error;
+use super::response::{ErrorResponse, RunnerOutput};
 
 const ALGOOUT: &'static str = "/tmp/algoout";
 const UNKNOWN_EXIT: i32 = -99;
-
-pub enum RunnerOutput {
-    Completed(Value),
-    Exited(Value),
-}
 
 type RunnerResult = Result<Value, Error>;
 
@@ -124,17 +118,9 @@ impl LangRunner {
         let mut runner_output = match received {
             Ok(response) => RunnerOutput::Completed(response),
             Err(err) => {
-                let error_type = match err {
-                    Error::UnexpectedExit(_) => "SystemExit",
-                    _ => "SystemError",
-                };
                 println!("Wait encountered an error: {}", err);
-                let error_obj = ObjectBuilder::new()
-                                    .insert("message", Value::String(err.to_string()))
-                                    .insert("error_type", Value::String(error_type.into()))
-                                    .unwrap();
-                let obj = ObjectBuilder::new().insert("error", error_obj).unwrap();
-                RunnerOutput::Exited(obj)
+                let response = ErrorResponse::from_error(err);
+                RunnerOutput::Exited(to_value(&response))
             }
         };
 
@@ -144,9 +130,7 @@ impl LangRunner {
         };
 
         // Augment output with duration and stdout
-        runner_output.set_duration(duration);
-        runner_output.set_stdout(stdout);
-        runner_output.set_stderr(stderr);
+        runner_output.set_metadata(duration, stdout, stderr);
         runner_output
     }
 
@@ -176,6 +160,7 @@ impl LangRunnerProcess {
         let mut child = try!(Command::new(&path)
                                  .stdin(Stdio::piped())
                                  .stdout(Stdio::piped())
+                                 .stderr(Stdio::piped())
                                  .spawn());
 
         println!("Running PID {}: {}", child.id(), path.to_string_lossy());
@@ -186,9 +171,9 @@ impl LangRunnerProcess {
         let stdout = try!(child.stdout
                                .take()
                                .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
-        let stderr = try!(child.stdout
+        let stderr = try!(child.stderr
                                .take()
-                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
+                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDERR"))));
 
         let child_stdout = Arc::new(Mutex::new(Vec::new()));
         let child_stderr = Arc::new(Mutex::new(Vec::new()));
@@ -333,51 +318,5 @@ impl LangRunnerProcess {
         // Store the exit status
         *exit_status = Some(code);
         code
-    }
-}
-
-impl RunnerOutput {
-    fn value_mut(&mut self) -> &mut Value {
-        match self {
-            &mut RunnerOutput::Completed(ref mut value) => value,
-            &mut RunnerOutput::Exited(ref mut value) => value,
-        }
-    }
-
-    fn set_duration(&mut self, duration: Duration) {
-        let duration_float = duration.as_secs() as f64 + (duration.subsec_nanos() as f64 / 1_000_000_000f64);
-        let mut metadata = self.metadata_mut();
-        metadata.insert(s!("duration"), Value::F64(duration_float));
-    }
-
-    fn set_stdout(&mut self, stdout: String) {
-        if !stdout.is_empty() {
-            let mut metadata = self.metadata_mut();
-            metadata.insert(s!("stdout"), Value::String(stdout));
-        }
-    }
-
-    fn set_stderr(&mut self, stderr: String) {
-        if !stderr.is_empty() {
-            let mut metadata = self.metadata_mut();
-            metadata.insert(s!("stderr"), Value::String(stderr));
-        }
-    }
-
-    fn metadata_mut(&mut self) -> &mut BTreeMap<String, Value> {
-        let mut metadata = match self.value_mut().as_object_mut() {
-            Some(map) => {
-                match map.contains_key("metadata") {
-                    true => map.get_mut("metadata").unwrap(),
-                    false => {
-                        let metadata = BTreeMap::new();
-                        map.insert(s!("metadata"), Value::Object(metadata));
-                        map.get_mut("metadata").expect("Failed to insert and retrieve metadata")
-                    }
-                }
-            }
-            None => panic!("Output not a valid structure"),
-        };
-        metadata.as_object_mut().expect("metadata is not an object")
     }
 }

@@ -13,8 +13,9 @@ use std::time::Duration;
 use std::{process, thread};
 
 use super::error::Error;
-use super::langrunner::{LangRunner, RunnerOutput};
-use super::notifier::Notifier;
+use super::langrunner::LangRunner;
+use super::response::RunnerOutput;
+use super::notifier::{Notifier, HealthStatus, StatusNotification};
 
 macro_rules! jsonres {
     ($x:expr) => (concat!(r#"{"result":""#, $x, r#""}"#).to_owned());
@@ -36,7 +37,7 @@ pub struct LangServer {
 }
 
 impl LangServer {
-    pub fn new(mode: LangServerMode) -> LangServer {
+    pub fn new(mode: LangServerMode, notify_exited: Option<Notifier>) -> LangServer {
         let runner = LangRunner::start().expect("Failed to start LangRunner");
 
         let ls = LangServer {
@@ -44,13 +45,13 @@ impl LangServer {
             mode: mode,
         };
 
-        ls.monitor_runner();
+        ls.monitor_runner(notify_exited);
         ls
     }
 
     // Monitor runner - exit if exit is encountered
     // Since this needs a lock on the runner, it won't run while we're calling the algorithm
-    fn monitor_runner(&self) {
+    fn monitor_runner(&self, notify_exited: Option<Notifier>) {
         let watched_runner = self.runner.clone();
         thread::spawn(move || {
             loop {
@@ -59,14 +60,17 @@ impl LangServer {
                     r.check_exited()
                 };
 
-                // Sleep even if exited, to give a chance for outstanding reponse connections to complete
-                thread::sleep(Duration::from_millis(500));
-
                 if let Some(code) = status {
                     println!("LangServer monitor thread detected exit: {}", code);
+                    if let Some(notifier) = notify_exited {
+                        let health_status = HealthStatus::Failure(Error::UnexpectedExit(code));
+                        let message = StatusNotification::new(health_status, Duration::new(0,0));
+                        let _ = notifier.notify(message, None);
+                    }
                     process::exit(code);
                 }
 
+                thread::sleep(Duration::from_millis(500));
             }
         });
     }
