@@ -67,15 +67,15 @@ impl RunnerOutput {
         }
     }
 
-    pub fn set_metadata(&mut self, duration: Duration, stdout: String, stderr: String) {
+    pub fn set_metadata(&mut self, duration: Duration, stdout: Option<String>, stderr: Option<String>) {
         let mut metadata = self.metadata_mut();
         let duration_float = duration.as_secs() as f64 + (duration.subsec_nanos() as f64 / 1_000_000_000f64);
         metadata.insert(s!("duration"), Value::F64(duration_float));
-        if !stdout.is_empty() {
-            metadata.insert(s!("stdout"), Value::String(stdout));
+        if let Some(value) = stdout {
+            metadata.insert(s!("stdout"), Value::String(value));
         }
-        if !stderr.is_empty() {
-            metadata.insert(s!("stderr"), Value::String(stderr));
+        if let Some(value) = stderr {
+            metadata.insert(s!("stderr"), Value::String(value));
         }
     }
 

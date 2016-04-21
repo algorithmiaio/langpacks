@@ -131,7 +131,7 @@ impl LangRunner {
         runner_output
     }
 
-    pub fn consume_stdio(&self) -> (String, String) {
+    pub fn consume_stdio(&self) -> (Option<String>, Option<String>) {
         let runner = self.runner.read().expect("Failed to acquire read lock on runner");
         (runner.consume_stdout(), runner.consume_stderr())
     }
@@ -234,27 +234,35 @@ impl LangRunnerProcess {
     }
 
     // This returns and clears the buffered stdout
-    pub fn consume_stdout(&self) -> String {
+    pub fn consume_stdout(&self) -> Option<String> {
         let arc_stdout = self.stdout.clone();
         let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
-        let mut algo_stdout = lines.join("\n");
-        if algo_stdout.chars().last() == Some('\n') {
-            let _ = algo_stdout.pop();
+        if lines.len() > 0 {
+            let mut algo_stdout = lines.join("\n");
+            if algo_stdout.chars().last() == Some('\n') {
+                let _ = algo_stdout.pop();
+            }
+            lines.clear();
+            Some(algo_stdout)
+        } else {
+            None
         }
-        lines.clear();
-        algo_stdout
     }
 
     // This returns and clears the buffered stderr
-    pub fn consume_stderr(&self) -> String {
+    pub fn consume_stderr(&self) -> Option<String> {
         let arc_stderr = self.stderr.clone();
         let mut lines = arc_stderr.lock().expect("Failed to get lock on stderr lines");
-        let mut algo_stderr = lines.join("\n");
-        if algo_stderr.chars().last() == Some('\n') {
-            let _ = algo_stderr.pop();
+        if lines.len() > 0 {
+            let mut algo_stderr = lines.join("\n");
+            if algo_stderr.chars().last() == Some('\n') {
+                let _ = algo_stderr.pop();
+            }
+            lines.clear();
+            Some(algo_stderr)
+        } else {
+            None
         }
-        lines.clear();
-        algo_stderr
     }
 
     pub fn check_exited(&self) -> Option<i32> {
