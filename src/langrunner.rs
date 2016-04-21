@@ -124,14 +124,16 @@ impl LangRunner {
             }
         };
 
-        let (stdout, stderr) = {
-            let runner = self.runner.read().expect("Failed to acquire read lock on runner");
-            (runner.consume_stdout(), runner.consume_stderr())
-        };
+        let (stdout, stderr) = self.consume_stdio();
 
         // Augment output with duration and stdout
         runner_output.set_metadata(duration, stdout, stderr);
         runner_output
+    }
+
+    pub fn consume_stdio(&self) -> (String, String) {
+        let runner = self.runner.read().expect("Failed to acquire read lock on runner");
+        (runner.consume_stdout(), runner.consume_stderr())
     }
 
     pub fn check_exited(&self) -> Option<i32> {

@@ -74,7 +74,7 @@ pub struct StatusNotification {
 }
 
 impl StatusNotification {
-    pub fn new(load_status: HealthStatus, load_time: Duration) -> StatusNotification {
+    pub fn new(load_status: HealthStatus, load_time: Duration, stdout: Option<String>, stderr: Option<String>) -> StatusNotification {
         let (status, error) = match load_status {
             HealthStatus::Success => ("Successful", None),
             HealthStatus::Failure(err) => ("Failed", Some(err)),
@@ -85,8 +85,8 @@ impl StatusNotification {
             error: error,
             metadata: ResponseMetadata {
                 duration: load_time.as_secs() as f64 + (load_time.subsec_nanos() as f64 / 1_000_000_000f64),
-                stdout: None,
-                stderr: None,
+                stdout: stdout,
+                stderr: stderr,
             }
         }
     }

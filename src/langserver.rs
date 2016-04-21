@@ -64,7 +64,9 @@ impl LangServer {
                     println!("LangServer monitor thread detected exit: {}", code);
                     if let Some(notifier) = notify_exited {
                         let health_status = HealthStatus::Failure(Error::UnexpectedExit(code));
-                        let message = StatusNotification::new(health_status, Duration::new(0,0));
+                        let r = watched_runner.lock().expect("Failed to lock runner");
+                        let (stdout, stderr) = r.consume_stdio();
+                        let message = StatusNotification::new(health_status, Duration::new(0,0), Some(stdout), Some(stderr));
                         let _ = notifier.notify(message, None);
                     }
                     process::exit(code);
