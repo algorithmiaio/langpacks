@@ -4,8 +4,10 @@ require 'base64'
 config_file = File.read("#{__dir__}/../algorithmia.conf")
 config = JSON.parse(config_file)
 require_relative "#{__dir__}/../src/#{config['algoname']}.rb"
+
 puts "PIPE_INIT_COMPLETE"
 STDOUT.flush
+
 def pipe_loop
   STDIN.each_line do |line|
     request = JSON.parse(line)
@@ -26,8 +28,7 @@ def pipe_loop
       { :error => { :message => e.message, :stacktrace => e.backtrace.join("\n"), :error_type => e.class.name }}
     end
 
-    # Add final newline delimeter and flush stdout before writing back response
-    puts "\n"
+    # Flush stdout before writing back response
     STDOUT.flush
     File.open('/tmp/algoout', 'w') do |algoout|
       algoout.puts response.to_json

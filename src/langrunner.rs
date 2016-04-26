@@ -1,3 +1,4 @@
+use nonblock::NonBlockingReader;
 use serde::ser::Serialize;
 use serde_json::{ser, to_value};
 use serde_json::de::StreamDeserializer;
@@ -6,7 +7,7 @@ use std::env;
 use std::io::{self, Read, Write, BufRead, BufReader};
 use std::fs::File;
 use std::{process, thread};
-use std::process::{Command, Child, ChildStdin, Stdio};
+use std::process::*;
 use std::sync::{Arc, Mutex, RwLock};
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::time::{Duration, Instant};
@@ -30,8 +31,8 @@ pub struct LangRunner {
 
 // Struct to manage the `bin/pipe` process
 struct LangRunnerProcess {
-    stdout: Arc<Mutex<Vec<String>>>,
-    stderr: Arc<Mutex<Vec<String>>>,
+    stdout: Arc<Mutex<NonBlockingReader<ChildStdout>>>,
+    stderr: Arc<Mutex<NonBlockingReader<ChildStderr>>>,
     stdin: Option<ChildStdin>,
     child: Mutex<Child>,
     exit_status: Mutex<Option<i32>>,
@@ -170,7 +171,7 @@ impl LangRunnerProcess {
         let stdin = try!(child.stdin
                               .take()
                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN"))));
-        let mut stdout = try!(child.stdout
+        let stdout = try!(child.stdout
                                .take()
                                .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
         let mut stderr = try!(child.stderr
@@ -211,46 +212,15 @@ impl LangRunnerProcess {
                 }
             }
         }
-        stdout = reader.into_inner();
 
-        let child_stdout = Arc::new(Mutex::new(Vec::new()));
-        let child_stderr = Arc::new(Mutex::new(Vec::new()));
-
-        // Spawn a thread to collect algorithm stdout
-        let arc_stdout = child_stdout.clone();
-        thread::spawn(move || {
-            let reader = BufReader::new(stdout);
-            for line_result in reader.lines() {
-                match line_result {
-                    Ok(line) => match arc_stdout.lock() {
-                        Ok(mut lines) => lines.push(line),
-                        Err(err) => println!("Failed to get lock on stdout lines: {}", err),
-                    },
-                    Err(err) => println!("Failed to read line: {}", err),
-                }
-            }
-        });
-
-        // Spawn a thread to collect algorithm stderr
-        let arc_stderr = child_stderr.clone();
-        thread::spawn(move || {
-            let reader = BufReader::new(stderr);
-            for line_result in reader.lines() {
-                match line_result {
-                    Ok(line) => match arc_stderr.lock() {
-                        Ok(mut lines) => lines.push(line),
-                        Err(err) => println!("Failed to get lock on stderr lines: {}", err),
-                    },
-                    Err(err) => println!("Failed to read line: {}", err),
-                }
-            }
-        });
+        let noblock_stdout = try!(NonBlockingReader::from_fd(reader.into_inner()));
+        let noblock_stderr = try!(NonBlockingReader::from_fd(stderr));
 
         Ok(LangRunnerProcess {
             child: Mutex::new(child),
             stdin: Some(stdin),
-            stdout: child_stdout,
-            stderr: child_stderr,
+            stdout: Arc::new(Mutex::new(noblock_stdout)),
+            stderr: Arc::new(Mutex::new(noblock_stderr)),
             exit_status: Mutex::new(None),
         })
     }
@@ -269,35 +239,33 @@ impl LangRunnerProcess {
         }
     }
 
-    // This returns and clears the buffered stdout
+    // This returns avialable stdout without blocking
     pub fn consume_stdout(&self) -> Option<String> {
         let arc_stdout = self.stdout.clone();
-        let mut lines = arc_stdout.lock().expect("Failed to get lock on stdout lines");
-        if lines.len() > 0 {
-            let mut algo_stdout = lines.join("\n");
-            if algo_stdout.chars().last() == Some('\n') {
-                let _ = algo_stdout.pop();
+        let mut buffer = String::new();
+        let mut noblock_stdout = arc_stdout.lock().expect("Failed to get lock on stdout");
+        match noblock_stdout.read_available_to_string(&mut buffer) {
+            Ok(0) => None,
+            Ok(_) => Some(buffer),
+            Err(err) => {
+                println!("Warn: failed to read available stdout: {}", err);
+                None
             }
-            lines.clear();
-            Some(algo_stdout)
-        } else {
-            None
         }
     }
 
-    // This returns and clears the buffered stderr
+    // This returns available stderr without blocking
     pub fn consume_stderr(&self) -> Option<String> {
         let arc_stderr = self.stderr.clone();
-        let mut lines = arc_stderr.lock().expect("Failed to get lock on stderr lines");
-        if lines.len() > 0 {
-            let mut algo_stderr = lines.join("\n");
-            if algo_stderr.chars().last() == Some('\n') {
-                let _ = algo_stderr.pop();
+        let mut buffer = String::new();
+        let mut noblock_stderr = arc_stderr.lock().expect("Failed to get lock on stderr");
+        match noblock_stderr.read_available_to_string(&mut buffer) {
+            Ok(0) => None,
+            Ok(_) => Some(buffer),
+            Err(err) => {
+                println!("Warn: failed to read available stderr: {}", err);
+                None
             }
-            lines.clear();
-            Some(algo_stderr)
-        } else {
-            None
         }
     }
 

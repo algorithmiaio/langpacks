@@ -81,7 +81,6 @@ function algoCallback(calledAlready, error, result) {
 
     fd = fs.openSync(FIFO_PATH, 'a');
     fs.writeSync(fd, JSON.stringify(response));
-    fs.writeSync(fd, '\n');
     // Flushing here causes errors...
     fs.closeSync(fd);
     rl.write('\n');

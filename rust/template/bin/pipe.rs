@@ -79,7 +79,7 @@ impl AlgoFailure {
 }
 
 fn main() {
-    print!("PIPE_INIT_COMPLETE");
+    println!("PIPE_INIT_COMPLETE");
     flush_std_pipes();
 
     let stdin = io::stdin();
@@ -130,8 +130,8 @@ fn serialize_output(output: Result<AlgoOutput, algorithmia::error::Error>) -> St
 }
 
 fn flush_std_pipes() {
-    let _ = io::stdout().write(b"\n");
     let _ = io::stdout().flush();
+    let _ = io::stderr().flush();
 }
 
 fn algoout(output_json: &str) {

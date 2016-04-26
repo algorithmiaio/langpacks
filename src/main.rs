@@ -3,6 +3,7 @@ extern crate quick_error;
 
 extern crate base64;
 extern crate hyper;
+extern crate nonblock;
 extern crate serde;
 extern crate serde_json;
 extern crate wait_timeout;

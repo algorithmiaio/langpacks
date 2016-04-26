@@ -28,8 +28,7 @@ def main():
         request = json.loads(line)
         response_string = get_response(request)
 
-        # Add final newline delimeter and flush stdout before writing back response
-        sys.stdout.write('\n')
+        # Flush stdout before writing back response
         sys.stdout.flush()
 
         with open(FIFO_PATH, 'w') as f:
