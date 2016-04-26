@@ -4,6 +4,8 @@ const config = JSON.parse(fs.readFileSync(__dirname+'/../algorithmia.conf', 'utf
 const Algorithm = require('../src/'+config.algoname+'.js');
 const FIFO_PATH = '/tmp/algoout';
 
+console.log("PIPE_INIT_COMPLETE");
+
 function start_call(line, cb) {
     try {
         request = JSON.parse(line);

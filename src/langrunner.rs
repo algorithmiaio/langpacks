@@ -3,7 +3,7 @@ use serde_json::{ser, to_value};
 use serde_json::de::StreamDeserializer;
 use serde_json::Value;
 use std::env;
-use std::io::{Read, Write, BufRead, BufReader};
+use std::io::{self, Read, Write, BufRead, BufReader};
 use std::fs::File;
 use std::{process, thread};
 use std::process::{Command, Child, ChildStdin, Stdio};
@@ -83,7 +83,7 @@ impl LangRunner {
                     let runner = arc_runner.read().expect("Failed to acquire read lock on runner");
                     if let Some(code) = runner.check_exited() {
                         println!("LangRunner monitor thread detected exit: {}", code);
-                        if let Err(err) = tx.send(Err(Error::UnexpectedExit(code))) {
+                        if let Err(err) = tx.send(Err(Error::UnexpectedExit(code, None, None))) {
                             println!("FATAL: Channel receiver disconnected unexpectedly: {}", err);
                             process::exit(code); // Don't want to just panic a single thread and hang
                         }
@@ -170,12 +170,48 @@ impl LangRunnerProcess {
         let stdin = try!(child.stdin
                               .take()
                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN"))));
-        let stdout = try!(child.stdout
+        let mut stdout = try!(child.stdout
                                .take()
                                .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
-        let stderr = try!(child.stderr
+        let mut stderr = try!(child.stderr
                                .take()
                                .ok_or(Error::Unexpected(s!("Failed to open runner's STDERR"))));
+
+        let mut reader = BufReader::new(stdout);
+        let mut collected_stdout = String::new();
+        loop {
+            let mut line = String::new();
+            match reader.read_line(&mut line) {
+                Ok(0) => {
+                    println!("Reached stdout EOF");
+                    let code = child.wait().ok().and_then(|exit| exit.code()).unwrap_or(UNKNOWN_EXIT);
+                    let mut collected_stderr = String::new();
+                    let bytes = stderr.read_to_string(&mut collected_stderr).unwrap_or(0);
+                    if bytes > 0 {
+                        let _ = io::stderr().write(collected_stderr.as_bytes());
+                    }
+                    let stdout_opt = match collected_stdout.is_empty() {
+                        true => None,
+                        false => Some(collected_stdout),
+                    };
+                    let stderr_opt = match collected_stderr.is_empty() {
+                        true => None,
+                        false => Some(collected_stderr),
+                    };
+                    return Err(Error::UnexpectedExit(code, stdout_opt, stderr_opt));
+                }
+                Ok(_) => {
+                    print!("{}", line);
+                    collected_stdout.push_str(&line);
+                    if line.contains("PIPE_INIT_COMPLETE") { break; }
+                }
+                Err(err) => {
+                    println!("Failed to read child stdout: {}", err);
+                    return Err(err.into());
+                }
+            }
+        }
+        stdout = reader.into_inner();
 
         let child_stdout = Arc::new(Mutex::new(Vec::new()));
         let child_stderr = Arc::new(Mutex::new(Vec::new()));

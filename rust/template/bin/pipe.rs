@@ -79,6 +79,9 @@ impl AlgoFailure {
 }
 
 fn main() {
+    print!("PIPE_INIT_COMPLETE");
+    flush_std_pipes();
+
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let output_json = match line {

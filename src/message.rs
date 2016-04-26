@@ -5,7 +5,6 @@ use std::time::Duration;
 use std::env;
 
 use super::error::Error;
-use super::notifier::HealthStatus;
 
 pub enum RunnerOutput {
     Completed(Value),
@@ -33,6 +32,11 @@ pub struct Metadata {
     // content_type is never added by LangServer/LangRunner, only by the pipe process
 }
 
+pub enum HealthStatus {
+    Success,
+    Failure(Error)
+}
+
 pub struct StatusMessage {
     slot_id: Option<String>,
     status: String,
@@ -41,8 +45,8 @@ pub struct StatusMessage {
 }
 
 impl StatusMessage {
-    pub fn new(load_status: HealthStatus, load_time: Duration, stdout: Option<String>, stderr: Option<String>) -> StatusMessage {
-        let (status, error) = match load_status {
+    fn new(health_status: HealthStatus, load_time: Duration, stdout: Option<String>, stderr: Option<String>) -> StatusMessage {
+        let (status, error) = match health_status {
             HealthStatus::Success => ("Successful", None),
             HealthStatus::Failure(err) => ("Failed", Some(err)),
         };
@@ -56,6 +60,18 @@ impl StatusMessage {
                 stderr: stderr,
             }
         }
+    }
+
+    pub fn success(duration: Duration) -> StatusMessage {
+        StatusMessage::new(HealthStatus::Success, duration, None, None)
+    }
+
+    pub fn failure(err: Error, duration: Duration) -> StatusMessage {
+        let (stdout, stderr) = match err {
+            Error::UnexpectedExit(_, ref stdout, ref stderr) => (stdout.clone(), stderr.clone()),
+            _ => (None, None),
+        };
+        StatusMessage::new(HealthStatus::Failure(err), duration, stdout, stderr)
     }
 }
 

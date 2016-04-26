@@ -4,7 +4,8 @@ require 'base64'
 config_file = File.read("#{__dir__}/../algorithmia.conf")
 config = JSON.parse(config_file)
 require_relative "#{__dir__}/../src/#{config['algoname']}.rb"
-
+puts "PIPE_INIT_COMPLETE"
+STDOUT.flush
 def pipe_loop
   STDIN.each_line do |line|
     request = JSON.parse(line)

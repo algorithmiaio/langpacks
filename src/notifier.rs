@@ -59,10 +59,3 @@ impl Notifier {
         Ok(())
     }
 }
-
-pub enum HealthStatus {
-    Success,
-    Failure(Error)
-}
-
-

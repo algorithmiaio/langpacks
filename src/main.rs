@@ -21,39 +21,47 @@ pub mod message;
 
 use error::Error;
 use langserver::{LangServer, LangServerMode};
-use notifier::{Notifier, HealthStatus};
+use notifier::Notifier;
 use message::StatusMessage;
 
 fn main() {
     let start = Instant::now();
 
-    let listener = get_mode().and_then(|mode| {
+    let listener_res = get_mode()
         // Start LangPack runner and server
-        let lang_server = LangServer::new(mode, get_status_notifier());
-        let listener = Server::http("0.0.0.0:9999").and_then(|s| s.handle(lang_server));
-        println!("Listening on port 9999.");
-        listener.map_err(|err| err.into())
-    });
+        .and_then(|mode| { LangServer::start(mode, get_status_notifier()) })
+        // Start serving the LangServer handler
+        .and_then(|lang_server| {
+            Server::http("0.0.0.0:9999")
+                .and_then(|s| s.handle(lang_server))
+                .map_err(|err| err.into())
+        });
 
     let duration = start.elapsed();
 
-    match listener {
+    if listener_res.is_ok() {
+        println!("Listening on port 9999.");
+    }
+
+    match listener_res {
         Ok(mut listener) => {
-            let _ = load_complete(HealthStatus::Success, duration).or_else(|_| listener.close());
+            let _ = load_complete(Ok(()), duration).or_else(|_| listener.close());
         }
         Err(err) => {
             println!("Failed to load: {}", err);
-            let status = HealthStatus::Failure(err);
-            let _ = load_complete(status, duration);
+            let _ = load_complete(Err(err), duration);
         }
     };
 }
 
 
-fn load_complete(status: HealthStatus, duration: Duration) -> Result<(), Error> {
+fn load_complete(result: Result<(), Error>, duration: Duration) -> Result<(), Error> {
     // Optionally notify another service that the LangServer is alive and serving requests
     if let Some(notifier) = get_status_notifier() {
-        let message = StatusMessage::new(status, duration, None, None);
+        let message = match result {
+            Ok(_) => StatusMessage::success(duration),
+            Err(err) => StatusMessage::failure(err, duration),
+        };
         try!(notifier.notify(message, None));
     }
     Ok(())

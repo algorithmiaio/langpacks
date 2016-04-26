@@ -16,6 +16,9 @@ algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
 FIFO_PATH = '/tmp/algoout'
 
 def main():
+    print('PIPE_INIT_COMPLETE')
+    sys.stdout.flush()
+
     while True:
         try:
             line = input()

@@ -15,7 +15,7 @@ use std::{process, thread};
 use super::error::Error;
 use super::langrunner::LangRunner;
 use super::message::{RunnerOutput, StatusMessage};
-use super::notifier::{Notifier, HealthStatus};
+use super::notifier::Notifier;
 
 macro_rules! jsonres {
     ($x:expr) => (concat!(r#"{"result":""#, $x, r#""}"#).to_owned());
@@ -37,8 +37,8 @@ pub struct LangServer {
 }
 
 impl LangServer {
-    pub fn new(mode: LangServerMode, notify_exited: Option<Notifier>) -> LangServer {
-        let runner = LangRunner::start().expect("Failed to start LangRunner");
+    pub fn start(mode: LangServerMode, notify_exited: Option<Notifier>) -> Result<LangServer, Error> {
+        let runner = try!(LangRunner::start());
 
         let ls = LangServer {
             runner: Arc::new(Mutex::new(runner)),
@@ -46,7 +46,7 @@ impl LangServer {
         };
 
         ls.monitor_runner(notify_exited);
-        ls
+        Ok(ls)
     }
 
     // Monitor runner - exit if exit is encountered
@@ -66,11 +66,11 @@ impl LangServer {
 
                 if let Some(code) = status {
                     println!("LangServer monitor thread detected exit: {}", code);
-                    if let Some(ref notifier) = notify_exited {
-                        let health_status = HealthStatus::Failure(Error::UnexpectedExit(code));
+                    if let Some(notifier) = notify_exited {
                         let r = watched_runner.lock().expect("Failed to lock runner");
                         let (stdout, stderr) = r.consume_stdio();
-                        let message = StatusMessage::new(health_status, Duration::new(0,0), stdout, stderr);
+                        let err = Error::UnexpectedExit(code, stdout, stderr);
+                        let message = StatusMessage::failure(err, Duration::new(0,0));
                         let _ = notifier.notify(message, None);
                     }
                     if !is_async {

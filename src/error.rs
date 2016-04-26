@@ -49,7 +49,7 @@ quick_error! {
             display("bad request: {}", err)
         }
 
-        UnexpectedExit(code: i32) {
+        UnexpectedExit(code: i32, stdout: Option<String>, stderr: Option<String>) {
             description("unexpected exit")
             display("exited with code {}", code)
         }
@@ -73,7 +73,7 @@ struct ErrorMapVisitor<'a> {
 impl<'a> serde::ser::MapVisitor for ErrorMapVisitor<'a> {
     fn visit<S: Serializer>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error> {
         let error_type = match self.value {
-            &Error::UnexpectedExit(_) => "SystemExit",
+            &Error::UnexpectedExit(..) => "SystemExit",
             _ => "SystemError",
         };
         try!(serializer.serialize_map_elt("message", &self.value.to_string()));
