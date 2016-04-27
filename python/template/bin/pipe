@@ -15,6 +15,5 @@ else
     exit 1
 fi
 
-export PYTHONPATH=$ROOTDIR/vendor/lib/python/
-
-exec $PYTHON $ROOTDIR/bin/pipe.py
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PYTHONPATH=$PYTHONPATH:$DIR/../dependencies exec $PYTHON $ROOTDIR/bin/pipe.py
