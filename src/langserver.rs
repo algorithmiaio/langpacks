@@ -54,7 +54,7 @@ impl LangServer {
     fn monitor_runner(&self, notify_exited: Option<Notifier>) {
         let is_async = match self.mode {
             LangServerMode::Sync => false,
-            LangServerMode::Async(ref notif) => true,
+            LangServerMode::Async(..) => true,
         };
         let watched_runner = self.runner.clone();
         thread::spawn(move || {
@@ -66,7 +66,7 @@ impl LangServer {
 
                 if let Some(code) = status {
                     println!("LangServer monitor thread detected exit: {}", code);
-                    if let Some(notifier) = notify_exited {
+                    if let Some(ref notifier) = notify_exited {
                         let r = watched_runner.lock().expect("Failed to lock runner");
                         let (stdout, stderr) = r.consume_stdio();
                         let err = Error::UnexpectedExit(code, stdout, stderr);
