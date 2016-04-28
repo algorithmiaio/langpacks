@@ -79,8 +79,18 @@ function algoCallback(calledAlready, error, result) {
         };
     }
 
+    var jsonStringifiedResponse = null;
+    try {
+        jsonStringifiedResponse = JSON.stringify(response);
+    } catch (error) {
+        jsonStringifiedResponse = JSON.stringify({
+            message: "Cannot json encode result of type: " + typeof(result),
+            stacktrace: error.stack
+        });
+    }
+
     fd = fs.openSync(FIFO_PATH, 'a');
-    fs.writeSync(fd, JSON.stringify(response));
+    fs.writeSync(fd, jsonStringifiedResponse);
     // Flushing here causes errors...
     fs.closeSync(fd);
     rl.write('\n');
