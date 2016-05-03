@@ -11,7 +11,7 @@ cargo build --release
 mkdir -p target/bin
 
 # Simplify local testing
-test -f `pwd`/bin/pipe || ln -s `pwd`/target/release/pipe `pwd`/bin/pipe
+cp `pwd`/target/release/pipe `pwd`/bin/pipe
 
 # Prepare algorithm.zip
 cp target/release/pipe target/bin/pipe
