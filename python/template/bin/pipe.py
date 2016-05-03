@@ -63,12 +63,10 @@ def get_response(request):
             }
         })
     except Exception as e:
-        _, _, exc_traceback = sys.exc_info()
-
         response_string = json.dumps({
             'error': {
                 'message': str(e),
-                'stacktrace': traceback.format_exc(exc_traceback),
+                'stacktrace': traceback.format_exc(),
                 'error_type': 'AlgorithmError'
             }
         })
