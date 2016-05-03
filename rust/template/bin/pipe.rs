@@ -79,6 +79,7 @@ impl AlgoFailure {
 }
 
 fn main() {
+    let algo = algorithm::Algo::default();
     println!("PIPE_INIT_COMPLETE");
     flush_std_pipes();
 
@@ -86,7 +87,7 @@ fn main() {
     for line in stdin.lock().lines() {
         let output_json = match line {
             Ok(input) => {
-                let output = call_algorithm(input);
+                let output = call_algorithm(&algo, input);
                 flush_std_pipes();
                 serialize_output(output)
             }
@@ -143,11 +144,10 @@ fn algoout(output_json: &str) {
     };
 }
 
-fn call_algorithm(stdin: String) -> std::result::Result<AlgoOutput, algorithmia::error::Error> {
+fn call_algorithm<A: AlgoEntryPoint>(algo: &A, stdin: String) -> std::result::Result<AlgoOutput, algorithmia::error::Error> {
     let parsed = Json::from_str(&stdin).expect("Request is not valid JSON");
     let req = Request::from_json(&parsed).expect("Failed to deserialize JSON request");
     let Request { data, content_type } = req;
-    let algo = algorithm::Algo::default();
     let input = match (content_type, data) {
         ("text", &Json::String(ref text)) => algo.apply(AlgoInput::Text(text)),
         ("binary", &Json::String(ref encoded)) => algo.apply(AlgoInput::Binary(&try!(encoded.from_base64()))),
