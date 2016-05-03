@@ -4,17 +4,17 @@ extern crate algorithmia;
 use algorithmia::*;
 use algorithmia::algo::*;
 
-// This function signature must remain unchanged to interop with the runner
-pub fn apply<'a>(input: AlgoInput<'a>) -> Result<AlgoOutput, Box<std::error::Error>> {
-    // Use .as_string, .as_json, or .as_bytes, depending on the input you want to support
-    match input.as_string() {
-        Some(text) => Ok(__ALGO__::apply(&text).into()),
-        None => Err("Unsupported input type".into())
-    }
-}
+#[derive(Default)]
+pub struct Algo;
 
-mod __ALGO__ {
-    pub fn apply(name: &str) -> String {
-        format!("Hello {}", name)
+impl AlgoEntryPoint for Algo {
+    fn apply_str(&self, name: &str) -> Result<AlgoOutput, Box<std::error::Error>> {
+        let msg = format!("Hello {}", name);
+        Ok(msg.into())
     }
+
+    // Alternate methods you can override:
+    // fn apply_json(&self, json: &Json) -> Result<AlgoOutput, Box<std::error::Error>> {}
+    // fn apply_bytes(&self, bytes: &[u8]) -> Result<AlgoOutput, Box<std::error::Error>> {}
+    // fn apply<'a>(&self, input: AlgoInput<'a>) -> Result<AlgoOutput, Box<std::error::Error>> {}
 }

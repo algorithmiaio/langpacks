@@ -105,12 +105,8 @@ fn serialize_output(output: Result<AlgoOutput, algorithmia::error::Error>) -> St
         Ok(AlgoOutput::Text(text)) => {
             json::encode(&AlgoSuccess::new(Json::String(text), "text"))
         }
-        Ok(AlgoOutput::Json(json)) => {
-            Json::from_str(&json)
-                .map(|result| json::encode(&AlgoSuccess::new(result, "json")))
-                .unwrap_or_else(|err| {
-                    json::encode(&AlgoFailure::new(err.description(), "SystemError"))
-                })
+        Ok(AlgoOutput::Json(json_obj)) => {
+            json::encode(&AlgoSuccess::new(json_obj, "json"))
         }
         Ok(AlgoOutput::Binary(bytes)) => {
             let config = base64::Config {
@@ -151,13 +147,14 @@ fn call_algorithm(stdin: String) -> std::result::Result<AlgoOutput, algorithmia:
     let parsed = Json::from_str(&stdin).expect("Request is not valid JSON");
     let req = Request::from_json(&parsed).expect("Failed to deserialize JSON request");
     let Request { data, content_type } = req;
-    match (content_type, data) {
-        ("text", &Json::String(ref text)) => algorithm::apply(AlgoInput::Text(&text)),
-        ("binary", &Json::String(ref encoded)) => algorithm::apply(AlgoInput::Binary(&try!(encoded.from_base64()))),
-        ("json", _) => algorithm::apply(AlgoInput::Json(Cow::Owned(stdin))),
+    let algo = algorithm::Algo::default();
+    let input = match (content_type, data) {
+        ("text", &Json::String(ref text)) => algo.apply(AlgoInput::Text(text)),
+        ("binary", &Json::String(ref encoded)) => algo.apply(AlgoInput::Binary(&try!(encoded.from_base64()))),
+        ("json", json_obj) => algo.apply(AlgoInput::Json(Cow::Borrowed(json_obj))),
         (ct, _) => panic!("Unsupported input content_type: {}", ct),
-    }
-    .map_err(|e| {
+    };
+    input.map_err(|e| {
         ApiError {
             message: e.description().into(),
             stacktrace: None.into(),

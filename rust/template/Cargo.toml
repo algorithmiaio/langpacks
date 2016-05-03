@@ -10,5 +10,5 @@ path = "bin/pipe.rs"
 name = "algorithm"
 
 [dependencies]
-rustc-serialize = "0.3.18"
-algorithmia = "1.1"
+rustc-serialize = "0.3.19"
+algorithmia = "1.2.0"
