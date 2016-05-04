@@ -18,7 +18,7 @@ def pipe_loop
       else
         'json'
       end
-      result = if result.encoding == 'binary' then
+      result = if content_type == 'binary' then
         Base64.encode64(result)
       else
         result
