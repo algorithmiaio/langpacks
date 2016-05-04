@@ -181,10 +181,11 @@ impl LangRunnerProcess {
         let mut reader = BufReader::new(stdout);
         let mut collected_stdout = String::new();
         loop {
-            let mut line = String::new();
-            match reader.read_line(&mut line) {
+            let mut line = Vec::new();
+            match reader.read_until(b'\n', &mut line) {
                 Ok(0) => {
                     println!("Reached stdout EOF");
+                    // Wait for exit, return UnexpectedExit with stdout & stderr
                     let code = child.wait().ok().and_then(|exit| exit.code()).unwrap_or(UNKNOWN_EXIT);
                     let mut collected_stderr = String::new();
                     let bytes = stderr.read_to_string(&mut collected_stderr).unwrap_or(0);
@@ -202,9 +203,10 @@ impl LangRunnerProcess {
                     return Err(Error::UnexpectedExit(code, stdout_opt, stderr_opt));
                 }
                 Ok(_) => {
-                    print!("{}", line);
-                    collected_stdout.push_str(&line);
-                    if line.contains("PIPE_INIT_COMPLETE") { break; }
+                    let line_str = String::from_utf8_lossy(&line);
+                    print!("{}", line_str);
+                    collected_stdout.push_str(&line_str);
+                    if line_str.contains("PIPE_INIT_COMPLETE") { break; }
                 }
                 Err(err) => {
                     printerrln!("Failed to read child stdout: {}", err);
@@ -242,11 +244,11 @@ impl LangRunnerProcess {
     // This returns avialable stdout without blocking
     pub fn consume_stdout(&self) -> Option<String> {
         let arc_stdout = self.stdout.clone();
-        let mut buffer = String::new();
+        let mut buffer = Vec::new();
         let mut noblock_stdout = arc_stdout.lock().expect("Failed to get lock on stdout");
-        match noblock_stdout.read_available_to_string(&mut buffer) {
+        match noblock_stdout.read_available(&mut buffer) {
             Ok(0) => None,
-            Ok(_) => Some(buffer),
+            Ok(_) => Some(String::from_utf8_lossy(&buffer).into_owned()),
             Err(err) => {
                 println!("Warn: failed to read available stdout: {}", err);
                 None
@@ -257,11 +259,11 @@ impl LangRunnerProcess {
     // This returns available stderr without blocking
     pub fn consume_stderr(&self) -> Option<String> {
         let arc_stderr = self.stderr.clone();
-        let mut buffer = String::new();
+        let mut buffer = Vec::new();
         let mut noblock_stderr = arc_stderr.lock().expect("Failed to get lock on stderr");
-        match noblock_stderr.read_available_to_string(&mut buffer) {
+        match noblock_stderr.read_available(&mut buffer) {
             Ok(0) => None,
-            Ok(_) => Some(buffer),
+            Ok(_) => Some(String::from_utf8_lossy(&buffer).into_owned()),
             Err(err) => {
                 println!("Warn: failed to read available stderr: {}", err);
                 None
