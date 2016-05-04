@@ -59,8 +59,11 @@ function algoCallback(calledAlready, error, result) {
         }
 
         response = {
-            message: error.toString(),
-            stacktrace: stacktrace
+            error: {
+                message: error.toString(),
+                stacktrace: stacktrace,
+                error_type: 'AlgorithmError'
+            }
         }
     } else {
         content_type = 'json';
@@ -84,8 +87,11 @@ function algoCallback(calledAlready, error, result) {
         jsonStringifiedResponse = JSON.stringify(response);
     } catch (error) {
         jsonStringifiedResponse = JSON.stringify({
-            message: "Cannot json encode result of type: " + typeof(result),
-            stacktrace: error.stack
+            error: {
+                message: "Cannot json encode result of type: " + typeof(result),
+                stacktrace: error.stack,
+                error_type: 'AlgorithmError'
+            }
         });
     }
 
