@@ -7,14 +7,11 @@ use algorithmia::algo::*;
 #[derive(Default)]
 pub struct Algo;
 
-impl AlgoEntryPoint for Algo {
-    fn apply_str(&self, name: &str) -> Result<AlgoOutput, Box<std::error::Error>> {
-        let msg = format!("Hello {}", name);
-        Ok(msg.into())
+// Algo should implement EntryPoint or DecodedEntryPoint
+//   and override at least one of the apply method variants
+impl EntryPoint for Algo {
+    fn apply_str(&self, input: &str) -> Result<AlgoOutput, Box<std::error::Error>> {
+        let msg = format!("Hello {}", input);
+        Ok(AlgoOutput::Text(msg))
     }
-
-    // Alternate methods you can override:
-    // fn apply_json(&self, json: &Json) -> Result<AlgoOutput, Box<std::error::Error>> {}
-    // fn apply_bytes(&self, bytes: &[u8]) -> Result<AlgoOutput, Box<std::error::Error>> {}
-    // fn apply<'a>(&self, input: AlgoInput<'a>) -> Result<AlgoOutput, Box<std::error::Error>> {}
 }

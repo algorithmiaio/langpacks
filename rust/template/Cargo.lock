@@ -2,13 +2,13 @@
 name = "__ALGO__"
 version = "0.0.1"
 dependencies = [
- "algorithmia 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "algorithmia 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "algorithmia"
-version = "1.2.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "chrono 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",

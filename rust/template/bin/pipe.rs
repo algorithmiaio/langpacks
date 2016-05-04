@@ -144,7 +144,7 @@ fn algoout(output_json: &str) {
     };
 }
 
-fn call_algorithm<A: AlgoEntryPoint>(algo: &A, stdin: String) -> std::result::Result<AlgoOutput, algorithmia::error::Error> {
+fn call_algorithm<E: EntryPoint>(algo: &E, stdin: String) -> std::result::Result<AlgoOutput, algorithmia::error::Error> {
     let parsed = Json::from_str(&stdin).expect("Request is not valid JSON");
     let req = Request::from_json(&parsed).expect("Failed to deserialize JSON request");
     let Request { data, content_type } = req;
