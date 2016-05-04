@@ -1,5 +1,4 @@
 .git
-*/examples
 */template/Dockerfile.*
 target/
 !target/release/langserver
