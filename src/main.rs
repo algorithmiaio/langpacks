@@ -13,6 +13,16 @@ use std::env;
 use std::time::{Duration, Instant};
 
 macro_rules! s { ($x:expr) => ($x.to_string()); }
+macro_rules! printerrln {
+    ($($arg:tt)*) => ({
+        use std::io::prelude::*;
+        if let Err(e) = write!(&mut ::std::io::stderr(), "{}\n", format_args!($($arg)*)) {
+            panic!("Failed to write to stderr.\
+                \nOriginal error output: {}\
+                \nSecondary error writing to stderr: {}", format!($($arg)*), e);
+        }
+    })
+}
 
 mod langserver;
 pub mod error;

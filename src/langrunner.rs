@@ -207,7 +207,7 @@ impl LangRunnerProcess {
                     if line.contains("PIPE_INIT_COMPLETE") { break; }
                 }
                 Err(err) => {
-                    println!("Failed to read child stdout: {}", err);
+                    printerrln!("Failed to read child stdout: {}", err);
                     return Err(err.into());
                 }
             }
@@ -281,7 +281,7 @@ impl LangRunnerProcess {
         let mut child = self.child.lock().expect("Failed to get lock on runner");
         match child.wait_timeout(Duration::from_millis(10)) {
             Err(err) => {
-                println!("Error waiting for runner: {}", err);
+                printerrln!("Error waiting for runner: {}", err);
                 *exit_status = Some(UNKNOWN_EXIT);
                 Some(UNKNOWN_EXIT)
             }
@@ -313,7 +313,7 @@ impl LangRunnerProcess {
         let mut child = self.child.lock().expect("Failed to get lock on runner");
         let code = match child.wait_timeout(Duration::from_secs(3)) {
             Err(err) => {
-                println!("Error waiting for runner: {}", err);
+                printerrln!("Error waiting for runner: {}", err);
                 UNKNOWN_EXIT
             }
             Ok(Some(exit)) => {
