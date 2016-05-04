@@ -2,6 +2,9 @@
 
 set -e
 
-bundle update algorithmia
+if [[ -f Gemfile.lock ]]; then
+  bundle update algorithmia
+fi
+
 bundle install --path vendor/bundle
-zip -r algorithm.zip * .bundle
+zip -rq algorithm.zip * .bundle
