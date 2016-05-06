@@ -1,6 +1,6 @@
 [package]
 name = "__ALGO__"
-version = "0.0.1"
+version = "0.1.0"
 
 # Do NOT change the [[bin]] and [lib] sections
 [[bin]]
@@ -11,4 +11,4 @@ name = "algorithm"
 
 [dependencies]
 rustc-serialize = "0.3.19"
-algorithmia = "1.2.1"
+algorithmia = "1.2.2"

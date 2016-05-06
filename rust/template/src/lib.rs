@@ -1,8 +1,9 @@
 extern crate algorithmia;
+extern crate rustc_serialize;
 
-#[allow(unused_imports)]
 use algorithmia::*;
 use algorithmia::algo::*;
+use algorithmia::data::*;
 
 #[derive(Default)]
 pub struct Algo;

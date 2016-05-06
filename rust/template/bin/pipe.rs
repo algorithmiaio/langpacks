@@ -149,8 +149,8 @@ fn call_algorithm<E: EntryPoint>(algo: &E, stdin: String) -> std::result::Result
     let req = Request::from_json(&parsed).expect("Failed to deserialize JSON request");
     let Request { data, content_type } = req;
     let input = match (content_type, data) {
-        ("text", &Json::String(ref text)) => algo.apply(AlgoInput::Text(text)),
-        ("binary", &Json::String(ref encoded)) => algo.apply(AlgoInput::Binary(&try!(encoded.from_base64()))),
+        ("text", &Json::String(ref text)) => algo.apply(text.into()),
+        ("binary", &Json::String(ref encoded)) => algo.apply(try!(encoded.from_base64()).into()),
         ("json", json_obj) => algo.apply(AlgoInput::Json(Cow::Borrowed(json_obj))),
         (ct, _) => panic!("Unsupported input content_type: {}", ct),
     };
