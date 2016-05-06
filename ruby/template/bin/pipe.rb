@@ -14,7 +14,7 @@ def pipe_loop
     response = begin
       result = call_algorithm(request)
       content_type = if result.is_a? String then
-        result.encoding == 'ASCII-8BIT' ? 'binary' : 'text'
+        result.encoding == Encoding::ASCII_8BIT ? 'binary' : 'text'
       else
         'json'
       end
