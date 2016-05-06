@@ -113,7 +113,7 @@ fn serialize_output(output: Result<AlgoOutput, algorithmia::error::Error>) -> St
             let config = base64::Config {
                 char_set: base64::CharacterSet::Standard,
                 newline: base64::Newline::LF,
-                pad: false,
+                pad: true,
                 line_length: None,
             };
             let result = bytes.to_base64(config);
