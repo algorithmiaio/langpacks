@@ -42,3 +42,5 @@ rm /opt/anaconda3/bin/curl /opt/anaconda3/bin/curl-config
 export PATH=/opt/anaconda3/bin:$PATH
 
 pip3 install pylab pil-compat cvxopt python-dateutil joblib simplejson
+
+apt-get install -y libx11-dev # You need this if you want to include <X11/Xlib.h>
