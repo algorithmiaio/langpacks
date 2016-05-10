@@ -1,0 +1,13 @@
+language: rust
+
+script:
+  - cargo build --release
+  - tar -czvf langserver.tar.gz -C target/release langserver
+
+deploy:
+ provider: releases
+ api-key: $GITHUB_API_TOKEN
+ file: "langserver.tar.gz"
+ skip_cleanup: true
+ on:
+   tags: true
