@@ -1,7 +1,5 @@
 # LangPacks
 
-This is work-in-progress tracking the [LangPack spec proposal](https://docs.google.com/a/algorithmia.io/document/d/1vd80VKXX5kPIYIHpaXV-oD15aw2CyoM6vXWQLTH9MfI/edit?usp=sharing)
-
 *LangPack*: A language specific package the encompasses steps to setup, build, and run language-specific algorithms.
 
 *LangServer*: A server that serve a LangPack's `bin/pipe` runner in a way that emulates a light-weight version of the Algorithmia API.
