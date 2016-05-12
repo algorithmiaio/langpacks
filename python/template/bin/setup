@@ -35,6 +35,7 @@ rm /opt/anaconda2/bin/curl /opt/anaconda2/bin/curl-config
 export PATH=/opt/anaconda2/bin:$PATH
 /opt/anaconda2/bin/conda install nomkl
 
+/opt/anaconda2/bin/pip install --upgrade pip
 /opt/anaconda2/bin/pip install pylab pil-compat cvxopt python-dateutil joblib simplejson
 
 # Install Anaconda for Python3
@@ -44,6 +45,7 @@ rm /opt/anaconda3/bin/curl /opt/anaconda3/bin/curl-config
 export PATH=/opt/anaconda3/bin:$PATH
 /opt/anaconda3/bin/conda install nomkl
 
+/opt/anaconda3/bin/pip install --upgrade pip
 /opt/anaconda3/bin/pip install pylab pil-compat cvxopt python-dateutil joblib simplejson
 
 apt-get install -y libx11-dev # You need this if you want to include <X11/Xlib.h>
