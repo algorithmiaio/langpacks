@@ -35,7 +35,7 @@ rm /opt/anaconda2/bin/curl /opt/anaconda2/bin/curl-config
 export PATH=/opt/anaconda2/bin:$PATH
 /opt/anaconda2/bin/conda install nomkl
 
-pip  install pylab pil-compat cvxopt python-dateutil joblib simplejson
+/opt/anaconda2/bin/pip install pylab pil-compat cvxopt python-dateutil joblib simplejson
 
 # Install Anaconda for Python3
 wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda3-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
@@ -44,7 +44,7 @@ rm /opt/anaconda3/bin/curl /opt/anaconda3/bin/curl-config
 export PATH=/opt/anaconda3/bin:$PATH
 /opt/anaconda3/bin/conda install nomkl
 
-pip3 install pylab pil-compat cvxopt python-dateutil joblib simplejson
+/opt/anaconda3/bin/pip install pylab pil-compat cvxopt python-dateutil joblib simplejson
 
 apt-get install -y libx11-dev # You need this if you want to include <X11/Xlib.h>
 apt-get install -y libgdal-dev # You need this if you want to include gdal.h
