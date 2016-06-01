@@ -50,7 +50,7 @@ cd /tmp/opencv
 
 git clone https://github.com/Itseez/opencv.git
 cd opencv
-git checkout 3.0.1
+git checkout d3930cdee1a0c7124045883b3062f25b3027fa97
 
 mkdir build
 cd build
