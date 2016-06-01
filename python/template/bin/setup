@@ -23,7 +23,6 @@ apt-get install -u -y unzip wget git-core \
     python-numpy  python-scipy  python-sklearn \
     python3-numpy python3-scipy
 
-
 pip3 install sklearn
 
 pip install pandas
@@ -44,23 +43,6 @@ apt-get install -y build-essential
 apt-get install -y cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
 apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
 
-ORIG_DIR=`pwd`
-mkdir /tmp/opencv
-cd /tmp/opencv
-
-git clone https://github.com/Itseez/opencv.git
-cd opencv
-git checkout d3930cdee1a0c7124045883b3062f25b3027fa97
-
-mkdir build
-cd build
-
-cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
-make
-sudo make install
-
-cd $ORIG_DIR
-
 # Install Anaconda for Python3
 wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda3-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
 bash Anaconda3-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda3
@@ -73,4 +55,8 @@ export PATH=/opt/anaconda3/bin:$PATH
 
 apt-get install -y libx11-dev # You need this if you want to include <X11/Xlib.h>
 apt-get install -y libgdal-dev # You need this if you want to include gdal.h
+
+# Install opencv
+/opt/anaconda2/bin/conda install -c https://conda.anaconda.org/menpo opencv3
+/opt/anaconda3/bin/conda install -c https://conda.anaconda.org/menpo opencv3
 
