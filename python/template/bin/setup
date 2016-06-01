@@ -51,6 +51,8 @@ export PATH=/opt/anaconda3/bin:$PATH
 apt-get install -y libx11-dev # You need this if you want to include <X11/Xlib.h>
 apt-get install -y libgdal-dev # You need this if you want to include gdal.h
 
+apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev
+
 # Install opencv
 /opt/anaconda2/bin/conda install -c https://conda.anaconda.org/menpo opencv3
 /opt/anaconda3/bin/conda install -c https://conda.anaconda.org/menpo opencv3
