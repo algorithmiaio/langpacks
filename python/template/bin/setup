@@ -38,11 +38,6 @@ export PATH=/opt/anaconda2/bin:$PATH
 /opt/anaconda2/bin/pip install --upgrade pip
 /opt/anaconda2/bin/pip install pylab pil-compat cvxopt python-dateutil joblib simplejson
 
-# Steps to get open CV (from: http://docs.opencv.org/2.4/doc/tutorials/introduction/linux_install/linux_install.html#linux-installation)
-apt-get install -y build-essential
-apt-get install -y cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
-apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
-
 # Install Anaconda for Python3
 wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda3-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
 bash Anaconda3-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda3
