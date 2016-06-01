@@ -5,7 +5,6 @@ set -e
 DEBIAN_FRONTEND=noninteractive
 
 apt-get -y update
-apt-get -y upgrade
 
 # Getting python 2.7
 apt-get install -y python2.7 python2.7-dev
@@ -18,10 +17,9 @@ apt-get install -y python3-pip
 pip3 install --upgrade pip
 
 # Install dependencies
-apt-get install -u -y build-essential unzip wget cmake git git-core \
-    pkg-config libblas-dev liblapack-dev libpng-dev libjpeg8-dev libtiff4-dev libfreetype6-dev \
-    libatlas-base-dev gfortran libjasper-dev libpng12-dev libtbb2 libtbb-dev libjpeg-dev libtiff-dev \
-    libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libdc1394-22-dev \
+apt-get install -u -y unzip wget git-core \
+    pkg-config libblas-dev liblapack-dev libpng-dev libjpeg8-dev libfreetype6-dev \
+    libatlas-base-dev gfortran \
     python-numpy  python-scipy  python-sklearn \
     python3-numpy python3-scipy
 
@@ -41,29 +39,26 @@ export PATH=/opt/anaconda2/bin:$PATH
 /opt/anaconda2/bin/pip install --upgrade pip
 /opt/anaconda2/bin/pip install pylab pil-compat cvxopt python-dateutil joblib simplejson
 
+# Steps to get open CV (from: http://docs.opencv.org/2.4/doc/tutorials/introduction/linux_install/linux_install.html#linux-installation)
+apt-get install -y build-essential
+apt-get install -y cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
+
 ORIG_DIR=`pwd`
 mkdir /tmp/opencv
 cd /tmp/opencv
-git clone https://github.com/Itseez/opencv_contrib.git
-cd opencv_contrib
-git checkout 3.0.0
 
-cd /tmp/opencv
 git clone https://github.com/Itseez/opencv.git
 cd opencv
-git checkout 3.0.0
+git checkout 3.0.1
+
 mkdir build
 cd build
-cmake -D CMAKE_BUILD_TYPE=RELEASE \
-    -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D INSTALL_C_EXAMPLES=ON \
-    -D INSTALL_PYTHON_EXAMPLES=ON \
-    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
-    -D BUILD_EXAMPLES=ON ..
-make -j4
 
-make install
-ldconfig
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
+make
+sudo make install
+
 cd $ORIG_DIR
 
 # Install Anaconda for Python3
