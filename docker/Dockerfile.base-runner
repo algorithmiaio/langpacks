@@ -1,9 +1,9 @@
 FROM ubuntu:14.04
 
+# additional auxillary packages for developers are on line 7
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    curl zip software-properties-common && \
-    # additional auxillary packages for developers
+    curl zip software-properties-common \
     imagemagick wkhtmltopdf fontconfig fonts-wqy-microhei libopenblas-dev pandoc && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" algo
