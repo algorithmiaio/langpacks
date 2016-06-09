@@ -1,5 +1,7 @@
 FROM ubuntu:14.04
 
+# THIS FILE IS ALMOST DEPRECATED - we only use this for language specific builders which we only make while testing
+
 # additional auxillary packages for developers are on line 7
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
