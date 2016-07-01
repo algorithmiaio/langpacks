@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+# When installing from CRAN, use this mirror as a default
+echo "options(repos=structure(c(CRAN=\"http://lib.stat.cmu.edu/R/CRAN/\")))" > ~/.Rprofile
+
+# TODO(james): install dependencies here
+
+zip -r algorithm.zip *
