@@ -10,7 +10,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" --uid $ALGO_UID algo
 
-
+COPY r/template/bin/setup /tmp/r/setup
 COPY ruby/template/bin/setup /tmp/ruby/setup
 COPY python/template/bin/setup /tmp/python/setup
 COPY javascript/template/bin/setup /tmp/javascript/setup
