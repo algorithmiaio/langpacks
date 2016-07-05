@@ -7,5 +7,7 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 # When installing from CRAN, use this mirror as a default
 echo "options(repos=structure(c(CRAN=\"http://lib.stat.cmu.edu/R/CRAN/\")))" > ~/.Rprofile
 
+mkdir "$ROOTDIR/dependencies" # If this directory already exists, weird things could happen
 echo "R_LIBS_USER=$ROOTDIR/dependencies" > ~/.Renviron
+
 exec Rscript $ROOTDIR/bin/pipe.r
