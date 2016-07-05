@@ -8,6 +8,8 @@ source(sprintf("src/%s.r", conf$algoname))
 print("PIPE_INIT_COMPLETE")
 flush.console()
 
+out <- fifo("/tmp/algoout", open="w", blocking=TRUE)
+
 while (TRUE) {
     line <- readLines(file("stdin"), n=1)
     if (is.null(line) | is.na(line) | nchar(line) == 0) {
@@ -21,5 +23,5 @@ while (TRUE) {
 
     # Flush stdout before writing back response
     flush.console()
-    writeLines(toJSON(response), con="/tmp/algoout")
+    writeLines(toJSON(response), con=out)
 }
