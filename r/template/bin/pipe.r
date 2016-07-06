@@ -22,8 +22,5 @@ while (TRUE) {
     # Flush stdout before writing back response
     flush.console()
 
-    out <- fifo("/tmp/algoout", open="w", blocking=TRUE)
-    writeLines(toJSON(response), con=out)
-    flush(out)
-    close(out)
+    writeLines(sprintf('{ "result": %s, "metadata": { "content_type": "json" } }', toJSON(response)), con=fifo("/tmp/algoout", open="w", blocking=TRUE))
 }
