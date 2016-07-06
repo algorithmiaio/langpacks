@@ -8,6 +8,13 @@ source(sprintf("src/%s.r", conf$algoname))
 print("PIPE_INIT_COMPLETE")
 flush.console()
 
+getInputData <- function(input) {
+    if (input$content_type == "binary") {
+        return base64_dec(input$data)
+    }
+    input$data
+}
+
 while (TRUE) {
     line <- readLines(file("stdin"), n=1)
     if (is.null(line) | is.na(line) | nchar(line) == 0) {
@@ -15,9 +22,11 @@ while (TRUE) {
         break
     }
 
+
     # TODO(james): do more error checking
     input <- rjson::fromJSON(line)
-    output <- algorithm(input)
+    inputData <- getInputData(input)
+    output <- algorithm(inputData)
 
     # Flush stdout before writing back response
     flush.console()
