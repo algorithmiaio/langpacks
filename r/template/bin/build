@@ -5,6 +5,10 @@ set -e
 # When installing from CRAN, use this mirror as a default
 echo "options(repos=structure(c(CRAN=\"http://lib.stat.cmu.edu/R/CRAN/\")))" > ~/.Rprofile
 
-# TODO(james): install dependencies here
+mkdir `pwd`/dependencies # If this directory already exists, weird things could happen
+echo "R_LIBS_USER=`pwd`/dependencies" > ~/.Renviron
+
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+python $ROOTDIR/bin/rip.py $ROOTDIR/packages.txt
 
 zip -r algorithm.zip *
