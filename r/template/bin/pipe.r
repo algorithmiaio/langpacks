@@ -1,8 +1,5 @@
-# TODO(james): push this to setup
-install.packages("base64enc")
 library("base64enc")
-install.packages("rjson")
-library(rjson)
+library("rjson")
 
 conf <- rjson::fromJSON(file="algorithmia.conf")
 source(sprintf("src/%s.r", conf$algoname))
