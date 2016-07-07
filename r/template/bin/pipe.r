@@ -15,12 +15,22 @@ getInputData <- function(input) {
     }
 }
 
-getResponse <- function(output) {
+getResponseObject <- function(output) {
     if (typeof(output) == "raw") {
         list(result=base64enc::base64encode(output), metadata=list(content_type="binary"))
     } else {
         list(result=output, metadata=list(content_type="json"))
     }
+}
+
+getResponse <- function(output) {
+    tryCatch({
+        rjson::toJSON(getResponseObject(output))
+    },
+    error = function(e) {
+        print(e)
+        rjson::toJSON(list(error=list(message=toString(e), stacktrace="pipe.r:getResponse", error_type="AlgorithmError")))
+    })
 }
 
 while (TRUE) {
@@ -39,7 +49,6 @@ while (TRUE) {
     # Flush stdout before writing back response
     flush.console()
 
-    # TODO(james): more error checking around json serialization
     response = getResponse(output)
-    writeLines(rjson::toJSON(response), con=fifo("/tmp/algoout", open="w", blocking=TRUE))
+    writeLines(response, con=fifo("/tmp/algoout", open="w", blocking=TRUE))
 }
