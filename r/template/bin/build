@@ -9,6 +9,6 @@ mkdir `pwd`/dependencies # If this directory already exists, weird things could 
 echo "R_LIBS_USER=`pwd`/dependencies" > ~/.Renviron
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-python $ROOTDIR/bin/rip.py $ROOTDIR/packages.txt
+python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt
 
 zip -r algorithm.zip *
