@@ -5,10 +5,16 @@ set -e
 # When installing from CRAN, use this mirror as a default
 echo "options(repos=structure(c(CRAN=\"http://lib.stat.cmu.edu/R/CRAN/\")))" > ~/.Rprofile
 
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
+# First install the latest CRAN packages system wide so it can populate the shared cache
+python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --cran-latest
+
+# Make the directory that will store all the packages necessary to run the algo
 mkdir `pwd`/dependencies # If this directory already exists, weird things could happen
 echo "R_LIBS_USER=`pwd`/dependencies" > ~/.Renviron
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+# Re-run the package installation so everything makes it into the dependencies directory
 python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt
 
 zip -r algorithm.zip *
