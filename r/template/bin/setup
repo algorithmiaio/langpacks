@@ -22,3 +22,6 @@ p_install("base64enc")
 EOF
 
 rm ~/.Rprofile
+
+# We want to allow the algo user to install packages system-wide
+chown algo -R /usr/local/lib/R/site-library
