@@ -8,7 +8,10 @@ echo "options(repos=structure(c(CRAN=\"http://lib.stat.cmu.edu/R/CRAN/\")))" > ~
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 # First install the latest CRAN packages system wide so it can populate the shared cache
-python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --cran-latest
+python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --cran-latest --output-dependencies /tmp/cran-dependencies-1
+
+# Copy the packages from the system wide location to our local dependencies directory
+python $ROOTDIR/bin/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-1 --destination `pwd`/dependencies
 
 # Make the directory that will store all the packages necessary to run the algo
 mkdir `pwd`/dependencies # If this directory already exists, weird things could happen

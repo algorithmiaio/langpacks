@@ -9,6 +9,7 @@ import sys
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', required=True, help='the file with the list of packages')
+    parser.add_argument('--output-dependencies', help='file with a json blob storing the package dependencies')
     parser.add_argument('--cran-latest', action='store_true', help='only install latest CRAN packages')
     args = parser.parse_args()
 
@@ -18,6 +19,7 @@ def main():
         sys.exit(1)
 
     rscript = ['library("pacman")']
+    normalPackages = []
     with open(args.file) as f:
         for line in f.readlines():
             line = line.strip()
@@ -29,6 +31,7 @@ def main():
             tokens = line.split()
             if len(tokens) == 1: # installs the latest package from CRAN
                 rscript.append('install.packages("{}")'.format(line))
+                normalPackages.append(line)
             elif tokens[0] == '-t' and len(tokens) == 2: # installs a specific archive from CRAN (most likely)
                 if not args.cran_latest:
                     rscript.append('install.packages("{}", repos=NULL, type="source")'.format(tokens[1]))
@@ -46,6 +49,10 @@ def main():
     commandArgs = ['Rscript', '-e', '; '.join(rscript)]
     print 'Running: {}'.format(' '.join(commandArgs))
     subprocess.check_call(commandArgs)
+
+    if len(normalPackages) > 0 and args.output_dependencies is not None:
+        packagesStr = ', '.join('"{}"'.format(p) for p in normalPackages)
+        subprocess.check_call(['Rscript', '-e', 'library(tools); library(rjson); writeLines(toJSON(package_dependencies(c({}), recursive=TRUE)), con="{}")'.format(packagesStr, args.output_dependencies)])
 
 
 if __name__ == '__main__':
