@@ -31,9 +31,10 @@ def main():
                 continue
 
             tokens = line.split()
-            if len(tokens) == 1 and not args.skip_cran_latest: # installs the latest package from CRAN
-                rscript.append('install.packages("{}")'.format(line))
-                normalPackages.append(line)
+            if len(tokens) == 1: # installs the latest package from CRAN
+                if not args.skip_cran_latest:
+                    rscript.append('install.packages("{}")'.format(line))
+                    normalPackages.append(line)
             elif tokens[0] == '-t' and len(tokens) == 2: # installs a specific archive from CRAN (most likely)
                 if not args.cran_latest:
                     rscript.append('install.packages("{}", repos=NULL, type="source")'.format(tokens[1]))
