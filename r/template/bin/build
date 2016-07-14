@@ -17,7 +17,10 @@ python $ROOTDIR/bin/copy-cran-packages.py --lib /usr/local/lib/R/site-library --
 mkdir `pwd`/dependencies # If this directory already exists, weird things could happen
 echo "R_LIBS_USER=`pwd`/dependencies" > ~/.Renviron
 
-# Re-run the package installation so everything makes it into the dependencies directory
-python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt
+# Re-run the package installation but only take non-latest CRAN packages
+python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --skip-cran-latest --output-dependencies /tmp/cran-dependencies-2 --library `pwd`/dependencies
+
+# Copy any dependencies from the system wide location to our local dependencies directory
+python $ROOTDIR/bin/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-2 --destination `pwd`/dependencies
 
 zip -r algorithm.zip *

@@ -11,6 +11,8 @@ def main():
     parser.add_argument('--file', required=True, help='the file with the list of packages')
     parser.add_argument('--output-dependencies', help='file with a json blob storing the package dependencies')
     parser.add_argument('--cran-latest', action='store_true', help='only install latest CRAN packages')
+    parser.add_argument('--skip-cran-latest', action='store_true', help='only install packages that are not latest CRAN packages')
+    parser.add_argument('--library', help="used with --output-dependencies to determine which library to look at")
     args = parser.parse_args()
 
 
@@ -29,7 +31,7 @@ def main():
                 continue
 
             tokens = line.split()
-            if len(tokens) == 1: # installs the latest package from CRAN
+            if len(tokens) == 1 and not args.skip_cran_latest: # installs the latest package from CRAN
                 rscript.append('install.packages("{}")'.format(line))
                 normalPackages.append(line)
             elif tokens[0] == '-t' and len(tokens) == 2: # installs a specific archive from CRAN (most likely)
@@ -50,9 +52,13 @@ def main():
     print 'Running: {}'.format(' '.join(commandArgs))
     subprocess.check_call(commandArgs)
 
-    if len(normalPackages) > 0 and args.output_dependencies is not None:
-        packagesStr = ', '.join('"{}"'.format(p) for p in normalPackages)
-        subprocess.check_call(['Rscript', '-e', 'library(tools); library(rjson); writeLines(toJSON(package_dependencies(c({}), recursive=TRUE)), con="{}")'.format(packagesStr, args.output_dependencies)])
+    if args.output_dependencies is not None:
+        if args.library is not None:
+            subprocess.check_call(['Rscript', '-e', 'library(tools); library(rjson); packages <- rownames(installed.packages("{}")); if (!is.null(packages)){ writeLines(toJSON(package_dependencies(packages, recursive=TRUE)), con="{}") }'.format(args.library, args.output_dependencies)])
+        elif len(normalPackages) > 0:
+            packagesStr = ', '.join('"{}"'.format(p) for p in normalPackages)
+            subprocess.check_call(['Rscript', '-e', 'library(tools); library(rjson); writeLines(toJSON(package_dependencies(c({}), recursive=TRUE)), con="{}")'.format(packagesStr, args.output_dependencies)])
+
 
 
 if __name__ == '__main__':
