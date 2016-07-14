@@ -33,8 +33,11 @@ def main():
     for package in depObject:
         copy(package, args.lib, args.destination)
 
-        for dep in depObject[package]:
-            copy(dep, args.lib, args.destination)
+        if isinstance(depObject[package], list):
+            for dep in depObject[package]:
+                copy(dep, args.lib, args.destination)
+        elif depObject[package] is not None:
+            copy(depObject[package], args.lib, args.destination)
 
 if __name__ == '__main__':
     main()

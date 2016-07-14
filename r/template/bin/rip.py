@@ -54,7 +54,7 @@ def main():
 
     if args.output_dependencies is not None:
         if args.library is not None:
-            subprocess.check_call(['Rscript', '-e', 'library(tools); library(rjson); packages <- rownames(installed.packages("{}")); if (!is.null(packages)){ writeLines(toJSON(package_dependencies(packages, recursive=TRUE)), con="{}") }'.format(args.library, args.output_dependencies)])
+            subprocess.check_call(['Rscript', '-e', 'library(tools); library(rjson); packages <- rownames(installed.packages("{}")); if (!is.null(packages)){{ writeLines(toJSON(package_dependencies(packages, recursive=TRUE)), con="{}") }}'.format(args.library, args.output_dependencies)])
         elif len(normalPackages) > 0:
             packagesStr = ', '.join('"{}"'.format(p) for p in normalPackages)
             subprocess.check_call(['Rscript', '-e', 'library(tools); library(rjson); writeLines(toJSON(package_dependencies(c({}), recursive=TRUE)), con="{}")'.format(packagesStr, args.output_dependencies)])
