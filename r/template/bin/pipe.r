@@ -18,6 +18,8 @@ getInputData <- function(input) {
 getResponseObject <- function(output) {
     if (typeof(output) == "raw") {
         list(result=base64enc::base64encode(output), metadata=list(content_type="binary"))
+    } else if (is.character(output) & length(output) == 1) {
+        list(result=output, metadata=list(content_type="text"))
     } else {
         list(result=output, metadata=list(content_type="json"))
     }
