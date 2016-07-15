@@ -22,3 +22,12 @@ p_install("base64enc")
 EOF
 
 rm ~/.Rprofile
+
+# We want pacman, rjson, and base64enc to be in the docker image. The others can be bind mounted
+# in the normal location which we now make sure is empty
+echo "R_LIBS_SITE='/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library:/usr/local/lib/R/site-library-langserver'" >> /etc/R/Renviron
+mv /usr/local/lib/R/site-library /usr/local/lib/R/site-library-langserver
+
+# We want to allow the algo user to install packages system-wide
+mkdir /usr/local/lib/R/site-library
+chown algo -R /usr/local/lib/R/site-library
