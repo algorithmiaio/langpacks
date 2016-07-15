@@ -6,6 +6,9 @@ import os
 import subprocess
 import sys
 
+def installLatestCranIfNecessary(package):
+    return 'if (!(("{}"  %in% installed.packages()[, c("Package")]) && (available.packages()["{}",2] == packageVersion("{}")))) {{ install.packages("{}") }}'.format(package, package, package, package)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', required=True, help='the file with the list of packages')
@@ -33,7 +36,7 @@ def main():
             tokens = line.split()
             if len(tokens) == 1: # installs the latest package from CRAN
                 if not args.skip_cran_latest:
-                    rscript.append('install.packages("{}")'.format(line))
+                    rscript.append(installLatestCranIfNecessary(line))
                     normalPackages.append(line)
             elif tokens[0] == '-t' and len(tokens) == 2: # installs a specific archive from CRAN (most likely)
                 if not args.cran_latest:
