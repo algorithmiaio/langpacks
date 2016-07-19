@@ -1,4 +1,3 @@
-use std::error::Error as StdError;
 use {std, hyper, serde_json};
 use serde::{self, Serialize, Serializer};
 

@@ -7,7 +7,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate wait_timeout;
 
-use hyper::server::{Handler, Server};
+use hyper::server::Server;
 use std::env;
 use std::time::{Duration, Instant};
 

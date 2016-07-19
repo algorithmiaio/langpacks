@@ -7,7 +7,7 @@ use hyper::{Get, Post, Delete};
 use serde_json::{de, ser};
 use serde_json::Value;
 use serde_json::builder::ObjectBuilder;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{process, thread};
