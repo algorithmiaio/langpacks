@@ -9,6 +9,7 @@ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
 apt-get -y update
 apt-get install -y r-base
 apt-get install -y r-base-dev
+apt-get install -y libcurl4-gnutls-dev # This is needed for RCurl
 apt-get -y upgrade
 
 echo "options(repos=structure(c(CRAN=\"http://lib.stat.cmu.edu/R/CRAN/\")))" > ~/.Rprofile
