@@ -75,6 +75,8 @@ impl LangServer {
                     }
                     if !is_async {
                         process::exit(code);
+                    } else {
+                        break;
                     }
                 }
 
