@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
-ruby "2.2.5"
+ruby "~> 2.2.0"
 
 gem 'algorithmia', '~>0.9.4'
