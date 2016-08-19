@@ -30,8 +30,26 @@ getResponse <- function(output) {
         rjson::toJSON(getResponseObject(output))
     },
     error = function(e) {
-        print(e)
+        print(paste0("Error in getResponse: ", e))
         rjson::toJSON(list(error=list(message=toString(e), stacktrace="pipe.r:getResponse", error_type="AlgorithmError")))
+    },
+    warning = function(w) {
+        print(paste0("Warning in getResponse: ", w))
+        rjson::toJSON(getResponseObject(output))
+    })
+}
+
+parseLine <- function(line) {
+    tryCatch({
+        rjson::fromJSON(line)
+    },
+    error = function(e) {
+        print(paste0("Error in getInputData: ", e))
+        NA
+    },
+    warning = function(w) {
+        print(paste0("Warning in getInputData: ", w))
+        rjson::fromJSON(line)
     })
 }
 
@@ -43,10 +61,19 @@ while (TRUE) {
     }
 
 
-    # TODO(james): do more error checking
-    input <- rjson::fromJSON(line)
-    inputData <- getInputData(input)
-    output <- algorithm(inputData)
+    input <- parseLine(line)
+    output <- if (is.na(input)) {
+        list(error=list(message="Could not parse json input", stacktrace="pipe.r:parseLine", error_type="AlgorithmError"))
+    } else {
+        inputData <- getInputData(input)
+
+        tryCatch({
+            algorithm(inputData)
+        },
+        error = function(e) {
+            list(error=list(message=toString(e), stacktrace="algorithm", error_type="AlgorithmError"))
+        })
+    }
 
     # Flush stdout before writing back response
     flush.console()
