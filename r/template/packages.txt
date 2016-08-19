@@ -13,3 +13,4 @@
 #
 # If any of this is unclear and you want to see just how we install R packages at compile time,
 # take a look at: https://github.com/algorithmiaio/langpacks/blob/master/r/template/bin/rip.py
+-g algorithmiaio/algorithmia-r
