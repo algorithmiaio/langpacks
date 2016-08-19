@@ -53,6 +53,8 @@ parseLine <- function(line) {
     })
 }
 
+outputFile <- fifo("/tmp/algoout", open="w", blocking=TRUE)
+
 while (TRUE) {
     line <- readLines(file("stdin"), n=1)
     if (is.null(line) | is.na(line) | nchar(line) == 0) {
@@ -79,5 +81,5 @@ while (TRUE) {
     flush.console()
 
     response = getResponse(output)
-    writeLines(response, con=fifo("/tmp/algoout", open="w", blocking=TRUE))
+    writeLines(response, con=outputFile)
 }
