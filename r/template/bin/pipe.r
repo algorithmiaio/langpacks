@@ -39,43 +39,22 @@ getResponse <- function(output) {
     })
 }
 
-parseLine <- function(line) {
-    tryCatch({
-        rjson::fromJSON(line)
-    },
-    error = function(e) {
-        print(paste0("Error in getInputData: ", e))
-        NA
-    },
-    warning = function(w) {
-        print(paste0("Warning in getInputData: ", w))
-        rjson::fromJSON(line)
-    })
-}
 
 outputFile <- fifo("/tmp/algoout", open="w", blocking=TRUE)
+inputFile <- file("stdin")
+open(inputFile)
 
-while (TRUE) {
-    line <- readLines(file("stdin"), n=1)
-    if (is.null(line) | is.na(line) | nchar(line) == 0) {
-        # We never seem to get here! TODO(james): fix this
-        break
-    }
-
-
-    input <- parseLine(line)
-    output <- if (is.na(input)) {
-        list(error=list(message="Could not parse json input", stacktrace="pipe.r:parseLine", error_type="AlgorithmError"))
-    } else {
+while (length(line <- readLines(inputFile, n=1)) > 0) {
+    stage <- "parsing"
+    output <- tryCatch({
+        input <- rjson::fromJSON(line)
         inputData <- getInputData(input)
-
-        tryCatch({
-            algorithm(inputData)
-        },
-        error = function(e) {
-            list(error=list(message=toString(e), stacktrace="algorithm", error_type="AlgorithmError"))
-        })
-    }
+        stage <- "algorithm"
+        algorithm(inputData)
+    },
+    error = function(e) {
+        list(error=list(message=toString(e), stacktrace=stage, error_type="AlgorithmError"))
+    })
 
     # Flush stdout before writing back response
     flush.console()
