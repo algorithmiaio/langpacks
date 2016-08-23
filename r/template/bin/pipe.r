@@ -40,7 +40,7 @@ getResponse <- function(output) {
 }
 
 
-outputFile <- fifo("/tmp/algoout", open="w", blocking=TRUE)
+outputFile <- fifo("/tmp/algoout", blocking=TRUE)
 inputFile <- file("stdin")
 open(inputFile)
 
