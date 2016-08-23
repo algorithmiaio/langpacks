@@ -25,17 +25,13 @@ getResponseObject <- function(output) {
     }
 }
 
-getResponse <- function(output) {
+getResponseAsJsonString <- function(output) {
     tryCatch({
-        rjson::toJSON(getResponseObject(output))
+        rjson::toJSON(output)
     },
     error = function(e) {
         print(paste0("Error in getResponse: ", e))
-        rjson::toJSON(list(error=list(message=toString(e), stacktrace="pipe.r:getResponse", error_type="AlgorithmError")))
-    },
-    warning = function(w) {
-        print(paste0("Warning in getResponse: ", w))
-        rjson::toJSON(getResponseObject(output))
+        rjson::toJSON(list(error=list(message=toString(e), stacktrace="pipe.r:getResponseAsJsonString", error_type="AlgorithmError")))
     })
 }
 
@@ -50,7 +46,7 @@ while (length(line <- readLines(inputFile, n=1)) > 0) {
         input <- rjson::fromJSON(line)
         inputData <- getInputData(input)
         stage <- "algorithm"
-        algorithm(inputData)
+        getResponseObject(algorithm(inputData))
     },
     error = function(e) {
         list(error=list(message=toString(e), stacktrace=stage, error_type="AlgorithmError"))
@@ -59,6 +55,6 @@ while (length(line <- readLines(inputFile, n=1)) > 0) {
     # Flush stdout before writing back response
     flush.console()
 
-    response = getResponse(output)
+    response = getResponseAsJsonString(output)
     writeLines(response, con=outputFile)
 }
