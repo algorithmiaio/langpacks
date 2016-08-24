@@ -34,6 +34,7 @@ pub enum LangServerMode {
 pub struct LangServer {
     runner: Arc<Mutex<LangRunner>>,
     mode: LangServerMode,
+    delete_signalled: Arc<Mutex<bool>>,
 }
 
 impl LangServer {
@@ -43,6 +44,7 @@ impl LangServer {
         let ls = LangServer {
             runner: Arc::new(Mutex::new(runner)),
             mode: mode,
+            delete_signalled: Arc::new(Mutex::new(false)),
         };
 
         ls.monitor_runner(notify_exited);
@@ -57,6 +59,7 @@ impl LangServer {
             LangServerMode::Async(..) => true,
         };
         let watched_runner = self.runner.clone();
+        let watched_delete_signal = self.delete_signalled.clone();
         thread::spawn(move || {
             loop {
                 let status = {
@@ -64,20 +67,26 @@ impl LangServer {
                     r.check_exited()
                 };
 
-                if let Some(code) = status {
-                    println!("LangServer monitor thread detected exit: {}", code);
-                    if let Some(ref notifier) = notify_exited {
-                        let r = watched_runner.lock().expect("Failed to lock runner");
-                        let (stdout, stderr) = r.consume_stdio();
-                        let err = Error::UnexpectedExit(code, stdout, stderr);
-                        let message = StatusMessage::failure(err, Duration::new(0,0));
-                        let _ = notifier.notify(message, None);
+                let delete_signalled = watched_delete_signal.lock().unwrap();
+                if *delete_signalled {
+                    if let Some(code) = status {
+                        println!("LangServer monitor thread detected exit: {}", code);
+                        if let Some(ref notifier) = notify_exited {
+                            let r = watched_runner.lock().expect("Failed to lock runner");
+                            let (stdout, stderr) = r.consume_stdio();
+                            let err = Error::UnexpectedExit(code, stdout, stderr);
+                            let message = StatusMessage::failure(err, Duration::new(0,0));
+                            let _ = notifier.notify(message, None);
+                        }
+                        if !is_async {
+                            process::exit(code);
+                        } else {
+                            break;
+                        }
                     }
-                    if !is_async {
-                        process::exit(code);
-                    } else {
-                        break;
-                    }
+                } else {
+                    println!("Not sending status update on delete due to explicit delete");
+                    break;
                 }
 
                 thread::sleep(Duration::from_millis(500));
@@ -257,6 +266,9 @@ impl Handler for LangServer {
             Delete => {
                 let code = self.terminate();
                 terminate = true;
+                let delete_signalled = self.delete_signalled.clone();
+                let mut signalled = delete_signalled.lock().unwrap();
+                *signalled = true;
                 (StatusCode::Ok, (jsonres!("Runner exited: {}", code)))
             }
 
