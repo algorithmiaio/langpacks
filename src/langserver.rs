@@ -68,7 +68,7 @@ impl LangServer {
                 };
 
                 let delete_signalled = watched_delete_signal.lock().unwrap();
-                if *delete_signalled {
+                if !*delete_signalled {
                     if let Some(code) = status {
                         println!("LangServer monitor thread detected exit: {}", code);
                         if let Some(ref notifier) = notify_exited {
@@ -264,11 +264,11 @@ impl Handler for LangServer {
 
             // Route for terminating the managed algorithm
             Delete => {
-                let code = self.terminate();
-                terminate = true;
                 let delete_signalled = self.delete_signalled.clone();
                 let mut signalled = delete_signalled.lock().unwrap();
                 *signalled = true;
+                let code = self.terminate();
+                terminate = true;
                 (StatusCode::Ok, (jsonres!("Runner exited: {}", code)))
             }
 
