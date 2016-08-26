@@ -241,8 +241,8 @@ impl LangRunnerProcess {
                 Ok(_) => {
                     let line_str = String::from_utf8_lossy(&line);
                     print!("{}", line_str);
-                    collected_stdout.push_str(&line_str);
                     if line_str.contains("PIPE_INIT_COMPLETE") { break; }
+                    else { collected_stdout.push_str(&line_str); }
                 }
                 Err(err) => {
                     printerrln!("Failed to read child stdout: {}", err);
@@ -251,7 +251,7 @@ impl LangRunnerProcess {
             }
         }
 
-        let child_stdout = Arc::new(Mutex::new(Vec::new()));
+        let child_stdout = Arc::new(Mutex::new(vec![collected_stdout]));
         // Spawn a thread to collect algorithm stdout
         let arc_stdout = child_stdout.clone();
         thread::spawn(move || {
