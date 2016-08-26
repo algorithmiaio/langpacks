@@ -241,8 +241,8 @@ impl LangRunnerProcess {
                 Ok(_) => {
                     let line_str = String::from_utf8_lossy(&line);
                     print!("{}", line_str);
+                    collected_stdout.push_str(&line_str.replace("PIPE_INIT_COMPLETE\n",""));
                     if line_str.contains("PIPE_INIT_COMPLETE") { break; }
-                    else { collected_stdout.push_str(&line_str); }
                 }
                 Err(err) => {
                     printerrln!("Failed to read child stdout: {}", err);
