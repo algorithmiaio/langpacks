@@ -6,11 +6,14 @@
 #
 # We support installing package in one of three ways:
 #    1) Getting the latest version from CRAN. To do this put the package name on it's own line
+#         Example to get algorithmia from CRAN: algorithmia
 #    2) Getting an older version from CRAN. The line should look like: `-t <CRAN archive url>`
+#         Example to get a previous version of algorithmia: -t https://cran.r-project.org/src/contrib/algorithmia_0.0.2.tar.gz
 #    3) From GitHub. The line should look like this: `-g username/repo[/subdir][@ref|#pull]`
+#         Example to get the most recent version from our github: -g algorithmiaio/algorithmia-r
 #
 # Note: we only support single full-line comments starting with '#'
 #
 # If any of this is unclear and you want to see just how we install R packages at compile time,
 # take a look at: https://github.com/algorithmiaio/langpacks/blob/master/r/template/bin/rip.py
--g algorithmiaio/algorithmia-r
+algorithmia
