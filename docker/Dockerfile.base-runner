@@ -18,7 +18,6 @@ RUN mkdir -p /opt/algorithm && \
 WORKDIR /opt/algorithm
 EXPOSE 9999
 
-RUN mkfifo /tmp/algoout && chown algo /tmp/algoout
 ADD bin/init-langserver /bin/
 ADD target/release/langserver /bin/
 CMD ["/bin/init-langserver"]

@@ -6,6 +6,7 @@ extern crate hyper;
 extern crate serde;
 extern crate serde_json;
 extern crate wait_timeout;
+extern crate libc;
 
 use hyper::server::Server;
 use std::env;
@@ -33,9 +34,19 @@ use error::Error;
 use langserver::{LangServer, LangServerMode};
 use notifier::Notifier;
 use message::StatusMessage;
+use std::ffi::CString;
 
 fn main() {
     let start = Instant::now();
+
+    let mode = 0o644;
+    unsafe {
+        let location = CString::new("/tmp/algoout").unwrap().as_ptr();
+        match libc::mkfifo(location, mode) {
+            0 => (),
+            _ => panic!("unable to create algoout fifo"),
+        }
+    }
 
     let listener_res = get_mode()
         // Start LangPack runner and server
