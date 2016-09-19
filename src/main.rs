@@ -35,16 +35,19 @@ use langserver::{LangServer, LangServerMode};
 use notifier::Notifier;
 use message::StatusMessage;
 use std::ffi::CString;
+use std::path::Path;
 
 fn main() {
     let start = Instant::now();
 
-    let mode = 0o644;
-    unsafe {
-        let location = CString::new("/tmp/algoout").unwrap().as_ptr();
-        match libc::mkfifo(location, mode) {
-            0 => (),
-            _ => panic!("unable to create algoout fifo"),
+    if !Path::new("/tmp/algoout").exists() {
+        let mode = 0o644;
+        unsafe {
+            let location = CString::new("/tmp/algoout").unwrap().as_ptr();
+            match libc::mkfifo(location, mode) {
+                0 => (),
+                _ => panic!("unable to create algoout fifo"),
+            }
         }
     }
 
