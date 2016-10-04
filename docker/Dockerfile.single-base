@@ -6,14 +6,15 @@ ARG ALGO_UID=1000
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     curl zip software-properties-common build-essential \
-    imagemagick libmagickwand-dev fontconfig fonts-wqy-microhei libopenblas-dev texlive && \
+#    imagemagick libmagickwand-dev fontconfig fonts-wqy-microhei libopenblas-dev texlive && \
+    imagemagick libmagickwand-dev fontconfig fonts-wqy-microhei libopenblas-dev pandoc texlive && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" --uid $ALGO_UID algo
 
 # the pandoc ubuntu repo version is too old to use docx.
-RUN cd /opt && \
-curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/pandoc-1.17.2-1-amd64.deb && \
-dpkg -i pandoc-1.17.2-1-amd64.deb
+#RUN cd /opt && \
+#curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/pandoc-1.17.2-1-amd64.deb && \
+#dpkg -i pandoc-1.17.2-1-amd64.deb
 
 ENV LANG C.UTF-8
 
