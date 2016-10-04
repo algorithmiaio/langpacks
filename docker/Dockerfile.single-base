@@ -11,7 +11,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     adduser --disabled-password --gecos "" --uid $ALGO_UID algo
 
 # the pandoc ubuntu repo version is too old to use docx.
-RUN cd /tmp && \
+RUN cd /opt && \
 curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/pandoc-1.17.2-1-amd64.deb && \
 dpkg -i pandoc-1.17.2-1-amd64.deb
 
