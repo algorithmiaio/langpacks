@@ -74,7 +74,7 @@ docker run -it -v `pwd`/bin:/algo/bin algorithmia/langpack-base /algo/bin/setup 
 
 1. Fetch and cache algorithm dependencies
    - Use the language's most popular package manager
-   - The backend may need to be aware of how dependency cachine works to optimize build times
+   - The backend may need to be aware of how dependency caching works to optimize build times
 2. Compile any code, if needed
 3. Zip up any files needed to run into `algorithmia.zip` in the working directory
    - This zip must include `bin/pipe` at that location within the zip
