@@ -7,6 +7,9 @@ description = "LangServer runs LangPacks"
 [[bin]]
 name = "langserver"
 
+[lib]
+name = "langserver"
+
 [dependencies]
 base64 = "0.1.0"
 hyper = "0.7"

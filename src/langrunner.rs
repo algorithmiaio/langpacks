@@ -4,13 +4,17 @@ use serde_json::de::StreamDeserializer;
 use serde_json::Value;
 use std::env;
 use std::io::{self, Read, Write, BufRead, BufReader};
+use std::ffi::CString;
 use std::fs::File;
+use std::path::Path;
 use std::{process, thread};
 use std::process::*;
 use std::sync::{Arc, Mutex, RwLock};
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::time::{Duration, Instant};
+use libc;
 use wait_timeout::ChildExt;
+
 
 use super::error::Error;
 use super::message::{ErrorMessage, RunnerOutput};
@@ -76,6 +80,17 @@ fn get_and_clear_lines(vec: Arc<Mutex<Vec<String>>>) -> Option<String> {
 impl LangRunner {
     // Start the runner process, initialize channels, and begin monitoring the runner process for exit
     pub fn start() -> Result<LangRunner, Error> {
+        if !Path::new(ALGOOUT).exists() {
+            let mode = 0o644;
+            let location = CString::new(ALGOOUT).unwrap();
+            unsafe {
+                match libc::mkfifo(location.as_ptr(), mode) {
+                    0 => (),
+                    _ => panic!("Unable to create algoout fifo: {}", io::Error::last_os_error()),
+                }
+            }
+        }
+
         let runner = try!(LangRunnerProcess::start());
         let (tx, rx) = channel();
         let lr = LangRunner {

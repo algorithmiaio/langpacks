@@ -1,55 +1,17 @@
-#[macro_use]
-extern crate quick_error;
-
-extern crate base64;
+extern crate langserver;
 extern crate hyper;
-extern crate serde;
-extern crate serde_json;
-extern crate wait_timeout;
-extern crate libc;
 
 use hyper::server::Server;
 use std::env;
 use std::time::{Duration, Instant};
 
-macro_rules! s { ($x:expr) => ($x.to_string()); }
-macro_rules! printerrln {
-    ($($arg:tt)*) => ({
-        use std::io::prelude::*;
-        if let Err(e) = write!(&mut ::std::io::stderr(), "{}\n", format_args!($($arg)*)) {
-            panic!("Failed to write to stderr.\
-                \nOriginal error output: {}\
-                \nSecondary error writing to stderr: {}", format!($($arg)*), e);
-        }
-    })
-}
-
-mod langserver;
-pub mod error;
-pub mod langrunner;
-pub mod notifier;
-pub mod message;
-
-use error::Error;
+use langserver::error::Error;
+use langserver::message::StatusMessage;
+use langserver::notifier::Notifier;
 use langserver::{LangServer, LangServerMode};
-use notifier::Notifier;
-use message::StatusMessage;
-use std::ffi::CString;
-use std::path::Path;
 
 fn main() {
     let start = Instant::now();
-
-    if !Path::new("/tmp/algoout").exists() {
-        let mode = 0o644;
-        unsafe {
-            let location = CString::new("/tmp/algoout").unwrap().as_ptr();
-            match libc::mkfifo(location, mode) {
-                0 => (),
-                _ => panic!("unable to create algoout fifo"),
-            }
-        }
-    }
 
     let listener_res = get_mode()
         // Start LangPack runner and server
