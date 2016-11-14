@@ -12,9 +12,16 @@ name = "langserver"
 
 [dependencies]
 base64 = "0.1.0"
-hyper = "0.7"
 quick-error = "1.0.0"
 serde = "0.7"
 serde_json = "0.7"
 wait-timeout = "0.1"
 libc = "0.2"
+
+[dependencies.hyper]
+version = "0.9"
+default-features = false
+
+[features]
+default = ["hyper-ssl"]
+hyper-ssl = ["hyper/ssl"]
