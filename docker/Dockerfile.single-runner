@@ -15,6 +15,6 @@ EXPOSE 9999
 
 ADD bin/init-langserver /bin/
 ADD target/release/langserver /bin/
-CMD ["/bin/init-langserver"]
+CMD "/bin/init-langserver"
 
 USER algo
