@@ -1,3 +1,4 @@
+
 # LangPacks
 
 *LangPack*: A language-specific package the encompasses steps to setup, build, and run language-specific algorithms.
@@ -95,6 +96,7 @@ TODO: explain creating a docker single-language image that can bind mount the al
 
 **Requirements:**
 
+- Write `"PIPE_INIT_COMPLETE\n"` to STDOUT when the algorithm is successfully loaded
 - Read and decode a single line of compact JSON on STDIN. New lines will be the separator between separate inputs.
 - Convert STDIN into the appropriate argument(s) for invoking the algorithm
   - `bin/pipe` will be run from the root of the extracted `algorithm.zip` directory.
