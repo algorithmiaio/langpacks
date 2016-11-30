@@ -23,6 +23,9 @@ apt-get install -u -y unzip wget git-core \
     python-numpy  python-scipy  python-sklearn \
     python3-numpy python3-scipy
 
+pip install pytest
+pip3 install pytest
+
 pip3 install sklearn
 
 pip install pandas
