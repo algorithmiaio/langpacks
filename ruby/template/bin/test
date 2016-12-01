@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec bundle exec ruby -e "Dir.glob('./src/*_test.rb').each { |file| require file }"
+

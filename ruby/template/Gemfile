@@ -2,3 +2,7 @@ source 'https://rubygems.org'
 ruby "~> 2.2"
 
 gem 'algorithmia', '~>0.9.4'
+
+group :development do
+  gem 'minitest', '~> 5.8'
+end
