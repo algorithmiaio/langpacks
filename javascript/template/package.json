@@ -7,9 +7,15 @@
   "bin": {
     "__ALGO__": "./__ALGO__.js"
   },
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha"
+  },
   "readmeFilename": "README.md",
   "dependencies": {
     "algorithmia": "0.3.x"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
   }
 }
 
