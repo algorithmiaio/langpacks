@@ -44,6 +44,9 @@ def main():
             elif tokens[0] == '-g' and len(tokens) == 2: # installs from github of the form: username/repo[/subdir][@ref|#pull]
                 if not args.cran_latest:
                     rscript.append('p_install_gh(c("{}"))'.format(tokens[1]))
+            elif tokens[0] == '-e' and len(line) > 3:
+                if not args.cran_latest:
+                    rscript.append(line[3:])
             else:
                 print 'Unexpected line: "{}"'.format(line)
                 sys.exit(1)

@@ -4,13 +4,16 @@
 # to be fast), you need to specify your package dependencies in this file. You should not install
 # packages in your code. You should just load them using the normal syntax: `library("<package name>")`.
 #
-# We support installing package in one of three ways:
+# We support installing package in one of four ways:
 #    1) Getting the latest version from CRAN. To do this put the package name on it's own line
 #         Example to get algorithmia from CRAN: algorithmia
 #    2) Getting an older version from CRAN. The line should look like: `-t <CRAN archive url>`
 #         Example to get a previous version of algorithmia: -t https://cran.r-project.org/src/contrib/algorithmia_0.0.2.tar.gz
 #    3) From GitHub. The line should look like this: `-g username/repo[/subdir][@ref|#pull]`
 #         Example to get the most recent version from our github: -g algorithmiaio/algorithmia-r
+#    4) Execute R code to install your dependencies. This should be used as a last resort. Do not change the
+#       destination for these packages to ensure we can find them at runtime.
+#         Example to get algorithmia from CRAN: `-e install.packages("algorithmia")`
 #
 # Note: we only support single full-line comments starting with '#'
 #
