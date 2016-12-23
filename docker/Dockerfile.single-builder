@@ -7,6 +7,24 @@ RUN ( for lang in /tmp/*; do \
     done ) && \
     rm -rf /var/lib/apt/lists/*
 
+RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/NVIDIA-Linux-x86_64-361.28.run && \
+    chmod +x NVIDIA-Linux-x86_64-361.28.run && \
+    ./NVIDIA-Linux-x86_64-361.28.run -s --no-kernel-module
+
+RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cuda_7.5.18_linux.run && \
+    chmod +x cuda_7.5.18_linux.run && \
+    sh ./cuda_7.5.18_linux.run --silent --toolkit
+
+RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cudnn-7.5-linux-x64-v5.1.tgz && \
+    tar -xf cudnn-7.5-linux-x64-v5.1.tgz && \
+    mv cuda/include/* /usr/local/cuda/include && \
+    mv cuda/lib64/* /usr/local/cuda/lib64
+
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-4.6 30 && \
+    update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-4.6 30 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 30 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.6 30
+
 WORKDIR /tmp/build
 CMD ["bin/build"]
 
