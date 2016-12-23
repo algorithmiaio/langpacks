@@ -1,4 +1,9 @@
 FROM algorithmia/langpack-single-base
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes \
+        gcc-4.6 g++-4.6 gcc-4.6-multilib g++-4.6-multilib gfortran \
+        linux-headers-generic \
+        linux-image-generic
+
 
 # For each lang, run `setup`
 RUN ( for lang in /tmp/*; do \
