@@ -1,9 +1,4 @@
 FROM algorithmia/langpack-single-base
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes \
-        gcc-4.6 g++-4.6 gcc-4.6-multilib g++-4.6-multilib gfortran \
-        linux-headers-generic \
-        linux-image-generic
-
 
 # For each lang, run `setup`
 RUN ( for lang in /tmp/*; do \
@@ -11,6 +6,11 @@ RUN ( for lang in /tmp/*; do \
         $lang/setup || exit; \
     done ) && \
     rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes \
+        gcc-4.6 g++-4.6 gcc-4.6-multilib g++-4.6-multilib gfortran \
+        linux-headers-generic \
+        linux-image-generic
 
 RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/NVIDIA-Linux-x86_64-361.28.run && \
     chmod +x NVIDIA-Linux-x86_64-361.28.run && \
