@@ -3,7 +3,9 @@ FROM ubuntu:14.04
 ARG ALGO_UID=1000
 
 # additional auxillary packages for developers are on line 9
-RUN DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:george-edison55/cmake-3.x && \
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install software-properties-common && \
+    DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:george-edison55/cmake-3.x && \
     DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     curl zip software-properties-common build-essential cmake libboost-all-dev \
