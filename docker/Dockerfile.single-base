@@ -8,7 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:george-edison55/cmake-3.x && \
     DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    curl zip software-properties-common build-essential cmake libboost-all-dev \
+    curl zip software-properties-common build-essential cmake libboost-python-dev \
     imagemagick libmagickwand-dev fontconfig fonts-wqy-microhei libopenblas-dev pandoc texlive && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" --uid $ALGO_UID algo
