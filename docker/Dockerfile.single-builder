@@ -12,23 +12,19 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --force-
         linux-headers-generic \
         linux-image-generic
 
-RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/NVIDIA-Linux-x86_64-361.28.run && \
-    chmod +x NVIDIA-Linux-x86_64-361.28.run && \
-    ./NVIDIA-Linux-x86_64-361.28.run -s --no-kernel-module
 
-RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cuda_7.5.18_linux.run && \
-    chmod +x cuda_7.5.18_linux.run && \
-    sh ./cuda_7.5.18_linux.run --silent --toolkit
+RUN curl -LO http://us.download.nvidia.com/XFree86/Linux-x86_64/367.57/NVIDIA-Linux-x86_64-367.57.run && \
+        chmod +x NVIDIA-Linux-x86_64-367.57.run && \
+        sh ./NVIDIA-Linux-x86_64-367.57.run -s --no-kernel-module
 
-RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cudnn-7.5-linux-x64-v5.1.tgz && \
-    tar -xf cudnn-7.5-linux-x64-v5.1.tgz && \
+RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cuda_8.0.44_linux.run && \
+    chmod +x cuda_8.0.44_linux.run && \
+    sh ./cuda_8.0.44_linux.run --toolkit --silent
+
+RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cudnn-8.0-linux-x64-v5.1.tgz && \
+    tar -xf cudnn-8.0-linux-x64-v5.1.tgz && \
     mv cuda/include/* /usr/local/cuda/include && \
     mv cuda/lib64/* /usr/local/cuda/lib64
-
-RUN update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-4.6 30 && \
-    update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-4.6 30 && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 30 && \
-    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.6 30
 
 WORKDIR /tmp/build
 CMD ["bin/build"]
