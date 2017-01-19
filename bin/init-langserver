@@ -3,7 +3,7 @@
 set -e
 
 if [[ -f /tmp/algorithm.zip ]]; then
-  unzip -n /tmp/algorithm.zip
+  unzip -n -q /tmp/algorithm.zip
 elif [[ -d /tmp/algorithm ]]; then
   # For bind-mounting during development
   cp -rn /tmp/algorithm/. .
