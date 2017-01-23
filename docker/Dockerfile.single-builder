@@ -26,6 +26,10 @@ RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cudnn-8.0-l
     mv cuda/include/* /usr/local/cuda/include && \
     mv cuda/lib64/* /usr/local/cuda/lib64
 
+RUN ldconfig /usr/local/cuda/lib64
+RUN ldconfig /usr/local/cuda-8.0/lib64
+
+
 WORKDIR /tmp/build
 CMD ["bin/build"]
 
