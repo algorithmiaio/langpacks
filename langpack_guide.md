@@ -9,8 +9,7 @@
 
 1. [File a tracking issue](https://github.com/algorithmiaio/langpacks/issues/new?title=New+LangPack:+LANGUAGE).
    - We want to avoid competing implementations of a LangPack in the short term
-   -
-2. Implement an Algorithmia client library - see this [client SDK guide]
+2. Implement an Algorithmia client library - (TODO: add the client SDK guide to this repo)
    - LangPacks depend on an Algorithmia client to support calling other algorithms and managing data
    - Some languages may get away with reusing existing clients (e.g JVM-based languages can use the Java client)
 3. Fork [algorithmiaio/langpacks](https://github.com/algorithmiaio/langpacks) and add a directory with your LangPack implementation.
@@ -28,6 +27,7 @@ path                | Description
 template/           | directory containing templatized versions of an algorithm’s initial files and structure
 template/bin/setup  | executable that installs any language build or runtime dependencies (e.g. compiler, runtime)
 template/bin/build  | executable that builds an algorithm capable of being run by this LangPack
+template/bin/test   | executable that runs an algorithm's tests
 template/bin/pipe   | executable that runs an algorithm built by this LangPack (may be in the template or a built artifact)
 examples/           | any example algorithms - used for testing langpacks during development
 
@@ -85,6 +85,19 @@ docker run -it -v `pwd`/bin:/algo/bin algorithmia/langpack-base /algo/bin/setup 
 **Testing:**
 
 TODO: explain creating a docker single-language image that can bind mount the algorithm directory and run `bin/build`
+
+## `bin/test`
+
+**Requirements:**
+
+1. Must launch a test runner for the language. It should default to the most-commonly preferred test framework for the lanaguage.
+2. Must output test results to STDOUT/STDERR
+3. Exit with 0 if successful, otherwise nonzero
+
+**Testing:**
+
+The default templated algorithm should include a single test that passes by default.
+
 
 ## `bin/pipe`
 
