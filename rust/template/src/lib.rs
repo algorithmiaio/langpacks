@@ -1,18 +1,20 @@
+#[macro_use]
 extern crate algorithmia;
-extern crate rustc_serialize;
 
-use algorithmia::*;
-use algorithmia::algo::*;
-use algorithmia::data::*;
+use algorithmia::prelude::*;
 
-#[derive(Default)]
-pub struct Algo;
+algo_entrypoint!(&str);
+fn apply(input: &str) -> Result<String, String> {
+    Ok(format!("Hello {}", input))
+}
 
-// Algo should implement EntryPoint or DecodedEntryPoint
-//   and override at least one of the apply method variants
-impl EntryPoint for Algo {
-    fn apply_str(&self, input: &str) -> Result<AlgoOutput, Box<std::error::Error>> {
-        let msg = format!("Hello {}", input);
-        Ok(AlgoOutput::Text(msg))
+
+#[cfg(test)]
+mod test {
+    use super::apply;
+
+    #[test]
+    fn test_apply() {
+        assert_eq!(&apply("Jane").unwrap(), "Hello Jane");
     }
 }
