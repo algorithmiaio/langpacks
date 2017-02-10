@@ -8,7 +8,8 @@ extern crate serde_json;
 extern crate serde_derive;
 
 use algorithmia::algo::{AlgoInput, AlgoOutput, EntryPoint};
-use algorithmia::error::{Error, ApiError, ErrorKind, ResultExt};
+use algorithmia::error::{Error, ErrorKind, ResultExt};
+use std::error::Error as StdError;
 use serde_json::Value;
 use std::borrow::Cow;
 use std::io::{self, BufRead, Write};
@@ -55,21 +56,19 @@ impl AlgoSuccess {
 }
 
 impl AlgoFailure {
-    fn new(err: &Error) -> AlgoFailure {
-        let message = err.iter().map(|e| e.description()).collect::<Vec<_>>().join("\ncaused by ");
+    fn new(err: &StdError) -> AlgoFailure {
         AlgoFailure {
             error: RunnerError {
-                message: message,
+                message: error_cause_chain(err),
                 error_type: "AlgorithmError",
             },
         }
     }
 
-    fn system(err: &Error) -> AlgoFailure {
-        let message = err.iter().map(|e| e.description()).collect::<Vec<_>>().join("\ncaused by ");
+    fn system(err: &StdError) -> AlgoFailure {
         AlgoFailure {
             error: RunnerError {
-                message: message.into(),
+                message: error_cause_chain(err),
                 error_type: "SystemError",
             },
         }
@@ -91,7 +90,8 @@ fn main() {
             }
             Err(_) => {
                 let err = line.chain_err(|| "failed to read stdin").unwrap_err();
-                serde_json::to_string(&AlgoFailure::system(&err)).expect("Failed to encode JSON")
+                serde_json::to_string(&AlgoFailure::system(&err as &StdError))
+                    .expect("Failed to encode JSON")
             }
         };
         algoout(&output_json);
@@ -111,10 +111,20 @@ impl From<AlgoOutput> for AlgoSuccess {
     }
 }
 
-fn serialize_output(output: Result<AlgoOutput, Error>) -> String {
+fn error_cause_chain(err: &StdError) -> String {
+    let mut causes = vec![err.to_string()];
+    let mut e = err;
+    while let Some(cause) = e.cause() {
+        causes.push(cause.to_string());
+        e = cause;
+    }
+    causes.join("\ncaused by: ")
+}
+
+fn serialize_output(output: Result<AlgoOutput, Box<StdError>>) -> String {
     let json_result = match output {
         Ok(output) => serde_json::to_string(&AlgoSuccess::from(output)),
-        Err(err) => serde_json::to_string(&AlgoFailure::new(&err)),
+        Err(err) => serde_json::to_string(&AlgoFailure::new(&*err as &StdError)),
     };
 
     json_result.expect("Failed to encode JSON")
@@ -138,7 +148,7 @@ fn algoout(output_json: &str) {
     };
 }
 
-fn call_algorithm<E: EntryPoint>(algo: &E, stdin: String) -> Result<AlgoOutput, Error> {
+fn call_algorithm<E: EntryPoint>(algo: &E, stdin: String) -> Result<AlgoOutput, Box<StdError>> {
     let req = serde_json::from_str(&stdin).chain_err(|| ErrorKind::DecodeJson("request"))?;
     let Request { data, content_type } = req;
     let input = match (&*content_type, data) {
@@ -149,12 +159,7 @@ fn call_algorithm<E: EntryPoint>(algo: &E, stdin: String) -> Result<AlgoOutput, 
             AlgoInput::Binary(Cow::Owned(bytes))
         }
         ("json", json_obj) => AlgoInput::Json(Cow::Owned(json_obj)),
-        (_, _) => return Err(ErrorKind::InvalidContentType(content_type).into()),
+        (_, _) => return Err(Error::from(ErrorKind::InvalidContentType(content_type)).into()),
     };
-    algo.apply(input).map_err(|e| {
-        Error::from(ErrorKind::Api(ApiError {
-            message: e.description().into(),
-            stacktrace: None.into(),
-        }))
-    })
+    algo.apply(input)
 }
