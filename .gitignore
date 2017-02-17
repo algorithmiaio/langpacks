@@ -2,3 +2,4 @@
 */template/Dockerfile.*
 target/
 !target/release/langserver
+.idea/
