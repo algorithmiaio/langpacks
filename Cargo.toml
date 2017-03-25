@@ -13,8 +13,9 @@ name = "langserver"
 [dependencies]
 base64 = "0.1.0"
 quick-error = "1.0.0"
-serde = "0.7"
-serde_json = "0.7"
+serde = "0.9"
+serde_json = "0.9"
+serde_derive = "0.9"
 wait-timeout = "0.1"
 libc = "0.2"
 

@@ -1,9 +1,8 @@
 use serde::ser::Serialize;
-use serde_json::{ser, to_value};
-use serde_json::de::StreamDeserializer;
+use serde_json::{ser, to_value, Deserializer};
 use serde_json::Value;
 use std::env;
-use std::io::{self, Read, Write, BufRead, BufReader};
+use std::io::{self, Write, BufRead, BufReader};
 use std::ffi::CString;
 use std::fs::File;
 use std::path::Path;
@@ -50,7 +49,7 @@ fn get_next_algoout_value() -> Result<Value, Error> {
 
     // Read and deserialize the single next JSON Value on ALGOOUT
     println!("Deserializing algoout stream...");
-    let mut algoout_stream: StreamDeserializer<Value, _> = StreamDeserializer::new(algoout.bytes());
+    let mut algoout_stream = Deserializer::from_reader(algoout).into_iter::<Value>();
     match algoout_stream.next() {
         Some(next) => match next {
             Ok(out) => Ok(out),
@@ -149,7 +148,7 @@ impl LangRunner {
             Err(err) => {
                 println!("Wait encountered an error: {}", err);
                 let response = ErrorMessage::from_error(err);
-                RunnerOutput::Exited(to_value(&response))
+                RunnerOutput::Exited(to_value(&response).expect("RunnerOutput erialization failed"))
             }
         };
 

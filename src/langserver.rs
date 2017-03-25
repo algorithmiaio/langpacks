@@ -6,7 +6,6 @@ use hyper::status::StatusCode;
 use hyper::{Get, Post, Delete};
 use serde_json::{de, ser};
 use serde_json::Value;
-use serde_json::builder::ObjectBuilder;
 use std::io::Read;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -126,20 +125,20 @@ impl LangServer {
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
                 println!("Handling JSON input");
                 let raw: Value = try!(de::from_reader(req));
-                Ok(ObjectBuilder::new()
-                       .insert("content_type", "json")
-                       .insert("data", raw)
-                       .unwrap())
+                Ok(json!({
+                    "content_type": "json",
+                    "data": raw,
+                }))
             }
             // "text/plain"
             Some(&ContentType(Mime(TopLevel::Text, SubLevel::Plain, _))) => {
                 println!("Handling text input");
                 let mut raw = String::new();
                 let _ = req.read_to_string(&mut raw).expect("Failed to read request");
-                Ok(ObjectBuilder::new()
-                       .insert("content_type", "text")
-                       .insert("data", Value::String(raw))
-                       .unwrap())
+                Ok(json!({
+                    "content_type": "text",
+                    "data": raw,
+                }))
             }
             // "application/octet-stream"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Ext(_), _))) => {
@@ -155,10 +154,10 @@ impl LangServer {
                     String::from_utf8(b64_bytes).expect("Failed to create string from base64 bytes")
                 };
 
-                Ok(ObjectBuilder::new()
-                       .insert("content_type", "binary")
-                       .insert("data", Value::String(result_string))
-                       .unwrap())
+                Ok(json!({
+                    "content_type": "binary",
+                    "data": result_string,
+                }))
             }
             _ => Err(Error::BadRequest("Missing ContentType".to_string())),
         }

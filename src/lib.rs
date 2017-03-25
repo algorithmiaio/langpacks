@@ -1,11 +1,15 @@
 #[macro_use]
 extern crate quick_error;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
 
 extern crate base64;
 extern crate hyper;
 extern crate libc;
 extern crate serde;
-extern crate serde_json;
+
 extern crate wait_timeout;
 
 macro_rules! s { ($x:expr) => ($x.to_string()); }
