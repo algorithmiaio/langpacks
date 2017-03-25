@@ -150,8 +150,7 @@ impl LangServer {
                 let result_string = if has_base64_content_encoding {
                     String::from_utf8(raw).expect("Failed to stringify bytes")
                 } else {
-                    let b64_bytes = base64::u8en(&raw).expect("Failed encode request as base64");
-                    String::from_utf8(b64_bytes).expect("Failed to create string from base64 bytes")
+                    base64::encode(&raw)
                 };
 
                 Ok(json!({
