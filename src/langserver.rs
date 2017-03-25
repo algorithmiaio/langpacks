@@ -38,7 +38,7 @@ pub struct LangServer {
 
 impl LangServer {
     pub fn start(mode: LangServerMode, notify_exited: Option<Notifier>) -> Result<LangServer, Error> {
-        let runner = try!(LangRunner::start());
+        let runner = LangRunner::start()?;
 
         let ls = LangServer {
             runner: Arc::new(Mutex::new(runner)),
@@ -94,37 +94,27 @@ impl LangServer {
     }
 
     fn build_input(&self, mut req: Request) -> Result<Value, Error> {
-        let mut mutable_headers: Headers = req.headers.clone();
+        let headers = req.headers.clone();
         let mut has_base64_content_encoding = false;
-        if mutable_headers.has::<ContentEncoding>() {
-            let content_encoding_header: &ContentEncoding =
-                mutable_headers.get::<ContentEncoding>().expect("its there");
+        if let Some(content_encoding_header) = headers.get::<ContentEncoding>() {
             if content_encoding_header.len() != 1 {
                 return Err(Error::BadRequest("Too many ContentEncoding headers Error".to_string()));
             }
 
-            match content_encoding_header.iter().next() {
-                Some(&Encoding::EncodingExt(ref encoding @ _)) => {
-                    if encoding == "base64" {
-                        has_base64_content_encoding = true;
-                    } else {
-                        return Err(Error::BadRequest(format!("Unexpected ContentEncoding {}",
-                                                             encoding)));
-                    }
+            match content_encoding_header[0] {
+                Encoding::EncodingExt(ref encoding @ _) if encoding == "base64" => {
+                    has_base64_content_encoding = true;
                 }
-                _ => return Err(Error::BadRequest("Multiple ContentEncoding Error".to_string())),
+                ref encoding => return Err(Error::BadRequest(format!("Unexpected ContentEncoding {}",
+                                                            encoding))),
             }
         }
 
-        if has_base64_content_encoding {
-            mutable_headers.remove::<ContentEncoding>();
-        }
-
-        match mutable_headers.get() {
+        match headers.get() {
             // "application/json"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
                 println!("Handling JSON input");
-                let raw: Value = try!(de::from_reader(req));
+                let raw: Value = de::from_reader(req)?;
                 Ok(json!({
                     "content_type": "json",
                     "data": raw,
@@ -134,7 +124,7 @@ impl LangServer {
             Some(&ContentType(Mime(TopLevel::Text, SubLevel::Plain, _))) => {
                 println!("Handling text input");
                 let mut raw = String::new();
-                let _ = req.read_to_string(&mut raw).expect("Failed to read request");
+                let _ = req.read_to_string(&mut raw)?;
                 Ok(json!({
                     "content_type": "text",
                     "data": raw,
@@ -144,8 +134,8 @@ impl LangServer {
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Ext(_), _))) => {
                 // TODO: verify sublevel is actually "octet-stream"
                 println!("Handling binary input");
-                let mut raw: Vec<u8> = vec![];
-                let _ = req.read_to_end(&mut raw).expect("Failed to read request");
+                let mut raw = vec![];
+                let _ = req.read_to_end(&mut raw)?;
 
                 let result_string = if has_base64_content_encoding {
                     String::from_utf8(raw).expect("Failed to stringify bytes")

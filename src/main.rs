@@ -48,7 +48,7 @@ fn load_complete(result: Result<(), Error>, duration: Duration) -> Result<(), Er
             Ok(_) => StatusMessage::success(duration),
             Err(err) => StatusMessage::failure(err, duration),
         };
-        try!(notifier.notify(message, None));
+        notifier.notify(message, None)?;
     }
     Ok(())
 }

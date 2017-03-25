@@ -44,7 +44,7 @@ struct LangRunnerProcess {
 fn get_next_algoout_value() -> Result<Value, Error> {
     // Note: Opening a FIFO read-only pipe blocks until a writer opens it.
     println!("Opening /tmp/algoout FIFO...");
-    let algoout = try!(File::open(ALGOOUT));
+    let algoout = File::open(ALGOOUT)?;
 
 
     // Read and deserialize the single next JSON Value on ALGOOUT
@@ -90,7 +90,7 @@ impl LangRunner {
             }
         }
 
-        let runner = try!(LangRunnerProcess::start());
+        let runner = LangRunnerProcess::start()?;
         let (tx, rx) = channel();
         let lr = LangRunner {
             runner: Arc::new(RwLock::new(runner)),
@@ -184,26 +184,26 @@ impl LangRunner {
 
 impl LangRunnerProcess {
     fn start() -> Result<LangRunnerProcess, Error> {
-        let mut path = try!(env::current_dir());
+        let mut path = env::current_dir()?;
         path.push("bin/pipe");
 
-        let mut child = try!(Command::new(&path)
+        let mut child = Command::new(&path)
                                  .stdin(Stdio::piped())
                                  .stdout(Stdio::piped())
                                  .stderr(Stdio::piped())
-                                 .spawn());
+                                 .spawn()?;
 
         println!("Running PID {}: {}", child.id(), path.to_string_lossy());
 
-        let stdin = try!(child.stdin
+        let stdin = child.stdin
                               .take()
-                              .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN"))));
-        let stdout = try!(child.stdout
+                              .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN")))?;
+        let stdout = child.stdout
                                .take()
-                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT"))));
-        let stderr = try!(child.stderr
+                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT")))?;
+        let stderr = child.stderr
                                .take()
-                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDERR"))));
+                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDERR")))?;
 
         let child_stderr = Arc::new(Mutex::new(Vec::new()));
         // Spawn a thread to collect algorithm stderr - we do this here so we shouldn't get get stuck
@@ -293,8 +293,8 @@ impl LangRunnerProcess {
         match self.stdin.as_mut() {
             Some(mut stdin) => {
                 println!("Sending data to runner stdin");
-                try!(ser::to_writer(&mut stdin, &input));
-                try!(stdin.write(b"\n"));
+                ser::to_writer(&mut stdin, &input)?;
+                stdin.write(b"\n")?;
                 Ok(())
             }
             None => {

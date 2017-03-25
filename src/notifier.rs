@@ -45,7 +45,7 @@ impl Notifier {
     }
 
     pub fn notify<S: Serialize>(&self, message: S, headers: Option<Headers>) -> Result<(), Error> {
-        let body = try!(ser::to_string(&message));
+        let body = ser::to_string(&message)?;
 
         let mut i = 1;
         while let Err(err) = self.try_notify(body.clone(), headers.clone()) {
