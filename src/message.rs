@@ -78,9 +78,8 @@ impl StatusMessage {
 
 impl RunnerOutput {
     fn value_mut(&mut self) -> &mut Value {
-        match self {
-            &mut RunnerOutput::Completed(ref mut value) => value,
-            &mut RunnerOutput::Exited(ref mut value) => value,
+        match *self {
+            RunnerOutput::Completed(ref mut value) | RunnerOutput::Exited(ref mut value) => value,
         }
     }
 

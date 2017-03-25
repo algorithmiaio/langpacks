@@ -102,7 +102,7 @@ impl LangServer {
             }
 
             match content_encoding_header[0] {
-                Encoding::EncodingExt(ref encoding @ _) if encoding == "base64" => {
+                Encoding::EncodingExt(ref encoding) if encoding == "base64" => {
                     has_base64_content_encoding = true;
                 }
                 ref encoding => return Err(Error::BadRequest(format!("Unexpected ContentEncoding {}",
@@ -204,8 +204,7 @@ impl LangServer {
                 thread::spawn(move || {
                     let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
                     let output  = match runner.wait_for_response_or_exit() {
-                        RunnerOutput::Completed(output) => output,
-                        RunnerOutput::Exited(output) => output,
+                        RunnerOutput::Completed(output) | RunnerOutput::Exited(output) => output,
                     };
 
                     let mut terminate = false;

@@ -24,7 +24,7 @@ impl Notifier {
     fn try_notify(&self, body: String, headers: Option<Headers>) -> Result<(), Error> {
         let res = Client::new()
                       .post(self.url.clone())
-                      .headers(headers.unwrap_or(Headers::new()))
+                      .headers(headers.unwrap_or_else(Headers::new))
                       .header(ContentType::json())
                       .body(&body)
                       .send();
@@ -54,7 +54,7 @@ impl Notifier {
             }
             println!("Will retry notification (#{})", i);
             thread::sleep(Duration::from_secs(1));
-            i = i + 1;
+            i += 1;
         }
         Ok(())
     }

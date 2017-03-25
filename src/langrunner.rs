@@ -197,13 +197,13 @@ impl LangRunnerProcess {
 
         let stdin = child.stdin
                               .take()
-                              .ok_or(Error::Unexpected(s!("Failed to open runner's STDIN")))?;
+                              .ok_or_else(|| Error::Unexpected(s!("Failed to open runner's STDIN")))?;
         let stdout = child.stdout
                                .take()
-                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDOUT")))?;
+                               .ok_or_else(|| Error::Unexpected(s!("Failed to open runner's STDOUT")))?;
         let stderr = child.stderr
                                .take()
-                               .ok_or(Error::Unexpected(s!("Failed to open runner's STDERR")))?;
+                               .ok_or_else(|| Error::Unexpected(s!("Failed to open runner's STDERR")))?;
 
         let child_stderr = Arc::new(Mutex::new(Vec::new()));
         // Spawn a thread to collect algorithm stderr - we do this here so we shouldn't get get stuck
@@ -242,13 +242,15 @@ impl LangRunnerProcess {
                         let _ = io::stderr().write(collected_stderr.as_bytes());
                     }
 
-                    let stdout_opt = match collected_stdout.is_empty() {
-                        true => None,
-                        false => Some(collected_stdout),
+                    let stdout_opt = if collected_stdout.is_empty() {
+                        None
+                    } else {
+                        Some(collected_stdout)
                     };
-                    let stderr_opt = match collected_stderr.is_empty() {
-                        true => None,
-                        false => Some(collected_stderr),
+                    let stderr_opt = if collected_stderr.is_empty() {
+                        None
+                    } else {
+                        Some(collected_stderr)
                     };
                     return Err(Error::UnexpectedExit(code, stdout_opt, stderr_opt));
                 }
@@ -294,7 +296,7 @@ impl LangRunnerProcess {
             Some(mut stdin) => {
                 println!("Sending data to runner stdin");
                 ser::to_writer(&mut stdin, &input)?;
-                stdin.write(b"\n")?;
+                stdin.write_all(b"\n")?;
                 Ok(())
             }
             None => {
@@ -305,12 +307,12 @@ impl LangRunnerProcess {
 
     // This returns available stdout without blocking
     pub fn consume_stdout(&self) -> Option<String> {
-        return get_and_clear_lines(self.stdout_lines.clone());
+        get_and_clear_lines(self.stdout_lines.clone())
     }
 
     // This returns available stderr without blocking
     pub fn consume_stderr(&self) -> Option<String> {
-        return get_and_clear_lines(self.stderr_lines.clone());
+        get_and_clear_lines(self.stderr_lines.clone())
     }
 
     pub fn check_exited(&self) -> Option<i32> {
