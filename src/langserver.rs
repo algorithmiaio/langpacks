@@ -100,7 +100,7 @@ impl LangServer {
         });
     }
 
-    fn build_input(&self, mut req: Request) -> Result<Value, Error> {
+    fn build_input(&self, mut req: Request, request_id: String) -> Result<Value, Error> {
         let headers = req.headers.clone();
         let mut has_base64_content_encoding = false;
         if let Some(content_encoding_header) = headers.get::<ContentEncoding>() {
@@ -120,7 +120,7 @@ impl LangServer {
         match headers.get() {
             // "application/json"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
-                info!("{} {} Handling JSON input", LOG_IDENTIFIER, "-");
+                info!("{} {} Handling JSON input", LOG_IDENTIFIER, request_id);
                 let raw: Value = de::from_reader(req)?;
                 Ok(json!({
                     "content_type": "json",
@@ -129,7 +129,7 @@ impl LangServer {
             }
             // "text/plain"
             Some(&ContentType(Mime(TopLevel::Text, SubLevel::Plain, _))) => {
-                info!("{} {} Handling text input", LOG_IDENTIFIER, "-");
+                info!("{} {} Handling text input", LOG_IDENTIFIER, request_id);
                 let mut raw = String::new();
                 let _ = req.read_to_string(&mut raw)?;
                 Ok(json!({
@@ -140,7 +140,7 @@ impl LangServer {
             // "application/octet-stream"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Ext(_), _))) => {
                 // TODO: verify sublevel is actually "octet-stream"
-                info!("{} {} Handling binary input", LOG_IDENTIFIER, "-");
+                info!("{} {} Handling binary input", LOG_IDENTIFIER, request_id);
                 let mut raw = vec![];
                 let _ = req.read_to_end(&mut raw)?;
 
@@ -168,11 +168,11 @@ impl LangServer {
     // Returns status, response string, and a boolean to indicate if the server should terminate
     fn run_algorithm(&self, req: Request) -> (StatusCode, String, bool) {
         let headers = self.get_proxied_headers(&req.headers);
-        let request_id = match req.headers.get::<XRequestId>() {
+        let request_id_opt = match req.headers.get::<XRequestId>() {
             Some(ref request_id) => Some(request_id.0.to_owned()),
             None => None,
         };
-        let input_value = match self.build_input(req) {
+        let input_value = match self.build_input(req, request_id_opt.clone().unwrap_or("-".to_owned())) {
             Ok(v) => v,
             Err(err) => {
                 return (StatusCode::BadRequest,
@@ -184,7 +184,7 @@ impl LangServer {
         // Start piping data
         let arc_runner = self.runner.clone();
         let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-        runner.set_request_id(request_id);
+        runner.set_request_id(request_id_opt.clone());
         if let Err(err) = runner.write(&input_value) {
             error!("{} {} Failed write to runner stdin: {}", LOG_IDENTIFIER, "-", err);
             return (StatusCode::BadRequest,
@@ -193,14 +193,16 @@ impl LangServer {
         }
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
+        let request_id = request_id_opt.unwrap_or("-".to_owned());
         match self.mode {
             LangServerMode::Sync => {
-                info!("{} {} Waiting synchronously for algorithm to complete", LOG_IDENTIFIER, "-");
+                info!("{} {} Waiting synchronously for algorithm to complete", LOG_IDENTIFIER, request_id);
                 let (status_code, output, terminate) = match runner.wait_for_response_or_exit() {
                     RunnerOutput::Completed(output) => (StatusCode::Ok, output, false),
                     RunnerOutput::Exited(output) => (StatusCode::Ok, output, true),
                 };
 
+                info!("{} {} algorithm completed", LOG_IDENTIFIER, request_id);
                 match ser::to_string(&output) {
                     Ok(response) => (status_code, response, terminate),
                     Err(err) => (StatusCode::InternalServerError,
@@ -209,7 +211,7 @@ impl LangServer {
                 }
             }
             LangServerMode::Async(ref notif) => {
-                info!("{} {} Waiting asynchronously for algorithm to complete", LOG_IDENTIFIER, "-");
+                info!("{} {} Waiting asynchronously for algorithm to complete", LOG_IDENTIFIER, request_id);
 
                 let notifier = notif.clone();
                 let arc_runner = self.runner.clone();
@@ -229,6 +231,7 @@ impl LangServer {
                         process::exit(code);
                     }
                 });
+                info!("{} {} algorithm completed", LOG_IDENTIFIER, request_id);
                 (StatusCode::Accepted, jsonres!("Algorithm started."), false)
             }
         }

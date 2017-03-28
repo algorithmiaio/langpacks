@@ -42,14 +42,15 @@ struct LangRunnerProcess {
 }
 
 // This blocks until output is available on ALGOOUT
-fn get_next_algoout_value() -> Result<Value, Error> {
+fn get_next_algoout_value(request_id: Arc<RwLock<Option<String>>>) -> Result<Value, Error> {
+    let req_id = request_id.read().expect("failed to get read handle on request_id for stdout reading").clone().unwrap_or("-".to_owned());
     // Note: Opening a FIFO read-only pipe blocks until a writer opens it.
-    info!("{} {} Opening /tmp/algoout FIFO...", LOG_IDENTIFIER, "-");
+    info!("{} {} Opening /tmp/algoout FIFO...", LOG_IDENTIFIER, req_id);
     let algoout = File::open(ALGOOUT)?;
 
 
     // Read and deserialize the single next JSON Value on ALGOOUT
-    info!("{} {} Deserializing algoout stream...", LOG_IDENTIFIER, "-");
+    info!("{} {} Deserializing algoout stream...", LOG_IDENTIFIER, req_id);
     let mut algoout_stream = Deserializer::from_reader(algoout).into_iter::<Value>();
     match algoout_stream.next() {
         Some(next) => match next {
@@ -145,8 +146,10 @@ impl LangRunner {
         let tx = self.tx.clone();
 
         let start = Instant::now();
+        let runner = self.runner.read().expect("Failed to acquire read lock for runner");
+        let arc_request_id = runner.request_id.clone();
         thread::spawn(move || {
-            if let Err(err) = tx.send(get_next_algoout_value()) {
+            if let Err(err) = tx.send(get_next_algoout_value(arc_request_id)) {
                 error!("{} {} FATAL: Channel receiver disconnected unexpectedly: {}", LOG_IDENTIFIER, "-", err);
                 process::exit(UNKNOWN_EXIT); // Don't want to just panic a single thread and hang
             }
