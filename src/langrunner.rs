@@ -259,7 +259,7 @@ impl LangRunnerProcess {
                 }
                 Ok(_) => {
                     let line_str = String::from_utf8_lossy(&line);
-                    info!("{} {} {}", LOG_IDENTIFIER, "-", line_str);
+                    info!("{} {} {}", LOG_IDENTIFIER, "-", &line_str.replace("\n",""));
                     collected_stdout.push_str(&line_str.replace("PIPE_INIT_COMPLETE\n",""));
                     if line_str.contains("PIPE_INIT_COMPLETE") { break; }
                 }
