@@ -38,6 +38,11 @@ pub struct LangServer {
     delete_signalled: Arc<Mutex<bool>>,
 }
 
+// Simple string header
+header! {
+    (XRequestId, "X-Request-Id") => [String]
+}
+
 impl LangServer {
     pub fn start(mode: LangServerMode, notify_exited: Option<Notifier>) -> Result<LangServer, Error> {
         let runner = LangRunner::start()?;
@@ -163,6 +168,10 @@ impl LangServer {
     // Returns status, response string, and a boolean to indicate if the server should terminate
     fn run_algorithm(&self, req: Request) -> (StatusCode, String, bool) {
         let headers = self.get_proxied_headers(&req.headers);
+        let request_id = match req.headers.get::<XRequestId>() {
+            Some(request_id) => request_id.clone().0.to_owned(),
+            None => "-".to_owned(),
+        };
         let input_value = match self.build_input(req) {
             Ok(v) => v,
             Err(err) => {
@@ -175,6 +184,7 @@ impl LangServer {
         // Start piping data
         let arc_runner = self.runner.clone();
         let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
+        runner.set_request_id(request_id);
         if let Err(err) = runner.write(&input_value) {
             error!("{} {} Failed write to runner stdin: {}", LOG_IDENTIFIER, "-", err);
             return (StatusCode::BadRequest,

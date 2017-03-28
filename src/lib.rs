@@ -9,6 +9,7 @@ extern crate serde_json;
 extern crate log;
 
 extern crate base64;
+#[macro_use]
 extern crate hyper;
 extern crate libc;
 extern crate serde;

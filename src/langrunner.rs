@@ -38,6 +38,7 @@ struct LangRunnerProcess {
     stdin: Option<ChildStdin>,
     child: Mutex<Child>,
     exit_status: Mutex<Option<i32>>,
+    request_id: Arc<RwLock<Option<String>>>,
 }
 
 // This blocks until output is available on ALGOOUT
@@ -128,6 +129,12 @@ impl LangRunner {
         runner.write(input)
     }
 
+    pub fn set_request_id(&mut self, request_id: String) {
+        let mut runner = self.runner.write().expect("Failed to acquire write lock for runner request_id");
+        let mut write_handle = runner.request_id.write().expect("Failed to get write lock for request_id");
+        *write_handle = Some(request_id);
+    }
+
     pub fn wait_for_response_or_exit(&mut self) -> RunnerOutput {
         let tx = self.tx.clone();
 
@@ -187,6 +194,8 @@ impl LangRunnerProcess {
         let mut path = env::current_dir()?;
         path.push("bin/pipe");
 
+        let request_id = Arc::new(RwLock::new(None));
+
         let mut child = Command::new(&path)
                                  .stdin(Stdio::piped())
                                  .stdout(Stdio::piped())
@@ -209,13 +218,15 @@ impl LangRunnerProcess {
         // Spawn a thread to collect algorithm stderr - we do this here so we shouldn't get get stuck
         // waiting for stuff to be read from stderr when we are loading the algorithm
         let arc_stderr = child_stderr.clone();
+        let arc_request_id_err = request_id.clone();
         thread::spawn(move || {
             let reader = BufReader::new(stderr);
             for line_result in reader.lines() {
                 match line_result {
                     Ok(line) => match arc_stderr.lock() {
                         Ok(mut lines) => {
-                            info!("{} {} {}", "ALGOERR", "-", line);
+                            let req_id = arc_request_id_err.read().expect("failed to get read handle on request_id for stderr reading").clone().unwrap_or("-".to_owned());
+                            info!("{} {} {}", "ALGOERR", req_id, line);
                             lines.push(line);
                         }
                         Err(err) => error!("{} {} Failed to get lock on stderr lines: {}", LOG_IDENTIFIER, "-", err),
@@ -273,12 +284,14 @@ impl LangRunnerProcess {
         let child_stdout = Arc::new(Mutex::new(vec![collected_stdout]));
         // Spawn a thread to collect algorithm stdout
         let arc_stdout = child_stdout.clone();
+        let arc_request_id_out = request_id.clone();
         thread::spawn(move || {
             for line_result in reader.lines() {
                 match line_result {
                     Ok(line) => match arc_stdout.lock() {
                         Ok(mut lines) => {
-                            info!("{} {} {}", "ALGOOUT", "-", line);
+                            let req_id = arc_request_id_out.read().expect("failed to get read handle on request_id for stdout reading").clone().unwrap_or("-".to_owned());
+                            info!("{} {} {}", "ALGOOUT", req_id, line);
                             lines.push(line);
                         }
                         Err(err) => error!("{} {} Failed to get lock on stdout lines: {}", LOG_IDENTIFIER, "-", err),
@@ -293,7 +306,8 @@ impl LangRunnerProcess {
             stdin: Some(stdin),
             stdout_lines: child_stdout,
             stderr_lines: child_stderr,
-            exit_status: Mutex::new(None)
+            exit_status: Mutex::new(None),
+            request_id: request_id.clone()
         })
     }
 
