@@ -129,10 +129,16 @@ impl LangRunner {
         runner.write(input)
     }
 
-    pub fn set_request_id(&mut self, request_id: String) {
+    pub fn set_request_id(&mut self, request_id: Option<String>) {
         let runner = self.runner.write().expect("Failed to acquire write lock for runner request_id");
         let mut write_handle = runner.request_id.write().expect("Failed to get write lock for request_id");
-        *write_handle = Some(request_id);
+        *write_handle = request_id;
+    }
+
+    pub fn get_request_id(&self) -> String {
+        let runner = self.runner.read().expect("Failed to acquire read lock for runner request_id");
+        let read_handle = runner.request_id.read().expect("Failed to get read lock for request_id");
+        read_handle.clone().unwrap_or("-".to_owned())
     }
 
     pub fn wait_for_response_or_exit(&mut self) -> RunnerOutput {
@@ -222,16 +228,16 @@ impl LangRunnerProcess {
         thread::spawn(move || {
             let reader = BufReader::new(stderr);
             for line_result in reader.lines() {
+                let req_id = arc_request_id_err.read().expect("failed to get read handle on request_id for stderr reading").clone().unwrap_or("-".to_owned());
                 match line_result {
                     Ok(line) => match arc_stderr.lock() {
                         Ok(mut lines) => {
-                            let req_id = arc_request_id_err.read().expect("failed to get read handle on request_id for stderr reading").clone().unwrap_or("-".to_owned());
                             info!("{} {} {}", "ALGOERR", req_id, line);
                             lines.push(line);
                         }
-                        Err(err) => error!("{} {} Failed to get lock on stderr lines: {}", LOG_IDENTIFIER, "-", err),
+                        Err(err) => error!("{} {} Failed to get lock on stderr lines: {}", LOG_IDENTIFIER, req_id, err),
                     },
-                    Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, "-", err),
+                    Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, req_id, err),
                 }
             }
         });
@@ -270,7 +276,8 @@ impl LangRunnerProcess {
                 }
                 Ok(_) => {
                     let line_str = String::from_utf8_lossy(&line);
-                    info!("{} {} {}", LOG_IDENTIFIER, "-", &line_str.replace("\n",""));
+                    let req_id = request_id.read().expect("failed to get read handle on request_id for stderr reading").clone().unwrap_or("-".to_owned());
+                    info!("{} {} {}", LOG_IDENTIFIER, req_id, &line_str.replace("\n",""));
                     collected_stdout.push_str(&line_str.replace("PIPE_INIT_COMPLETE\n",""));
                     if line_str.contains("PIPE_INIT_COMPLETE") { break; }
                 }
@@ -287,16 +294,16 @@ impl LangRunnerProcess {
         let arc_request_id_out = request_id.clone();
         thread::spawn(move || {
             for line_result in reader.lines() {
+                let req_id = arc_request_id_out.read().expect("failed to get read handle on request_id for stdout reading").clone().unwrap_or("-".to_owned());
                 match line_result {
                     Ok(line) => match arc_stdout.lock() {
                         Ok(mut lines) => {
-                            let req_id = arc_request_id_out.read().expect("failed to get read handle on request_id for stdout reading").clone().unwrap_or("-".to_owned());
                             info!("{} {} {}", "ALGOOUT", req_id, line);
                             lines.push(line);
                         }
-                        Err(err) => error!("{} {} Failed to get lock on stdout lines: {}", LOG_IDENTIFIER, "-", err),
+                        Err(err) => error!("{} {} Failed to get lock on stdout lines: {}", LOG_IDENTIFIER, req_id, err),
                     },
-                    Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, "-", err),
+                    Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, req_id, err),
                 }
             }
         });
@@ -314,7 +321,8 @@ impl LangRunnerProcess {
     pub fn write<T: Serialize>(&mut self, input: &T) -> Result<(), Error> {
         match self.stdin.as_mut() {
             Some(mut stdin) => {
-                info!("{} {} Sending data to runner stdin", LOG_IDENTIFIER, "-");
+                let req_id = self.request_id.read().expect("failed to get read handle on request_id for stdout reading").clone().unwrap_or("-".to_owned());
+                info!("{} {} Sending data to runner stdin", LOG_IDENTIFIER, req_id);
                 ser::to_writer(&mut stdin, &input)?;
                 stdin.write_all(b"\n")?;
                 Ok(())

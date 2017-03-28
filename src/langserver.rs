@@ -169,8 +169,8 @@ impl LangServer {
     fn run_algorithm(&self, req: Request) -> (StatusCode, String, bool) {
         let headers = self.get_proxied_headers(&req.headers);
         let request_id = match req.headers.get::<XRequestId>() {
-            Some(ref request_id) => request_id.0.to_owned(),
-            None => "-".to_owned(),
+            Some(ref request_id) => Some(request_id.0.to_owned()),
+            None => None,
         };
         let input_value = match self.build_input(req) {
             Ok(v) => v,
@@ -257,6 +257,11 @@ impl Handler for LangServer {
             // Route for calling the managed algorithm
             Post => {
                 let (code, res, term) = self.run_algorithm(req);
+                // Reset request id
+                let arc_runner = self.runner.clone();
+                let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
+                runner.set_request_id(None);
+
                 terminate = term;
                 (code, res)
             }
