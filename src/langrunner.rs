@@ -130,7 +130,7 @@ impl LangRunner {
     }
 
     pub fn set_request_id(&mut self, request_id: String) {
-        let mut runner = self.runner.write().expect("Failed to acquire write lock for runner request_id");
+        let runner = self.runner.write().expect("Failed to acquire write lock for runner request_id");
         let mut write_handle = runner.request_id.write().expect("Failed to get write lock for request_id");
         *write_handle = Some(request_id);
     }

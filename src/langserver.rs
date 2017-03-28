@@ -169,7 +169,7 @@ impl LangServer {
     fn run_algorithm(&self, req: Request) -> (StatusCode, String, bool) {
         let headers = self.get_proxied_headers(&req.headers);
         let request_id = match req.headers.get::<XRequestId>() {
-            Some(request_id) => request_id.clone().0.to_owned(),
+            Some(ref request_id) => request_id.0.to_owned(),
             None => "-".to_owned(),
         };
         let input_value = match self.build_input(req) {
