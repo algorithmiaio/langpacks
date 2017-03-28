@@ -14,12 +14,12 @@ use std::time::{Duration, Instant};
 use libc;
 use wait_timeout::ChildExt;
 
-
 use super::error::Error;
 use super::message::{ErrorMessage, RunnerOutput};
 
 const ALGOOUT: &'static str = "/tmp/algoout";
 const UNKNOWN_EXIT: i32 = -99;
+const LOG_IDENTIFIER: &'static str = "LANGRUNNER";
 
 type RunnerResult = Result<Value, Error>;
 
@@ -43,18 +43,18 @@ struct LangRunnerProcess {
 // This blocks until output is available on ALGOOUT
 fn get_next_algoout_value() -> Result<Value, Error> {
     // Note: Opening a FIFO read-only pipe blocks until a writer opens it.
-    println!("Opening /tmp/algoout FIFO...");
+    info!("{} {} Opening /tmp/algoout FIFO...", LOG_IDENTIFIER, "-");
     let algoout = File::open(ALGOOUT)?;
 
 
     // Read and deserialize the single next JSON Value on ALGOOUT
-    println!("Deserializing algoout stream...");
+    info!("{} {} Deserializing algoout stream...", LOG_IDENTIFIER, "-");
     let mut algoout_stream = Deserializer::from_reader(algoout).into_iter::<Value>();
     match algoout_stream.next() {
         Some(next) => match next {
             Ok(out) => Ok(out),
             Err(err) => {
-                println!("Failed to deserialize next JSON value from stream: {}", err);
+                error!("{} {} Failed to deserialize next JSON value from stream: {}", LOG_IDENTIFIER, "-", err);
                 Err(err.into())
             }
         },
@@ -110,9 +110,9 @@ impl LangRunner {
                 {
                     let runner = arc_runner.read().expect("Failed to acquire read lock on runner");
                     if let Some(code) = runner.check_exited() {
-                        println!("LangRunner monitor thread detected exit: {}", code);
+                        warn!("{} {} LangRunner monitor thread detected exit: {}", LOG_IDENTIFIER, "-", code);
                         if let Err(err) = tx.send(Err(Error::UnexpectedExit(code, None, None))) {
-                            println!("FATAL: Channel receiver disconnected unexpectedly: {}", err);
+                            error!("{} {} FATAL: Channel receiver disconnected unexpectedly: {}", LOG_IDENTIFIER, "-", err);
                             process::exit(code); // Don't want to just panic a single thread and hang
                         }
                         break;
@@ -134,7 +134,7 @@ impl LangRunner {
         let start = Instant::now();
         thread::spawn(move || {
             if let Err(err) = tx.send(get_next_algoout_value()) {
-                println!("FATAL: Channel receiver disconnected unexpectedly: {}", err);
+                error!("{} {} FATAL: Channel receiver disconnected unexpectedly: {}", LOG_IDENTIFIER, "-", err);
                 process::exit(UNKNOWN_EXIT); // Don't want to just panic a single thread and hang
             }
         });
@@ -146,9 +146,9 @@ impl LangRunner {
         let mut runner_output = match received {
             Ok(response) => RunnerOutput::Completed(response),
             Err(err) => {
-                println!("Wait encountered an error: {}", err);
+                error!("{} {} Wait encountered an error: {}", LOG_IDENTIFIER, "-", err);
                 let response = ErrorMessage::from_error(err);
-                RunnerOutput::Exited(to_value(&response).expect("RunnerOutput erialization failed"))
+                RunnerOutput::Exited(to_value(&response).expect("RunnerOutput serialization failed"))
             }
         };
 
@@ -193,7 +193,7 @@ impl LangRunnerProcess {
                                  .stderr(Stdio::piped())
                                  .spawn()?;
 
-        println!("Running PID {}: {}", child.id(), path.to_string_lossy());
+        info!("{} {} Running PID {}: {}", LOG_IDENTIFIER, "-", child.id(), path.to_string_lossy());
 
         let stdin = child.stdin
                               .take()
@@ -214,10 +214,13 @@ impl LangRunnerProcess {
             for line_result in reader.lines() {
                 match line_result {
                     Ok(line) => match arc_stderr.lock() {
-                        Ok(mut lines) => lines.push(line),
-                        Err(err) => println!("Failed to get lock on stderr lines: {}", err),
+                        Ok(mut lines) => {
+                            info!("{} {} {}", "ALGOERR", "-", line);
+                            lines.push(line);
+                        }
+                        Err(err) => error!("{} {} Failed to get lock on stderr lines: {}", LOG_IDENTIFIER, "-", err),
                     },
-                    Err(err) => println!("Failed to read line: {}", err),
+                    Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, "-", err),
                 }
             }
         });
@@ -228,8 +231,8 @@ impl LangRunnerProcess {
             let mut line = Vec::new();
             match reader.read_until(b'\n', &mut line) {
                 Ok(0) => {
-                    println!("Reached stdout EOF");
-                    // Wait for exit, return UnexpectedExit with stdout & stderr
+                    info!("{} {} Reached stdout EOF", LOG_IDENTIFIER, "-");
+                    // Wait for exit return UnexpectedExit with stdout & stderr
                     let code = child.wait().ok().and_then(|exit| exit.code()).unwrap_or(UNKNOWN_EXIT);
                     //let mut collected_stderr = self.consume_stderr()
                     //let bytes = stderr.read_to_string(&mut collected_stderr).unwrap_or(0);
@@ -256,12 +259,12 @@ impl LangRunnerProcess {
                 }
                 Ok(_) => {
                     let line_str = String::from_utf8_lossy(&line);
-                    print!("{}", line_str);
+                    info!("{} {} {}", LOG_IDENTIFIER, "-", line_str);
                     collected_stdout.push_str(&line_str.replace("PIPE_INIT_COMPLETE\n",""));
                     if line_str.contains("PIPE_INIT_COMPLETE") { break; }
                 }
                 Err(err) => {
-                    printerrln!("Failed to read child stdout: {}", err);
+                    error!("{} {} Failed to read child stdout: {}", LOG_IDENTIFIER, "-", err);
                     return Err(err.into());
                 }
             }
@@ -274,10 +277,13 @@ impl LangRunnerProcess {
             for line_result in reader.lines() {
                 match line_result {
                     Ok(line) => match arc_stdout.lock() {
-                        Ok(mut lines) => lines.push(line),
-                        Err(err) => println!("Failed to get lock on stdout lines: {}", err),
+                        Ok(mut lines) => {
+                            info!("{} {} {}", "ALGOOUT", "-", line);
+                            lines.push(line);
+                        }
+                        Err(err) => error!("{} {} Failed to get lock on stdout lines: {}", LOG_IDENTIFIER, "-", err),
                     },
-                    Err(err) => println!("Failed to read line: {}", err),
+                    Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, "-", err),
                 }
             }
         });
@@ -294,7 +300,7 @@ impl LangRunnerProcess {
     pub fn write<T: Serialize>(&mut self, input: &T) -> Result<(), Error> {
         match self.stdin.as_mut() {
             Some(mut stdin) => {
-                println!("Sending data to runner stdin");
+                info!("{} {} Sending data to runner stdin", LOG_IDENTIFIER, "-");
                 ser::to_writer(&mut stdin, &input)?;
                 stdin.write_all(b"\n")?;
                 Ok(())
@@ -327,12 +333,12 @@ impl LangRunnerProcess {
         let mut child = self.child.lock().expect("Failed to get lock on runner");
         match child.wait_timeout(Duration::from_millis(10)) {
             Err(err) => {
-                printerrln!("Error waiting for runner: {}", err);
+                error!("{} {} Error waiting for runner: {}", LOG_IDENTIFIER, "-", err);
                 *exit_status = Some(UNKNOWN_EXIT);
                 Some(UNKNOWN_EXIT)
             }
             Ok(Some(exit)) => {
-                println!("Runner exited - {}", exit);
+                info!("{} {} Runner exited - {}", LOG_IDENTIFIER, "-", exit);
                 let code = exit.code().unwrap_or(UNKNOWN_EXIT);
                 *exit_status = Some(code);
                 Some(code)
@@ -351,25 +357,25 @@ impl LangRunnerProcess {
 
         // Mutably `take` child_stdin out of `self` and drop it
         if let Some(_drop_stdin) = self.stdin.take() {
-            println!("Sending EOF to runner stdin.");
+            info!("{} {} Sending EOF to runner stdin.", LOG_IDENTIFIER, "-");
         } // _drop_stdin goes out of scope here which results in EOF
 
         // Now that stdin is closed, we can wait on child
-        println!("Waiting for runner to exit...");
+        info!("{} {} Waiting for runner to exit...", LOG_IDENTIFIER, "-");
         let mut child = self.child.lock().expect("Failed to get lock on runner");
         let code = match child.wait_timeout(Duration::from_secs(3)) {
             Err(err) => {
-                printerrln!("Error waiting for runner: {}", err);
+                error!("{} {} Error waiting for runner: {}", LOG_IDENTIFIER, "-", err);
                 UNKNOWN_EXIT
             }
             Ok(Some(exit)) => {
-                println!("Runner exited - {}", exit);
+                info!("{} {} Runner exited - {}", LOG_IDENTIFIER, "-", exit);
                 exit.code().unwrap_or(UNKNOWN_EXIT)
             }
             Ok(None) => {
-                println!("Runner did not exit. Killing.");
+                warn!("{} {} Runner did not exit. Killing.", LOG_IDENTIFIER, "-");
                 if let Err(err) = child.kill() {
-                    println!("Failed to kill runner: {}", err);
+                    error!("{} {} Failed to kill runner: {}", LOG_IDENTIFIER, "-", err);
                 }
                 UNKNOWN_EXIT
             }

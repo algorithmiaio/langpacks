@@ -19,4 +19,7 @@ serde_derive = "0.9"
 wait-timeout = "0.1"
 libc = "0.2"
 hyper = "0.10.5"
+env_logger = "0.3"
+log = "0.3"
+time = "0.1"
 

@@ -1,5 +1,10 @@
 extern crate langserver;
 extern crate hyper;
+extern crate time;
+
+#[macro_use]
+extern crate log;
+extern crate env_logger;
 
 use hyper::server::Server;
 use std::env;
@@ -10,7 +15,26 @@ use langserver::message::StatusMessage;
 use langserver::notifier::Notifier;
 use langserver::{LangServer, LangServerMode};
 
+use log::{LogRecord, LogLevelFilter};
+use env_logger::LogBuilder;
+
+const LOG_IDENTIFIER: &'static str = "MAIN";
+
 fn main() {
+    let format = |record: &LogRecord| {
+        let t = time::now();
+        format!("{}.{:03} {} {}",
+            time::strftime("%Y-%m-%dT%H:%M:%S", &t).unwrap(),
+            t.tm_nsec / 1000_000,
+            record.level(),
+            record.args()
+        )
+    };
+
+    let mut builder = LogBuilder::new();
+    builder.format(format).filter(None, LogLevelFilter::Info);
+    builder.init().unwrap();
+
     let start = Instant::now();
 
     let listener_res = get_mode()
@@ -26,7 +50,7 @@ fn main() {
     let duration = start.elapsed();
 
     if listener_res.is_ok() {
-        println!("Listening on port 9999.");
+        info!("{} {} Listening on port 9999.", LOG_IDENTIFIER, "-");
     }
 
     match listener_res {
@@ -34,7 +58,7 @@ fn main() {
             let _ = load_complete(Ok(()), duration).or_else(|_| listener.close());
         }
         Err(err) => {
-            println!("Failed to load: {}", err);
+            error!("{} {} Failed to load: {}", LOG_IDENTIFIER, "-", err);
             let _ = load_complete(Err(err), duration);
         }
     };

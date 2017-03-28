@@ -25,6 +25,8 @@ macro_rules! jsonerr {
     ($x:expr, $($arg:tt)*) => (format!(concat!(r#"{{"error":{{"type":"SystemError","message":""#, $x, r#""}}}}"#), $($arg)*));
 }
 
+const LOG_IDENTIFIER: &'static str = "LANGSERVER";
+
 pub enum LangServerMode {
     Sync,
     Async(Notifier),
@@ -69,7 +71,7 @@ impl LangServer {
                 let delete_signalled = watched_delete_signal.lock().unwrap();
                 if !*delete_signalled {
                     if let Some(code) = status {
-                        println!("LangServer monitor thread detected exit: {}", code);
+                        info!("{} {} LangServer monitor thread detected exit: {}", LOG_IDENTIFIER, "-", code);
                         if let Some(ref notifier) = notify_exited {
                             let r = watched_runner.lock().expect("Failed to lock runner");
                             let (stdout, stderr) = r.consume_stdio();
@@ -84,7 +86,7 @@ impl LangServer {
                         }
                     }
                 } else {
-                    println!("Not sending status update on delete due to explicit delete");
+                    info!("{} {} Not sending status update on delete due to explicit delete", LOG_IDENTIFIER, "-");
                     break;
                 }
 
@@ -113,7 +115,7 @@ impl LangServer {
         match headers.get() {
             // "application/json"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Json, _))) => {
-                println!("Handling JSON input");
+                info!("{} {} Handling JSON input", LOG_IDENTIFIER, "-");
                 let raw: Value = de::from_reader(req)?;
                 Ok(json!({
                     "content_type": "json",
@@ -122,7 +124,7 @@ impl LangServer {
             }
             // "text/plain"
             Some(&ContentType(Mime(TopLevel::Text, SubLevel::Plain, _))) => {
-                println!("Handling text input");
+                info!("{} {} Handling text input", LOG_IDENTIFIER, "-");
                 let mut raw = String::new();
                 let _ = req.read_to_string(&mut raw)?;
                 Ok(json!({
@@ -133,7 +135,7 @@ impl LangServer {
             // "application/octet-stream"
             Some(&ContentType(Mime(TopLevel::Application, SubLevel::Ext(_), _))) => {
                 // TODO: verify sublevel is actually "octet-stream"
-                println!("Handling binary input");
+                info!("{} {} Handling binary input", LOG_IDENTIFIER, "-");
                 let mut raw = vec![];
                 let _ = req.read_to_end(&mut raw)?;
 
@@ -174,7 +176,7 @@ impl LangServer {
         let arc_runner = self.runner.clone();
         let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
         if let Err(err) = runner.write(&input_value) {
-            println!("Failed write to runner stdin: {}", err);
+            error!("{} {} Failed write to runner stdin: {}", LOG_IDENTIFIER, "-", err);
             return (StatusCode::BadRequest,
                     jsonerr!("Failed to write to runner stdin: {}", err),
                     false);
@@ -183,7 +185,7 @@ impl LangServer {
         // Wait for the algorithm to complete (either synchronously or asynchronously)
         match self.mode {
             LangServerMode::Sync => {
-                println!("Waiting synchronously for algorithm to complete");
+                info!("{} {} Waiting synchronously for algorithm to complete", LOG_IDENTIFIER, "-");
                 let (status_code, output, terminate) = match runner.wait_for_response_or_exit() {
                     RunnerOutput::Completed(output) => (StatusCode::Ok, output, false),
                     RunnerOutput::Exited(output) => (StatusCode::Ok, output, true),
@@ -197,7 +199,7 @@ impl LangServer {
                 }
             }
             LangServerMode::Async(ref notif) => {
-                println!("Waiting asynchronously for algorithm to complete");
+                info!("{} {} Waiting asynchronously for algorithm to complete", LOG_IDENTIFIER, "-");
 
                 let notifier = notif.clone();
                 let arc_runner = self.runner.clone();
@@ -209,7 +211,7 @@ impl LangServer {
 
                     let mut terminate = false;
                     if let Err(err) = notifier.notify(output, Some(headers)) {
-                        println!("Failed to send REQUEST_COMPLETE notification: {}", err);
+                        error!("{} {} Failed to send REQUEST_COMPLETE notification: {}", LOG_IDENTIFIER, "-", err);
                         terminate = true;
                     }
                     if terminate {
@@ -234,7 +236,7 @@ impl LangServer {
 impl Handler for LangServer {
     fn handle(&self, req: Request, mut res: Response) {
         let route = format!("{} {}", req.method, req.uri);
-        println!("{} (start)", route);
+        info!("{} {} {} (start)", LOG_IDENTIFIER, "-", route);
         let mut terminate = false;
 
 
@@ -263,7 +265,7 @@ impl Handler for LangServer {
             _ => (StatusCode::MethodNotAllowed, jsonerr!("Method not allowed")),
         };
 
-        println!("{} (complete)", route);
+        info!("{} {} {} (complete)", LOG_IDENTIFIER, "-", route);
         res.headers_mut().set(ContentType::json());
         *res.status_mut() = status;
         res.send(output.as_bytes()).unwrap();

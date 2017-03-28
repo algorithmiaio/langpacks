@@ -13,6 +13,8 @@ pub struct Notifier {
     url: Url,
 }
 
+const LOG_IDENTIFIER: &'static str = "NOTIFIER";
+
 impl Notifier {
     pub fn parse(url: &str) -> Result<Notifier, Error> {
         match Url::parse(url) {
@@ -34,11 +36,11 @@ impl Notifier {
                 Ok(())
             }
             Ok(response) => {
-                println!("Failed to send notification: {}", response.status);
+                error!("{} {} Failed to send notification: {}", LOG_IDENTIFIER, "-", response.status);
                 Err(Error::NotificationError(response))
             }
             Err(err) => {
-                println!("Failed to send notification: {}", err);
+                error!("{} {} Failed to send notification: {}", LOG_IDENTIFIER, "-", err);
                 Err(err.into())
             }
         }
@@ -52,7 +54,7 @@ impl Notifier {
             if i == 3 {
                 return Err(err);
             }
-            println!("Will retry notification (#{})", i);
+            warn!("{} {} Will retry notification (#{})", LOG_IDENTIFIER, "-", i);
             thread::sleep(Duration::from_secs(1));
             i += 1;
         }
