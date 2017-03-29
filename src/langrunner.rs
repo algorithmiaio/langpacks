@@ -280,9 +280,14 @@ impl LangRunnerProcess {
                 Ok(_) => {
                     let line_str = String::from_utf8_lossy(&line);
                     let req_id = request_id.read().expect("failed to get read handle on request_id for stderr reading").clone().unwrap_or("-".to_owned());
-                    info!("{} {} {}", LOG_IDENTIFIER, req_id, &line_str.replace("\n",""));
                     collected_stdout.push_str(&line_str.replace("PIPE_INIT_COMPLETE\n",""));
-                    if line_str.contains("PIPE_INIT_COMPLETE") { break; }
+                    if line_str.contains("PIPE_INIT_COMPLETE") {
+                        info!("{} {} {}", LOG_IDENTIFIER, req_id, &line_str.replace("\n",""));
+                        break;
+                    }
+                    else {
+                        info!("{} {} {}", "ALGOOUT", req_id, &line_str.replace("\n",""));
+                    }
                 }
                 Err(err) => {
                     error!("{} {} Failed to read child stdout: {}", LOG_IDENTIFIER, "-", err);
