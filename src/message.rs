@@ -68,7 +68,7 @@ impl RunnerState {
             }
             RunnerState::Completed(RunnerOutput::Failure{ message, stacktrace, error_type }) => {
                 RunnerMessage::Failure {
-                    error: ErrorMessage{ message, stacktrace, error_type },
+                    error: ErrorMessage{ message: message, stacktrace: stacktrace, error_type: error_type },
                     metadata: Metadata::new(duration, None),
                 }
             }
