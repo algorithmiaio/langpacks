@@ -13,7 +13,7 @@ use std::{process, thread};
 
 use super::error::Error;
 use super::langrunner::LangRunner;
-use super::message::{RunnerOutput, StatusMessage};
+use super::message::StatusMessage;
 use super::notifier::Notifier;
 
 macro_rules! jsonres {
@@ -78,9 +78,7 @@ impl LangServer {
                     if let Some(code) = status {
                         info!("{} {} LangServer monitor thread detected exit: {}", LOG_IDENTIFIER, "-", code);
                         if let Some(ref notifier) = notify_exited {
-                            let r = watched_runner.lock().expect("Failed to lock runner");
-                            let (stdout, stderr) = r.consume_stdio();
-                            let err = Error::UnexpectedExit(code, stdout, stderr);
+                            let err = Error::UnexpectedExit(code);
                             let message = StatusMessage::failure(err, Duration::new(0,0));
                             let _ = notifier.notify(message, None);
                         }
@@ -197,16 +195,14 @@ impl LangServer {
         match self.mode {
             LangServerMode::Sync => {
                 info!("{} {} Waiting synchronously for algorithm to complete", LOG_IDENTIFIER, request_id);
-                let (status_code, output, terminate) = match runner.wait_for_response_or_exit() {
-                    RunnerOutput::Completed(output) => (StatusCode::Ok, output, false),
-                    RunnerOutput::Exited(output) => (StatusCode::Ok, output, true),
-                };
-
+                let message = runner.wait_for_response_or_exit();
                 info!("{} {} algorithm completed", LOG_IDENTIFIER, request_id);
-                match ser::to_string(&output) {
-                    Ok(response) => (status_code, response, terminate),
+                let terminate = message.exited_early();
+
+                match ser::to_string(&message) {
+                    Ok(response) => (StatusCode::Ok, response, terminate),
                     Err(err) => (StatusCode::InternalServerError,
-                                 jsonerr!("Failed to encode RunnerOutput: {}", err),
+                                 jsonerr!("Failed to encode RunnerState: {}", err),
                                  true),
                 }
             }
@@ -217,9 +213,7 @@ impl LangServer {
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
                     let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-                    let output  = match runner.wait_for_response_or_exit() {
-                        RunnerOutput::Completed(output) | RunnerOutput::Exited(output) => output,
-                    };
+                    let output  = runner.wait_for_response_or_exit();
 
                     let mut terminate = false;
                     if let Err(err) = notifier.notify(output, Some(headers)) {

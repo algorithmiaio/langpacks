@@ -13,10 +13,7 @@ extern crate base64;
 extern crate hyper;
 extern crate libc;
 extern crate serde;
-
 extern crate wait_timeout;
-
-macro_rules! s { ($x:expr) => ($x.to_string()); }
 
 pub use langserver::{LangServer, LangServerMode};
 
