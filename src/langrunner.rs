@@ -40,7 +40,9 @@ struct LangRunnerProcess {
 
 // This blocks until output is available on ALGOOUT
 fn get_next_algoout_value(request_id: Arc<RwLock<Option<String>>>) -> Result<RunnerOutput, Error> {
-    let req_id = request_id.read().expect("failed to get read handle on request_id for stdout reading").clone().unwrap_or("-".to_owned());
+    let req_id = request_id.read()
+        .expect("failed to get read handle on request_id for stdout reading")
+        .clone().unwrap_or_else(|| "-".to_owned());
     // Note: Opening a FIFO read-only pipe blocks until a writer opens it.
     info!("{} {} Opening /tmp/algoout FIFO...", LOG_IDENTIFIER, req_id);
     let algoout = File::open(ALGOOUT)?;
@@ -115,7 +117,7 @@ impl LangRunner {
     pub fn get_request_id(&self) -> String {
         let runner = self.runner.read().expect("Failed to acquire read lock for runner request_id");
         let read_handle = runner.request_id.read().expect("Failed to get read lock for request_id");
-        read_handle.clone().unwrap_or("-".to_owned())
+        read_handle.clone().unwrap_or_else(|| "-".to_owned())
     }
 
     pub fn wait_for_response_or_exit(&mut self) -> RunnerMessage {
@@ -198,7 +200,7 @@ impl LangRunnerProcess {
             for line_result in reader.lines() {
                 let req_id = arc_request_id_err
                     .read().expect("failed to get read handle on request_id for stdout reading")
-                    .clone().unwrap_or("-".to_owned());
+                    .clone().unwrap_or_else(|| "-".to_owned());
                 match line_result {
                     Ok(line) => info!("{} {} {}", "ALGOERR", req_id, line),
                     Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, req_id, err),
@@ -220,7 +222,7 @@ impl LangRunnerProcess {
                     let _newline = line.pop();
                     let req_id = request_id.read()
                         .expect("failed to get read handle on request_id for stderr reading")
-                        .clone().unwrap_or("-".to_owned());
+                        .clone().unwrap_or_else(|| "-".to_owned());
                     if line.contains("PIPE_INIT_COMPLETE") {
                         info!("{} {} {}", LOG_IDENTIFIER, req_id, &line);
                         break;
@@ -241,7 +243,7 @@ impl LangRunnerProcess {
             for line_result in reader.lines() {
                 let req_id = arc_request_id_out
                     .read().expect("failed to get read handle on request_id for stdout reading")
-                    .clone().unwrap_or("-".to_owned());
+                    .clone().unwrap_or_else(|| "-".to_owned());
                 match line_result {
                     Ok(line) => info!("{} {} {}", "ALGOOUT", req_id, line),
                     Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, req_id, err),
@@ -260,7 +262,9 @@ impl LangRunnerProcess {
     pub fn write<T: Serialize>(&mut self, input: &T) -> Result<(), Error> {
         match self.stdin.as_mut() {
             Some(mut stdin) => {
-                let req_id = self.request_id.read().expect("failed to get read handle on request_id for stdout reading").clone().unwrap_or("-".to_owned());
+                let req_id = self.request_id.read()
+                    .expect("failed to get read handle on request_id for stdout reading")
+                    .clone().unwrap_or_else(|| "-".to_owned());
                 info!("{} {} Sending data to runner stdin", LOG_IDENTIFIER, req_id);
                 ser::to_writer(&mut stdin, &input)?;
                 stdin.write_all(b"\n")?;

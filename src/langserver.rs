@@ -98,7 +98,7 @@ impl LangServer {
         });
     }
 
-    fn build_input(&self, mut req: Request, request_id: String) -> Result<Value, Error> {
+    fn build_input(&self, mut req: Request, request_id: &str) -> Result<Value, Error> {
         let headers = req.headers.clone();
         let mut has_base64_content_encoding = false;
         if let Some(content_encoding_header) = headers.get::<ContentEncoding>() {
@@ -166,11 +166,11 @@ impl LangServer {
     // Returns status, response string, and a boolean to indicate if the server should terminate
     fn run_algorithm(&self, req: Request) -> (StatusCode, String, bool) {
         let headers = self.get_proxied_headers(&req.headers);
-        let request_id_opt = match req.headers.get::<XRequestId>() {
-            Some(ref request_id) => Some(request_id.0.to_owned()),
-            None => None,
+        let request_id = match req.headers.get::<XRequestId>() {
+            Some(request_id) => request_id.0.to_owned(),
+            None => "-".to_owned(),
         };
-        let input_value = match self.build_input(req, request_id_opt.clone().unwrap_or("-".to_owned())) {
+        let input_value = match self.build_input(req, &request_id) {
             Ok(v) => v,
             Err(err) => {
                 return (StatusCode::BadRequest,
@@ -182,7 +182,7 @@ impl LangServer {
         // Start piping data
         let arc_runner = self.runner.clone();
         let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-        runner.set_request_id(request_id_opt.clone());
+        runner.set_request_id(Some(request_id.clone()));
         if let Err(err) = runner.write(&input_value) {
             error!("{} {} Failed write to runner stdin: {}", LOG_IDENTIFIER, "-", err);
             return (StatusCode::BadRequest,
@@ -191,7 +191,6 @@ impl LangServer {
         }
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
-        let request_id = request_id_opt.unwrap_or("-".to_owned());
         match self.mode {
             LangServerMode::Sync => {
                 info!("{} {} Waiting synchronously for algorithm to complete", LOG_IDENTIFIER, request_id);
