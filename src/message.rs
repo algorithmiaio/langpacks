@@ -13,7 +13,7 @@ pub enum RunnerState {
 #[serde(untagged)]
 pub enum RunnerOutput {
     Success { result: Value, metadata: RunnerMetadata },
-    Failure { message: String, stacktrace: Option<String>, error_type: ErrorType },
+    Failure { error: ErrorMessage },
 }
 
 #[derive(Deserialize)]
@@ -66,9 +66,9 @@ impl RunnerState {
                     metadata: Metadata::new(duration, Some(metadata.content_type)),
                 }
             }
-            RunnerState::Completed(RunnerOutput::Failure{ message, stacktrace, error_type }) => {
+            RunnerState::Completed(RunnerOutput::Failure{ error }) => {
                 RunnerMessage::Failure {
-                    error: ErrorMessage{ message: message, stacktrace: stacktrace, error_type: error_type },
+                    error: error,
                     metadata: Metadata::new(duration, None),
                 }
             }

@@ -153,7 +153,8 @@ impl LangServer {
                     "data": result_string,
                 }))
             }
-            _ => Err(Error::BadRequest("Missing ContentType".to_string())),
+            Some(ct) => Err(Error::BadRequest(format!("unsupported Content-Type '{}'", ct))),
+            None => Err(Error::BadRequest("missing Content-Type".to_string())),
         }
     }
 
