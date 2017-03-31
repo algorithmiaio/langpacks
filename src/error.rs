@@ -8,26 +8,27 @@ quick_error! {
         HttpError(err: hyper::error::Error) {
             from()
             description(err.description())
-            cause(err)
+            display("HTTP error - {}", err)
         }
 
         /// Errors reading environment variables
         EnvVarError(err: std::env::VarError) {
             from()
             description(err.description())
-            cause(err)
+            display("environment var error - {}", err)
         }
 
         /// Errors serialize type to JSON
         SerdeError(err: serde_json::error::Error) {
             from()
             description(err.description())
+            display("JSON error - {}", err)
         }
 
         IoError(err: std::io::Error) {
             from()
             description(err.description())
-            cause(err)
+            display("IO error - {}", err)
         }
 
         /// Errors parsing URLs
