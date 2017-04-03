@@ -11,6 +11,10 @@ fi
 
 if [[ -x bin/pipe ]]; then
   exec /bin/langserver
+elif [[ "$LANGUAGE_VERSION" == "javaMigration" ]]; then
+    mkdir -p bin
+    ln -s /tmp/javaLangpack/pipe bin/pipe
+    exec /bin/langserver
 else
   echo "Did not find executable $(pwd)/bin/pipe"
   exit 1

@@ -25,15 +25,16 @@ ln -s /usr/share/java/ivy.jar /usr/share/ant/lib/ivy.jar
 # Install generally useful packages
 apt-get install -y zip maven git
 
-mkdir /tmp/langserver-java
-cd /tmp/langserver-java
+mkdir /tmp/langserver-java-git
+cd /tmp/langserver-java-git
 git init
 git remote add origin https://github.com/algorithmiaio/langpacks.git
 git checkout -b java
 git pull origin java
-cd langpacks/java/pipe
+cd java/pipe
 mvn package
 
 mv target /tmp/javaLangpack
 
 cd
+cp /tmp/langserver-java-git/java/template/bin/pipe /tmp/javaLangpack/
