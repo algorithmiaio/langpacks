@@ -13,6 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" --uid $ALGO_UID algo
 
+ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV LANG C.UTF-8
 
 COPY r/template/bin/setup /tmp/r/setup
