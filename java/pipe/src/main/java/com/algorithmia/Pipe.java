@@ -14,6 +14,7 @@ public class Pipe {
     private static final String FIFO_PATH = "/tmp/algoout";
     private static final String CONFIG_FILE_NAME = WORKING_DIRECTORY + "/algorithmia.conf";
     private static final String ALGORITHM_NAME_ENV_VARIABLE = "ALGORITHMIA_ALGORITHM_NAME";
+    private static final String ALGORITHM_AUTHOR_ENV_VARIABLE = "ALGORITHMIA_ALGORITHM_AUTHOR_NAME";
     private static final JsonParser parser = new JsonParser();
 
     private static String getAlgorithmNameFromConfigFile() throws java.io.IOException {
@@ -21,6 +22,7 @@ public class Pipe {
         JsonObject json = parser.parse(contents).getAsJsonObject();
         return json.get("algoname").getAsString();
     }
+
     private static String getAlgorithmName() throws java.io.IOException {
         File f = new File(CONFIG_FILE_NAME);
         if (f.exists()) {
@@ -29,12 +31,24 @@ public class Pipe {
 
         return System.getenv().get(ALGORITHM_NAME_ENV_VARIABLE);
     }
-    public static void main(String[] args) throws java.io.FileNotFoundException, java.io.IOException, Throwable {
+
+    private static String getClassPath() throws java.io.IOException {
         String algoname = getAlgorithmName();
+
+        if (System.getenv().containsKey(ALGORITHM_AUTHOR_ENV_VARIABLE)) {
+            String author = System.getenv().get(ALGORITHM_AUTHOR_ENV_VARIABLE);
+            return "algorithmia." + author + "." + algoname + "." + algoname;
+        }
+
+        return "algorithmia." + algoname + "." + algoname;
+    }
+
+    public static void main(String[] args) throws java.io.FileNotFoundException, java.io.IOException, Throwable {
+        String classPath = getClassPath();
 
         JarRunner runner = null;
         try {
-            runner = new JarRunner(algoname, WORKING_DIRECTORY);
+            runner = new JarRunner(classPath, WORKING_DIRECTORY);
         } catch (Throwable t) {
             System.out.println("There was an error loading the algorithm");
             System.out.println(t);

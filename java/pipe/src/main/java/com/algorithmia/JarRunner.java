@@ -27,8 +27,8 @@ public class JarRunner {
         applyMethods.get(key).add(methodData);
     }
 
-    public JarRunner(String algoname, String workingDirectory) throws Exception {
-        Class<?> algoClass = loadAlgorithm(algoname, workingDirectory);
+    public JarRunner(String classPath, String workingDirectory) throws Exception {
+        Class<?> algoClass = loadAlgorithm(classPath, workingDirectory);
         instance = algoClass.newInstance();
         applyMethods = new HashMap<String, Queue<MethodData>>();
         returnJsonMethods = new HashSet<Method>();
@@ -195,9 +195,7 @@ public class JarRunner {
         );
     }
 
-    private Class<?> loadAlgorithm(String algoname, String workingDirectory) throws Exception {
-        String classPath = "algorithmia." + algoname + "." + algoname;
-
+    private Class<?> loadAlgorithm(String classPath, String workingDirectory) throws Exception {
         try {
             ClassLoader loader = loadJars(workingDirectory);
             return loader.loadClass(classPath);
