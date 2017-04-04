@@ -29,12 +29,13 @@ mkdir /tmp/langserver-java-git
 cd /tmp/langserver-java-git
 git init
 git remote add origin https://github.com/algorithmiaio/langpacks.git
-git checkout -b java
+git checkout -b java # TODO(james) on merge this should be master
 git pull origin java
 cd java/pipe
 mvn package
 
-mv target /tmp/javaLangpack
+mv target /bin/javaLangpack
 
+cp /tmp/langserver-java-git/java/template/bin/pipe /bin/javaLangpack/
 cd
-cp /tmp/langserver-java-git/java/template/bin/pipe /tmp/javaLangpack/
+rm -rf /tmp/langserver-java-git
