@@ -85,7 +85,6 @@ public class JarRunner {
             try {
                 for (int i = 0; i < convertedInputs.length; i++) {
                     convertedInputs[i] = mcp.conversions[i].apply(inputObject[i]);
-                    //System.out.println(" - " + convertedInputs[i]);
                 }
                 return applyInput(mcp.method, convertedInputs);
             } catch (Throwable t) {
@@ -110,7 +109,6 @@ public class JarRunner {
             }
             return applyInput(jsonApplyMethodData.method, convertedInputs);
         } catch (Throwable t) {
-            // System.out.println(t);
             // Ignore exceptions
         }
 
@@ -179,7 +177,6 @@ public class JarRunner {
         for (File jar : jarFiles) {
             try {
                 jarUrls.add(new URL("file:" + jar));
-                // System.out.println(new URL("file:" + jar));
             } catch (Throwable t) {
                 // Do nothing
             }

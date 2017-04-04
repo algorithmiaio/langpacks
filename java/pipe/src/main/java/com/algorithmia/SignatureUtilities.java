@@ -16,9 +16,13 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import java.util.function.Function;
+
 public class SignatureUtilities {
     public static final String METHOD_KEY_BYTE_ARRAY = "Bytes-";
     public static final String METHOD_KEY_OBJECT = "Object-";
+    public static final String METHOD_KEY_STRING = "String-";
+    public static final String METHOD_KEY_NUMBER = "Number-";
+    public static final String METHOD_KEY_BOOLEAN = "Boolean-";
 
     static class FloatSerializer implements JsonSerializer<Float> {
         public JsonElement serialize(Float value, Type theType, JsonSerializationContext context) {
@@ -105,28 +109,28 @@ public class SignatureUtilities {
             Class<?> c = parameterTypes[i];
             if (c.isPrimitive()) {
                 if (c == byte.class){
-                    signature.append("Number-");
+                    signature.append(METHOD_KEY_NUMBER);
                     conversions[i] = toByte;
                 } else if (c == short.class) {
-                    signature.append("Number-");
+                    signature.append(METHOD_KEY_NUMBER);
                     conversions[i] = toShort;
                 } else if (c == int.class) {
-                    signature.append("Number-");
+                    signature.append(METHOD_KEY_NUMBER);
                     conversions[i] = toInteger;
                 } else if (c == long.class) {
-                    signature.append("Number-");
+                    signature.append(METHOD_KEY_NUMBER);
                     conversions[i] = toLong;
                 } else if (c == float.class) {
-                    signature.append("Number-");
+                    signature.append(METHOD_KEY_NUMBER);
                     conversions[i] = toFloat;
                 } else if (c == double.class) {
-                    signature.append("Number-");
+                    signature.append(METHOD_KEY_NUMBER);
                     conversions[i] = toDouble;
                 } else if (c == char.class) {
-                    signature.append("String-");
+                    signature.append(METHOD_KEY_STRING);
                     conversions[i] = toCharacter;
                 } else if (c == boolean.class) {
-                    signature.append("Boolean-");
+                    signature.append(METHOD_KEY_BOOLEAN);
                     conversions[i] = toBoolean;
                 } else {
                     signature.append(METHOD_KEY_OBJECT);
@@ -150,25 +154,25 @@ public class SignatureUtilities {
                     } else {
                         conversions[i] = getCoerceFunction(genericParameterTypes[i]);
                     }
-                    signature.append("Number-");
+                    signature.append(METHOD_KEY_NUMBER);
 
                     // Make a function to coerce?
                 } else if (c == Boolean.class) {
-                    signature.append("Boolean-");
+                    signature.append(METHOD_KEY_BOOLEAN);
                     conversions[i] = toBoolean;
                 } else if (c == byte[].class) {
                     signature.append(METHOD_KEY_BYTE_ARRAY);
                     conversions[i] = toByteArray;
                 } else if (c == Character.class) {
-                    signature.append("String-");
+                    signature.append(METHOD_KEY_STRING);
                     conversions[i] = toCharacter;
                 } else {
                     try {
                         Object pInstance = c.newInstance();
                         if (pInstance instanceof Number) {
-                            signature.append("Number-");
+                            signature.append(METHOD_KEY_NUMBER);
                         } else if (pInstance instanceof String) {
-                            signature.append("String-");
+                            signature.append(METHOD_KEY_STRING);
                             conversions[i] = toString;
                         } else {
                             signature.append(METHOD_KEY_OBJECT);
@@ -217,12 +221,12 @@ public class SignatureUtilities {
         if (cur.isJsonPrimitive()) {
             JsonPrimitive primative = cur.getAsJsonPrimitive();
             if (primative.isBoolean()) {
-                return "Boolean-";
+                return METHOD_KEY_BOOLEAN;
             } else if (primative.isNumber()) {
-                return "Number-";
+                return METHOD_KEY_NUMBER;
             } else if (primative.isString()) {
                 // Since we can't tell the difference between strings and characters here, we lump them together
-                return "String-";
+                return METHOD_KEY_STRING;
             } else {
                 return METHOD_KEY_OBJECT;
             }

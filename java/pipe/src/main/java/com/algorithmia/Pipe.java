@@ -70,7 +70,7 @@ public class Pipe {
             String outputContentType = "text";
             if (inputContentType.equals("text")) {
                 Object[] inputArr = {json.get("data")};
-                AlgorithmResult result = runner.tryApplies("String-", inputArr);
+                AlgorithmResult result = runner.tryApplies(SignatureUtilities.METHOD_KEY_STRING, inputArr);
 
 
                 serializedJson = getJsonOutput(result);
