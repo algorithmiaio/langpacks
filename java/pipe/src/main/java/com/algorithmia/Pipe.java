@@ -73,7 +73,7 @@ public class Pipe {
                 AlgorithmResult result = runner.tryApplies(SignatureUtilities.METHOD_KEY_STRING, inputArr);
 
 
-                serializedJson = getJsonOutput(result);
+                serializedJson = result.getJsonOutput();
             } else if (inputContentType.equals("json")) {
                 JsonElement data = json.get("data");
                 if (data.isJsonArray()) {
@@ -87,24 +87,24 @@ public class Pipe {
 
                     AlgorithmResult result = runner.tryApplies(methodKey, inputs);
 
-                    serializedJson = getJsonOutput(result);
+                    serializedJson = result.getJsonOutput();
                 } else if (data.isJsonPrimitive() || data.isJsonNull()) {
                     String methodKey = SignatureUtilities.getMethodKeyForElement(data);
                     Object[] inputs = {data};
                     AlgorithmResult result = runner.tryApplies(methodKey, inputs);
 
-                    serializedJson = getJsonOutput(result);
+                    serializedJson = result.getJsonOutput();
                 } else {
                     Object[] inputs = {data};
                     AlgorithmResult result = runner.tryJsonApply(inputs);
 
-                    serializedJson = getJsonOutput(result);
+                    serializedJson = result.getJsonOutput();
                 }
             } else if (inputContentType.equals("binary")) {
                 Object[] inputs = {json.get("data")};
                 AlgorithmResult result = runner.tryApplies(SignatureUtilities.METHOD_KEY_BYTE_ARRAY, inputs);
 
-                serializedJson = getJsonOutput(result);
+                serializedJson = result.getJsonOutput();
             } else {
                 throw new IllegalStateException("Wrong content type: " + inputContentType);
             }
@@ -113,28 +113,6 @@ public class Pipe {
             output.println(serializedJson);
             output.flush();
         }
-    }
-
-    public static String getJsonOutput(AlgorithmResult algoResult) {
-        JsonObject metadata = new JsonObject();
-
-        switch (algoResult.contentType) {
-            case TEXT:
-                metadata.addProperty("content_type", "text");
-                break;
-            case JSON:
-                metadata.addProperty("content_type", "json");
-                break;
-            case BINARY:
-                metadata.addProperty("content_type", "binary");
-                break;
-        }
-
-        JsonObject jsonOutput = new JsonObject();
-        jsonOutput.addProperty("result", algoResult.result);
-        jsonOutput.add("metadata", metadata);
-
-        return jsonOutput.toString();
     }
 
 }

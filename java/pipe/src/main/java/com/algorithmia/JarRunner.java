@@ -103,16 +103,10 @@ public class JarRunner {
 
         Object[] convertedInputs = new Object[inputObject.length];
 
-        try {
-            for (int i = 0; i < convertedInputs.length; i++) {
-                convertedInputs[i] = jsonApplyMethodData.conversions[i].apply(inputObject[i]);
-            }
-            return applyInput(jsonApplyMethodData.method, convertedInputs);
-        } catch (Throwable t) {
-            // Ignore exceptions
+        for (int i = 0; i < convertedInputs.length; i++) {
+            convertedInputs[i] = jsonApplyMethodData.conversions[i].apply(inputObject[i]);
         }
-
-        throw new Exception("json apply failed");
+        return applyInput(jsonApplyMethodData.method, convertedInputs);
     }
 
     private AlgorithmResult applyInput(Method applyMethod, Object[] inputObject) throws Exception {
@@ -134,10 +128,8 @@ public class JarRunner {
         }
 
         if (output == null) {
-            return null;
-        }
-
-        if (output instanceof String) {
+            return new AlgorithmResult((JsonElement)null, AlgorithmResult.ContentType.JSON);
+        } else if (output instanceof String) {
             if (returnJsonMethods.contains(applyMethod)) {
                 return new AlgorithmResult((String)output, AlgorithmResult.ContentType.JSON);
             } else {
@@ -157,7 +149,7 @@ public class JarRunner {
             return new AlgorithmResult(Base64.getEncoder().encodeToString((byte[])output), AlgorithmResult.ContentType.BINARY);
         } else {
             try {
-                return new AlgorithmResult(SignatureUtilities.gson.toJson(output, applyMethod.getGenericReturnType()), AlgorithmResult.ContentType.JSON);
+                return new AlgorithmResult(SignatureUtilities.gson.toJsonTree(output, applyMethod.getGenericReturnType()), AlgorithmResult.ContentType.JSON);
             } catch (Throwable e) {
                 throw new Exception("failed to parse algorithm output", e);
             }
