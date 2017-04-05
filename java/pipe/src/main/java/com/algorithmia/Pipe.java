@@ -59,9 +59,10 @@ public class Pipe {
         System.out.flush();
 
         Scanner input = new Scanner(System.in);
-        FileOutputStream fileOutputStream = new FileOutputStream(FIFO_PATH, true);
-        PrintStream output = new PrintStream(fileOutputStream, true);
+
         while (input.hasNextLine()) {
+            FileOutputStream fileOutputStream = new FileOutputStream(FIFO_PATH, true);
+            PrintStream output = new PrintStream(fileOutputStream, true);
             String line = input.nextLine();
             String serializedJson = null;
 
@@ -112,6 +113,10 @@ public class Pipe {
             System.out.flush();
             output.println(serializedJson);
             output.flush();
+            fileOutputStream.flush();
+
+            output.close();
+            fileOutputStream.close();
         }
     }
 
