@@ -65,10 +65,24 @@ public class JarRunner {
     }
 
     public AlgorithmResult tryApplies(String methodKey, Object[] inputObject) throws Exception {
+        ErrorPair errorPair = new ErrorPair();
+
         try {
             return tryAppliesInternal(methodKey, inputObject);
-        } catch (Throwable e) {
+        } catch (Exception e) { // The catch block should be the same as the one below :(
+            errorPair.registerNewException(e);
+        }
+
+        try {
             return tryAppliesInternal(SignatureUtilities.getGenericKey(inputObject.length), inputObject);
+        } catch (Exception e) { // The catch block should be the same as the one below :(
+            errorPair.registerNewException(e);
+        }
+
+        if (errorPair.algorithmError != null) {
+            throw errorPair.algorithmError;
+        } else {
+            throw errorPair.callError;
         }
     }
 
@@ -78,7 +92,7 @@ public class JarRunner {
             throw new Exception("no apply method matches input signature");
         }
 
-
+        Exception exception = null;
         for (MethodData mcp : applyMethods.get(methodKey)) {
             Object[] convertedInputs = new Object[inputObject.length];
 
@@ -87,11 +101,14 @@ public class JarRunner {
                     convertedInputs[i] = mcp.conversions[i].apply(inputObject[i]);
                 }
                 return applyInput(mcp.method, convertedInputs);
-            } catch (Throwable t) {
-                // Ignore exceptions
+            } catch (Exception t) {
+                exception = t;
             }
         }
 
+        if (exception != null) {
+            throw exception;
+        }
         throw new Exception("no apply method was successfully applied to the input + " + inputObject[0].getClass().getName());
     }
 
@@ -110,22 +127,7 @@ public class JarRunner {
     }
 
     private AlgorithmResult applyInput(Method applyMethod, Object[] inputObject) throws Exception {
-        Object output = null;
-        try {
-            output = applyMethod.invoke(instance, inputObject);
-        } catch (ClassCastException e) {
-            throw new Exception("failed to invoke algorithm", e);
-        } catch (IllegalArgumentException e) {
-            throw new Exception("failed to invoke algorithm", e);
-        } catch (IllegalAccessException e) {
-            throw new Exception("failed to invoke algorithm", e);
-        } catch (InvocationTargetException e) {
-            if (e.getCause() == null) {
-                throw new Exception("failed to invoke algorithm", e);
-            } else {
-                throw new Exception(e.getCause());
-            }
-        }
+        Object output = applyMethod.invoke(instance, inputObject);
 
         if (output == null) {
             return new AlgorithmResult((JsonElement)null, AlgorithmResult.ContentType.JSON);
@@ -192,6 +194,31 @@ public class JarRunner {
             throw new Exception("Algorithm class not found. Name must match: " + classPath + "\nTo Fix: Double check both package-name and class-name");
         } catch (Throwable e) {
             throw e;
+        }
+    }
+
+    private class ErrorPair {
+        public Exception callError;
+        public Exception algorithmError;
+
+        public void registerNewException(Exception e) {
+            if (e instanceof ClassCastException || e instanceof IllegalArgumentException || e instanceof IllegalAccessException) {
+                if (callError == null) {
+                    callError = new Exception("failed to invoke algorithm", e);
+                }
+            } else if (e instanceof InvocationTargetException) {
+                if (callError == null) {
+                    if (e.getCause() == null) {
+                        callError = new Exception("failed to invoke algorithm", e);
+                    } else {
+                        callError = new Exception(e.getCause());
+                    }
+                }
+            } else {
+                if (algorithmError == null) {
+                    algorithmError = e;
+                }
+            }
         }
     }
 }
