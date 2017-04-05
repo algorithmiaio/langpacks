@@ -136,12 +136,6 @@ impl LangRunner {
         *write_handle = request_id;
     }
 
-    pub fn get_request_id(&self) -> String {
-        let runner = self.runner.read().expect("Failed to acquire read lock for runner request_id");
-        let read_handle = runner.request_id.read().expect("Failed to get read lock for request_id");
-        read_handle.clone().unwrap_or("-".to_owned())
-    }
-
     pub fn wait_for_response_or_exit(&mut self) -> RunnerOutput {
         let tx = self.tx.clone();
 
@@ -284,8 +278,7 @@ impl LangRunnerProcess {
                     if line_str.contains("PIPE_INIT_COMPLETE") {
                         info!("{} {} {}", LOG_IDENTIFIER, req_id, &line_str.replace("\n",""));
                         break;
-                    }
-                    else {
+                    } else {
                         info!("{} {} {}", "ALGOOUT", req_id, &line_str.replace("\n",""));
                     }
                 }
