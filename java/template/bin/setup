@@ -29,8 +29,7 @@ mkdir /tmp/langserver-java-git
 cd /tmp/langserver-java-git
 git init
 git remote add origin https://github.com/algorithmiaio/langpacks.git
-git checkout -b java # TODO(james) on merge this should be master
-git pull origin java
+git pull origin master
 cd java/pipe
 mvn package
 
