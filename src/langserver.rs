@@ -13,7 +13,7 @@ use std::{process, thread};
 
 use super::error::Error;
 use super::langrunner::LangRunner;
-use super::message::{RunnerOutput, StatusMessage};
+use super::message::StatusMessage;
 use super::notifier::Notifier;
 
 macro_rules! jsonres {
@@ -78,9 +78,7 @@ impl LangServer {
                     if let Some(code) = status {
                         info!("{} {} LangServer monitor thread detected exit: {}", LOG_IDENTIFIER, "-", code);
                         if let Some(ref notifier) = notify_exited {
-                            let r = watched_runner.lock().expect("Failed to lock runner");
-                            let (stdout, stderr) = r.consume_stdio();
-                            let err = Error::UnexpectedExit(code, stdout, stderr);
+                            let err = Error::UnexpectedExit(code);
                             let message = StatusMessage::failure(err, Duration::new(0,0));
                             let _ = notifier.notify(message, None);
                         }
@@ -100,7 +98,7 @@ impl LangServer {
         });
     }
 
-    fn build_input(&self, mut req: Request, request_id: String) -> Result<Value, Error> {
+    fn build_input(&self, mut req: Request, request_id: &str) -> Result<Value, Error> {
         let headers = req.headers.clone();
         let mut has_base64_content_encoding = false;
         if let Some(content_encoding_header) = headers.get::<ContentEncoding>() {
@@ -155,7 +153,8 @@ impl LangServer {
                     "data": result_string,
                 }))
             }
-            _ => Err(Error::BadRequest("Missing ContentType".to_string())),
+            Some(ct) => Err(Error::BadRequest(format!("unsupported Content-Type '{}'", ct))),
+            None => Err(Error::BadRequest("missing Content-Type".to_string())),
         }
     }
 
@@ -168,11 +167,11 @@ impl LangServer {
     // Returns status, response string, and a boolean to indicate if the server should terminate
     fn run_algorithm(&self, req: Request) -> (StatusCode, String, bool) {
         let headers = self.get_proxied_headers(&req.headers);
-        let request_id_opt = match req.headers.get::<XRequestId>() {
-            Some(ref request_id) => Some(request_id.0.to_owned()),
-            None => None,
+        let request_id = match req.headers.get::<XRequestId>() {
+            Some(request_id) => request_id.0.to_owned(),
+            None => "-".to_owned(),
         };
-        let input_value = match self.build_input(req, request_id_opt.clone().unwrap_or("-".to_owned())) {
+        let input_value = match self.build_input(req, &request_id) {
             Ok(v) => v,
             Err(err) => {
                 return (StatusCode::BadRequest,
@@ -184,7 +183,7 @@ impl LangServer {
         // Start piping data
         let arc_runner = self.runner.clone();
         let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-        runner.set_request_id(request_id_opt.clone());
+        runner.set_request_id(Some(request_id.clone()));
         if let Err(err) = runner.write(&input_value) {
             error!("{} {} Failed write to runner stdin: {}", LOG_IDENTIFIER, "-", err);
             return (StatusCode::BadRequest,
@@ -193,20 +192,17 @@ impl LangServer {
         }
 
         // Wait for the algorithm to complete (either synchronously or asynchronously)
-        let request_id = request_id_opt.unwrap_or("-".to_owned());
         match self.mode {
             LangServerMode::Sync => {
                 info!("{} {} Waiting synchronously for algorithm to complete", LOG_IDENTIFIER, request_id);
-                let (status_code, output, terminate) = match runner.wait_for_response_or_exit() {
-                    RunnerOutput::Completed(output) => (StatusCode::Ok, output, false),
-                    RunnerOutput::Exited(output) => (StatusCode::Ok, output, true),
-                };
-
+                let message = runner.wait_for_response_or_exit();
                 info!("{} {} algorithm completed", LOG_IDENTIFIER, request_id);
-                match ser::to_string(&output) {
-                    Ok(response) => (status_code, response, terminate),
+                let terminate = message.exited_early();
+
+                match ser::to_string(&message) {
+                    Ok(response) => (StatusCode::Ok, response, terminate),
                     Err(err) => (StatusCode::InternalServerError,
-                                 jsonerr!("Failed to encode RunnerOutput: {}", err),
+                                 jsonerr!("Failed to encode RunnerState: {}", err),
                                  true),
                 }
             }
@@ -217,9 +213,7 @@ impl LangServer {
                 let arc_runner = self.runner.clone();
                 thread::spawn(move || {
                     let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-                    let output  = match runner.wait_for_response_or_exit() {
-                        RunnerOutput::Completed(output) | RunnerOutput::Exited(output) => output,
-                    };
+                    let output  = runner.wait_for_response_or_exit();
 
                     let mut terminate = false;
                     if let Err(err) = notifier.notify(output, Some(headers)) {
