@@ -59,7 +59,7 @@ public class JarRunner {
             }
         }
 
-        if (jsonApplyMethodData != null && applyMethods.size() != 1) {
+        if (jsonApplyMethodData != null && applyMethods.size() != 2) {
             throw new Exception("can only have a single apply() method if specifying AcceptsJson");
         }
     }
