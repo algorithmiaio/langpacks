@@ -20,10 +20,10 @@ public class AlgorithmResult {
         contentType = c;
     }
 
-    public AlgorithmResult(JsonElement j, ContentType c) {
+    public AlgorithmResult(JsonElement j) {
         resultJson = j;
         resultString = null;
-        contentType = c;
+        contentType = ContentType.JSON;
     }
 
     public String getJsonOutput() {

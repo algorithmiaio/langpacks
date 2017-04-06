@@ -130,7 +130,7 @@ public class JarRunner {
         Object output = applyMethod.invoke(instance, inputObject);
 
         if (output == null) {
-            return new AlgorithmResult((JsonElement)null, AlgorithmResult.ContentType.JSON);
+            return new AlgorithmResult((JsonElement)null);
         } else if (output instanceof String) {
             if (returnJsonMethods.contains(applyMethod)) {
                 return new AlgorithmResult((String)output, AlgorithmResult.ContentType.JSON);
@@ -151,7 +151,7 @@ public class JarRunner {
             return new AlgorithmResult(Base64.getEncoder().encodeToString((byte[])output), AlgorithmResult.ContentType.BINARY);
         } else {
             try {
-                return new AlgorithmResult(SignatureUtilities.gson.toJsonTree(output, applyMethod.getGenericReturnType()), AlgorithmResult.ContentType.JSON);
+                return new AlgorithmResult(SignatureUtilities.gson.toJsonTree(output, applyMethod.getGenericReturnType()));
             } catch (Throwable e) {
                 throw new Exception("failed to parse algorithm output", e);
             }
