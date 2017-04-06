@@ -79,11 +79,7 @@ public class JarRunner {
             errorPair.registerNewException(e);
         }
 
-        if (errorPair.algorithmError != null) {
-            throw errorPair.algorithmError;
-        } else {
-            throw errorPair.callError;
-        }
+        return errorPair.getResult();
     }
 
     @SuppressWarnings("unchecked")
@@ -219,6 +215,22 @@ public class JarRunner {
                     algorithmError = e;
                 }
             }
+        }
+
+        public AlgorithmResult getResult() {
+            Exception e = algorithmError != null ? algorithmError : callError;
+
+            StringWriter writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+
+            JsonObject inner = new JsonObject();
+            inner.addProperty("message", e.getMessage().toString());
+            inner.addProperty("stacktrace", writer.toString());
+            inner.addProperty("error_type", "AlgorithmError");
+
+            JsonObject outer = new JsonObject();
+            outer.add("error", inner);
+            return new AlgorithmResult(outer, true);
         }
     }
 }

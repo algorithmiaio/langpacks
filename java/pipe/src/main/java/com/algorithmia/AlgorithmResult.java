@@ -13,20 +13,31 @@ public class AlgorithmResult {
     private final String resultString;
     private final JsonElement resultJson;
     private final ContentType contentType;
+    private final boolean error;
 
     public AlgorithmResult(String s, ContentType c) {
         resultString = s;
         resultJson = null;
         contentType = c;
+        error = false;
     }
 
     public AlgorithmResult(JsonElement j) {
+        this(j, false);
+    }
+
+    public AlgorithmResult(JsonElement j, boolean e) {
         resultJson = j;
         resultString = null;
         contentType = ContentType.JSON;
+        error = e;
     }
 
     public String getJsonOutput() {
+        if (error) {
+            return resultJson.toString();
+        }
+
         JsonObject metadata = new JsonObject();
 
         switch (contentType) {

@@ -73,7 +73,6 @@ public class Pipe {
                 Object[] inputArr = {json.get("data")};
                 AlgorithmResult result = runner.tryApplies(SignatureUtilities.METHOD_KEY_STRING, inputArr);
 
-
                 serializedJson = result.getJsonOutput();
             } else if (inputContentType.equals("json")) {
                 JsonElement data = json.get("data");
