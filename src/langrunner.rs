@@ -140,33 +140,40 @@ impl LangRunner {
         let tx = self.tx.clone();
 
         let start = Instant::now();
-        let runner = self.runner.read().expect("Failed to acquire read lock for runner");
-        let arc_request_id = runner.request_id.clone();
-        thread::spawn(move || {
-            if let Err(err) = tx.send(get_next_algoout_value(arc_request_id)) {
-                error!("{} {} FATAL: Channel receiver disconnected unexpectedly: {}", LOG_IDENTIFIER, "-", err);
-                process::exit(UNKNOWN_EXIT); // Don't want to just panic a single thread and hang
-            }
-        });
+        let result = {
+            let runner = self.runner.read().expect("Failed to acquire read lock for runner");
+            let arc_request_id = runner.request_id.clone();
+            thread::spawn(move || {
+                if let Err(err) = tx.send(get_next_algoout_value(arc_request_id)) {
+                    error!("{} {} FATAL: Channel receiver disconnected unexpectedly: {}", LOG_IDENTIFIER, "-", err);
+                    process::exit(UNKNOWN_EXIT); // Don't want to just panic a single thread and hang
+                }
+            });
 
-        // Block until receiving message from `get_next_algoout_value` or the monitor thread
-        let received = self.rx.recv().expect("Channel sender disconnected unexpectedly");
-        let duration = start.elapsed();
+            // Block until receiving message from `get_next_algoout_value` or the monitor thread
+            let received = self.rx.recv().expect("Channel sender disconnected unexpectedly");
+            let duration = start.elapsed();
 
-        let mut runner_output = match received {
-            Ok(response) => RunnerOutput::Completed(response),
-            Err(err) => {
-                error!("{} {} Wait encountered an error: {}", LOG_IDENTIFIER, "-", err);
-                let response = ErrorMessage::from_error(err);
-                RunnerOutput::Exited(to_value(&response).expect("RunnerOutput serialization failed"))
-            }
+            let mut runner_output = match received {
+                Ok(response) => RunnerOutput::Completed(response),
+                Err(err) => {
+                    error!("{} {} Wait encountered an error: {}", LOG_IDENTIFIER, "-", err);
+                    let response = ErrorMessage::from_error(err);
+                    RunnerOutput::Exited(to_value(&response).expect("RunnerOutput serialization failed"))
+                }
+            };
+
+            let (stdout, stderr) = self.consume_stdio();
+
+            // Augment output with duration and stdout
+            runner_output.set_metadata(duration, stdout, stderr);
+            runner_output
         };
 
-        let (stdout, stderr) = self.consume_stdio();
+        // We are now done with a request, we can set the request_id to none
+        self.set_request_id(None);
 
-        // Augment output with duration and stdout
-        runner_output.set_metadata(duration, stdout, stderr);
-        runner_output
+        result
     }
 
     pub fn consume_stdio(&self) -> (Option<String>, Option<String>) {
