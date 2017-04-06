@@ -64,7 +64,7 @@ public class JarRunner {
         }
     }
 
-    public AlgorithmResult tryApplies(String methodKey, Object[] inputObject) throws Exception {
+    public AlgorithmResult tryApplies(String methodKey, Object[] inputObject) {
         ErrorPair errorPair = new ErrorPair();
 
         try {
@@ -108,8 +108,20 @@ public class JarRunner {
         throw new Exception("no apply method was successfully applied to the input + " + inputObject[0].getClass().getName());
     }
 
+    public AlgorithmResult tryJsonApply(Object[] inputObject) {
+        ErrorPair errorPair = new ErrorPair();
+
+        try {
+            return tryJsonApplyInternal(inputObject);
+        } catch (Exception e) {
+            errorPair.registerNewException(e);
+        }
+
+        return errorPair.getResult();
+    }
+
     @SuppressWarnings("unchecked")
-    public AlgorithmResult tryJsonApply(Object[] inputObject) throws Exception {
+    public AlgorithmResult tryJsonApplyInternal(Object[] inputObject) throws Exception {
         if (jsonApplyMethodData == null) {
             throw new IllegalStateException("There is no json apply method");
         }
