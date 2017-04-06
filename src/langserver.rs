@@ -260,11 +260,6 @@ impl Handler for LangServer {
             // Route for calling the managed algorithm
             Post => {
                 let (code, res, term) = self.run_algorithm(req);
-                // Reset request id
-                let arc_runner = self.runner.clone();
-                let mut runner = arc_runner.lock().expect("Failed to take lock on runner");
-                runner.set_request_id(None);
-
                 terminate = term;
                 (code, res)
             }

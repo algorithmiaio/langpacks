@@ -1,0 +1,12 @@
+# Algorithmia gitignore
+
+bin
+ivy
+dist
+logs
+
+*.class
+
+/project/target
+
+algorithm.zip

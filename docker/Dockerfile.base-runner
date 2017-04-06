@@ -10,6 +10,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" algo
 
+ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV LANG C.UTF-8
 
 RUN mkdir -p /opt/algorithm && \

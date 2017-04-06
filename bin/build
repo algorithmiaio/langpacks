@@ -2,7 +2,7 @@
 
 set -e
 
-LANGS=(ruby python javascript rust)
+LANGS=(ruby python javascript rust java)
 ALGO_UID=${ALGO_UID:-$(id -u)}
 
 function build_base_images {
