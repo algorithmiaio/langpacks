@@ -130,7 +130,7 @@ public class JarRunner {
     @SuppressWarnings("unchecked")
     public AlgorithmResult tryJsonApplyInternal(Object[] inputObject) throws Exception {
         if (jsonApplyMethodData == null) {
-            tryAppliesInternal(SignatureUtilities.METHOD_KEY_OBJECT, inputObject);
+            return tryAppliesInternal(SignatureUtilities.METHOD_KEY_OBJECT, inputObject);
         }
 
         Object[] convertedInputs = new Object[inputObject.length];
