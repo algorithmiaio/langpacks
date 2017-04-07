@@ -136,8 +136,7 @@ impl LangServer {
                 }))
             }
             // "application/octet-stream"
-            Some(&ContentType(Mime(TopLevel::Application, SubLevel::Ext(_), _))) => {
-                // TODO: verify sublevel is actually "octet-stream"
+            Some(&ContentType(Mime(TopLevel::Application, SubLevel::OctetStream, _))) => {
                 info!("{} {} Handling binary input", LOG_IDENTIFIER, request_id);
                 let mut raw = vec![];
                 let _ = req.read_to_end(&mut raw)?;
