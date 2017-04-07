@@ -62,11 +62,11 @@ public class SignatureUtilities {
     private static Function<JsonElement, Long> toLong = number -> number.getAsNumber().longValue();
     private static Function<JsonElement, Integer> toInteger = number -> number.getAsNumber().intValue();
     private static Function<JsonElement, Short> toShort = number -> number.getAsNumber().shortValue();
-    private static Function<JsonElement, Character> toCharacter = str -> stringToCharacter((str.isJsonPrimitive()) ? str.getAsString() : str.toString());
+    private static Function<JsonElement, Character> toCharacter = str -> stringToCharacter(str.isJsonPrimitive() ? str.getAsString() : str.toString());
     private static Function<JsonElement, Byte> toByte = number -> number.getAsNumber().byteValue();
     private static Function<JsonElement, Boolean> toBoolean = bool -> bool.getAsBoolean();
-    private static Function<JsonElement, byte[]> toByteArray = jsonElement -> Base64.getDecoder().decode((jsonElement.isJsonPrimitive()) ? jsonElement.getAsString() : jsonElement.toString());
-    private static Function<JsonElement, String> toString = obj -> (obj.isJsonPrimitive()) ? obj.getAsString() : obj.toString();
+    private static Function<JsonElement, byte[]> toByteArray = jsonElement -> Base64.getDecoder().decode(jsonElement.isJsonPrimitive() ? jsonElement.getAsString() : jsonElement.toString());
+    private static Function<JsonElement, String> toString = obj -> obj.isJsonPrimitive() ? obj.getAsString() : obj.toString();
 
     private static Function<JsonElement, Object> getCoerceFunction(Type t) {
         Function<JsonElement, Object> result = input -> gson.fromJson(input, t);
