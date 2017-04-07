@@ -69,13 +69,13 @@ public class JarRunner {
 
         try {
             return tryAppliesInternal(methodKey, inputObject);
-        } catch (Exception e) { // The catch block should be the same as the one below :(
+        } catch (Exception e) {
             errorPair.registerNewException(e);
         }
 
         try {
             return tryAppliesInternal(SignatureUtilities.getGenericKey(inputObject.length), inputObject);
-        } catch (Exception e) { // The catch block should be the same as the one below :(
+        } catch (Exception e) {
             errorPair.registerNewException(e);
         }
 
@@ -105,7 +105,8 @@ public class JarRunner {
         if (exception != null) {
             throw exception;
         }
-        throw new Exception("no apply method was successfully applied to the input + " + inputObject[0].getClass().getName());
+
+        throw new Exception("no apply method was successfully applied to the input");
     }
 
     public AlgorithmResult tryJsonApply(Object[] inputObject) {
@@ -113,6 +114,12 @@ public class JarRunner {
 
         try {
             return tryJsonApplyInternal(inputObject);
+        } catch (Exception e) {
+            errorPair.registerNewException(e);
+        }
+
+        try {
+            return tryAppliesInternal(SignatureUtilities.getGenericKey(inputObject.length), inputObject);
         } catch (Exception e) {
             errorPair.registerNewException(e);
         }
@@ -240,7 +247,8 @@ public class JarRunner {
             e.printStackTrace(new PrintWriter(writer));
 
             JsonObject inner = new JsonObject();
-            inner.addProperty("message", e.getMessage().toString());
+            String message = (e.getMessage() == null) ? e.toString() : e.getMessage().toString();
+            inner.addProperty("message", message);
             inner.addProperty("stacktrace", writer.toString());
             inner.addProperty("error_type", "AlgorithmError");
 
