@@ -13,7 +13,7 @@ public class AlgorithmResult {
     private final String resultString;
     private final JsonElement resultJson;
     private final ContentType contentType;
-    private final boolean error;
+    public final boolean error;
 
     public AlgorithmResult(String s, ContentType c) {
         resultString = s;

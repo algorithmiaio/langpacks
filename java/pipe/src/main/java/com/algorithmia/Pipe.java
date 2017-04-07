@@ -72,9 +72,7 @@ public class Pipe {
 
             if (runner.hasJsonApply()) {
                 JsonElement data = json.get("data");
-                Object[] inputs = {data};
-                AlgorithmResult result = runner.tryJsonApply(inputs);
-                serializedJson = result.getJsonOutput();
+                serializedJson = tryJsonApply(runner, data).getJsonOutput();
             } else if (inputContentType.equals("text")) {
                 Object[] inputArr = {json.get("data")};
                 AlgorithmResult result = runner.tryApplies(SignatureUtilities.METHOD_KEY_STRING, inputArr);
@@ -82,6 +80,8 @@ public class Pipe {
                 serializedJson = result.getJsonOutput();
             } else if (inputContentType.equals("json")) {
                 JsonElement data = json.get("data");
+                AlgorithmResult result = null;
+
                 if (data.isJsonArray()) {
                     JsonArray array = data.getAsJsonArray();
                     String methodKey = SignatureUtilities.getMethodKey(array);
@@ -91,20 +91,25 @@ public class Pipe {
                         inputs[i] = array.get(i);
                     }
 
-                    AlgorithmResult result = runner.tryApplies(methodKey, inputs);
-
-                    serializedJson = result.getJsonOutput();
+                    result = runner.tryApplies(methodKey, inputs);
                 } else if (data.isJsonPrimitive() || data.isJsonNull()) {
                     String methodKey = SignatureUtilities.getMethodKeyForElement(data);
                     Object[] inputs = {data};
-                    AlgorithmResult result = runner.tryApplies(methodKey, inputs);
+                    result = runner.tryApplies(methodKey, inputs);
 
-                    serializedJson = result.getJsonOutput();
                 } else {
-                    Object[] inputs = {data};
-                    AlgorithmResult result = runner.tryJsonApply(inputs);
-                    serializedJson = result.getJsonOutput();
+                    result = tryJsonApply(runner, data);
                 }
+
+                // We failed to pass the args from the list as paramaters. Lets run it as json now.
+                if (result.error) {
+                    AlgorithmResult jsonAttempt = tryJsonApply(runner, data);
+                    if (!jsonAttempt.error) {
+                        result = jsonAttempt;
+                    }
+                }
+
+                serializedJson = result.getJsonOutput();
             } else if (inputContentType.equals("binary")) {
                 Object[] inputs = {json.get("data")};
                 AlgorithmResult result = runner.tryApplies(SignatureUtilities.METHOD_KEY_BYTE_ARRAY, inputs);
@@ -124,4 +129,8 @@ public class Pipe {
         }
     }
 
+    private static AlgorithmResult tryJsonApply(JarRunner runner, JsonElement data) {
+        Object[] inputs = {data};
+        return runner.tryJsonApply(inputs);
+    }
 }
