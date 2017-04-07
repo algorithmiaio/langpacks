@@ -69,7 +69,13 @@ public class Pipe {
             JsonObject json = parser.parse(line).getAsJsonObject();
             String inputContentType = json.get("content_type").getAsString();
             String outputContentType = "text";
-            if (inputContentType.equals("text")) {
+
+            if (runner.hasJsonApply()) {
+                JsonElement data = json.get("data");
+                Object[] inputs = {data};
+                AlgorithmResult result = runner.tryJsonApply(inputs);
+                serializedJson = result.getJsonOutput();
+            } else if (inputContentType.equals("text")) {
                 Object[] inputArr = {json.get("data")};
                 AlgorithmResult result = runner.tryApplies(SignatureUtilities.METHOD_KEY_STRING, inputArr);
 
@@ -97,7 +103,6 @@ public class Pipe {
                 } else {
                     Object[] inputs = {data};
                     AlgorithmResult result = runner.tryJsonApply(inputs);
-
                     serializedJson = result.getJsonOutput();
                 }
             } else if (inputContentType.equals("binary")) {

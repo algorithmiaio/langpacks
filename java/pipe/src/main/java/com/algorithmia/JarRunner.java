@@ -166,6 +166,10 @@ public class JarRunner {
         }
     }
 
+    public boolean hasJsonApply() {
+        return jsonApplyMethodData != null;
+    }
+
     /**
      * Resolve algorithm with ivy and load JARs into a ClassLoader
      */
