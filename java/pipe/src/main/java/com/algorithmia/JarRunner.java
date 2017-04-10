@@ -230,7 +230,7 @@ public class JarRunner {
 
         public void registerNewException(Exception e) {
             if (e instanceof AlgorithmiaRunnerException) {
-                if (callError != null) {
+                if (callError == null) {
                     callError = e;
                 }
             } else if (e instanceof ClassCastException || e instanceof IllegalArgumentException || e instanceof IllegalAccessException) {
