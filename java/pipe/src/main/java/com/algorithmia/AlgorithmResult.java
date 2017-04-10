@@ -10,23 +10,29 @@ public class AlgorithmResult {
         BINARY
     }
 
+    public static enum ErrorType {
+        NONE,
+        INVOCATION,
+        RUNNING
+    }
+
     private final String resultString;
     private final JsonElement resultJson;
     private final ContentType contentType;
-    public final boolean error;
+    public final ErrorType error;
 
     public AlgorithmResult(String s, ContentType c) {
         resultString = s;
         resultJson = null;
         contentType = c;
-        error = false;
+        error = ErrorType.NONE;
     }
 
     public AlgorithmResult(JsonElement j) {
-        this(j, false);
+        this(j, ErrorType.NONE);
     }
 
-    public AlgorithmResult(JsonElement j, boolean e) {
+    public AlgorithmResult(JsonElement j, ErrorType e) {
         resultJson = j;
         resultString = null;
         contentType = ContentType.JSON;
@@ -34,7 +40,7 @@ public class AlgorithmResult {
     }
 
     public String getJsonOutput() {
-        if (error) {
+        if (error != ErrorType.NONE) {
             return resultJson.toString();
         }
 

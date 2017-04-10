@@ -102,9 +102,10 @@ public class Pipe {
                 }
 
                 // We failed to pass the args from the list as paramaters. Lets run it as json now.
-                if (result.error) {
+                if (result.error != AlgorithmResult.ErrorType.NONE) {
                     AlgorithmResult jsonAttempt = tryJsonApply(runner, data);
-                    if (!jsonAttempt.error) {
+                    // We only want to use this result if it is "better" than what we had before.
+                    if ((jsonAttempt.error == AlgorithmResult.ErrorType.NONE || jsonAttempt.error == AlgorithmResult.ErrorType.RUNNING) && result.error == AlgorithmResult.ErrorType.INVOCATION) {
                         result = jsonAttempt;
                     }
                 }

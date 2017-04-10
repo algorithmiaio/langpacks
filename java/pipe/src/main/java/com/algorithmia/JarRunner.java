@@ -49,7 +49,7 @@ public class JarRunner {
                     if (jsonApplyMethodData == null) {
                         jsonApplyMethodData = methodData;
                     } else {
-                        throw new Exception("can only have a single apply() method if specifying AcceptsJson");
+                        throw new AlgorithmiaRunnerException("can only have a single apply() method if specifying AcceptsJson");
                     }
                 }
 
@@ -60,7 +60,7 @@ public class JarRunner {
         }
 
         if (jsonApplyMethodData != null && applyMethods.size() != 2) {
-            throw new Exception("can only have a single apply() method if specifying AcceptsJson");
+            throw new AlgorithmiaRunnerException("can only have a single apply() method if specifying AcceptsJson");
         }
     }
 
@@ -85,7 +85,7 @@ public class JarRunner {
     @SuppressWarnings("unchecked")
     private AlgorithmResult tryAppliesInternal(String methodKey, Object[] inputObject) throws Exception {
         if (!applyMethods.containsKey(methodKey)) {
-            throw new Exception("no apply method matches input signature");
+            throw new AlgorithmiaRunnerException("no apply method matches input signature");
         }
 
         Exception exception = null;
@@ -106,7 +106,7 @@ public class JarRunner {
             throw exception;
         }
 
-        throw new Exception("no apply method was successfully applied to the input");
+        throw new AlgorithmiaRunnerException("no apply method was successfully applied to the input");
     }
 
     public AlgorithmResult tryJsonApply(Object[] inputObject) {
@@ -160,7 +160,7 @@ public class JarRunner {
                 file.delete();
                 return new AlgorithmResult(out, AlgorithmResult.ContentType.BINARY);
             } catch (Throwable e) {
-                throw new Exception("failed to process algorithm output", e);
+                throw new AlgorithmiaRunnerException("failed to process algorithm output", e);
             }
         } else if (output instanceof byte[]) {
             return new AlgorithmResult(Base64.getEncoder().encodeToString((byte[])output), AlgorithmResult.ContentType.BINARY);
@@ -168,7 +168,7 @@ public class JarRunner {
             try {
                 return new AlgorithmResult(SignatureUtilities.gson.toJsonTree(output, applyMethod.getGenericReturnType()));
             } catch (Throwable e) {
-                throw new Exception("failed to parse algorithm output", e);
+                throw new AlgorithmiaRunnerException("failed to parse algorithm output", e);
             }
         }
     }
@@ -210,27 +210,39 @@ public class JarRunner {
             ClassLoader loader = loadJars(workingDirectory);
             return loader.loadClass(classPath);
         } catch (ClassNotFoundException e) {
-            throw new Exception("Algorithm class not found. Name must match: " + classPath + "\nTo Fix: Double check both package-name and class-name");
+            throw new AlgorithmiaRunnerException("Algorithm class not found. Name must match: " + classPath + "\nTo Fix: Double check both package-name and class-name");
         } catch (Throwable e) {
             throw e;
         }
     }
+
+    private class AlgorithmiaRunnerException extends Exception {
+        public AlgorithmiaRunnerException() { super(); }
+        public AlgorithmiaRunnerException(String message) { super(message); }
+        public AlgorithmiaRunnerException(String message, Throwable cause) { super(message, cause); }
+        public AlgorithmiaRunnerException(Throwable cause) { super(cause); }
+    }
+
 
     private class ErrorPair {
         public Exception callError;
         public Exception algorithmError;
 
         public void registerNewException(Exception e) {
-            if (e instanceof ClassCastException || e instanceof IllegalArgumentException || e instanceof IllegalAccessException) {
+            if (e instanceof AlgorithmiaRunnerException) {
+                if (callError != null) {
+                    callError = e;
+                }
+            } else if (e instanceof ClassCastException || e instanceof IllegalArgumentException || e instanceof IllegalAccessException) {
                 if (callError == null) {
-                    callError = new Exception("failed to invoke algorithm", e);
+                    callError = new AlgorithmiaRunnerException("failed to invoke algorithm", e);
                 }
             } else if (e instanceof InvocationTargetException) {
                 if (callError == null) {
                     if (e.getCause() == null) {
-                        callError = new Exception("failed to invoke algorithm", e);
+                        callError = new AlgorithmiaRunnerException("failed to invoke algorithm", e);
                     } else {
-                        callError = new Exception(e.getCause());
+                        callError = new AlgorithmiaRunnerException(e.getCause());
                     }
                 }
             } else {
@@ -241,6 +253,7 @@ public class JarRunner {
         }
 
         public AlgorithmResult getResult() {
+            AlgorithmResult.ErrorType errorType = algorithmError != null ? AlgorithmResult.ErrorType.RUNNING : AlgorithmResult.ErrorType.INVOCATION;
             Exception e = algorithmError != null ? algorithmError : callError;
 
             StringWriter writer = new StringWriter();
@@ -254,7 +267,7 @@ public class JarRunner {
 
             JsonObject outer = new JsonObject();
             outer.add("error", inner);
-            return new AlgorithmResult(outer, true);
+            return new AlgorithmResult(outer, errorType);
         }
     }
 }
