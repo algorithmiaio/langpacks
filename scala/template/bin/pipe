@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+java -cp /bin/javaLangpack/algorithmia-langpack-1.0-SNAPSHOT.jar:/bin/javaLangpack/dependencies/gson-2.8.0.jar:/bin/javaLangpack/dependencies/commons-io-2.5.jar com.algorithmia.Pipe
