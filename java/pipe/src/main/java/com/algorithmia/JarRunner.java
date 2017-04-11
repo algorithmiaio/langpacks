@@ -18,6 +18,7 @@ public class JarRunner {
     private Set<Method> returnJsonMethods;
     private MethodData jsonApplyMethodData;
     private Object instance;
+    private String applyMethodPattern;
 
     private void addToMethods(MethodData methodData) {
         String key = methodData.key;
@@ -27,7 +28,14 @@ public class JarRunner {
         applyMethods.get(key).add(methodData);
     }
 
+    private boolean errorFromApply(Throwable t) {
+        StringWriter writer = new StringWriter();
+        t.printStackTrace(new PrintWriter(writer));
+        return writer.toString().contains(applyMethodPattern);
+    }
+
     public JarRunner(String classPath, String workingDirectory) throws Exception {
+        applyMethodPattern = classPath + ".apply(";
         Class<?> algoClass = loadAlgorithm(classPath, workingDirectory);
         instance = algoClass.newInstance();
         applyMethods = new HashMap<String, Queue<MethodData>>();
@@ -69,13 +77,13 @@ public class JarRunner {
 
         try {
             return tryAppliesInternal(methodKey, inputObject);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             errorPair.registerNewException(e);
         }
 
         try {
             return tryAppliesInternal(SignatureUtilities.getGenericKey(inputObject.length), inputObject);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             errorPair.registerNewException(e);
         }
 
@@ -83,12 +91,12 @@ public class JarRunner {
     }
 
     @SuppressWarnings("unchecked")
-    private AlgorithmResult tryAppliesInternal(String methodKey, Object[] inputObject) throws Exception {
+    private AlgorithmResult tryAppliesInternal(String methodKey, Object[] inputObject) throws Throwable {
         if (!applyMethods.containsKey(methodKey)) {
             throw new AlgorithmiaRunnerException("no apply method matches input signature");
         }
 
-        Exception exception = null;
+        Throwable exception = null;
         for (MethodData mcp : applyMethods.get(methodKey)) {
             Object[] convertedInputs = new Object[inputObject.length];
 
@@ -97,8 +105,14 @@ public class JarRunner {
                     convertedInputs[i] = mcp.conversions[i].apply(inputObject[i]);
                 }
                 return applyInput(mcp.method, convertedInputs);
-            } catch (Exception t) {
-                exception = t;
+            } catch (Throwable e) {
+                if (e instanceof InvocationTargetException && e.getCause() != null) {
+                    e = e.getCause();
+                }
+
+                if (errorFromApply(e) || exception == null) {
+                    exception = e;
+                }
             }
         }
 
@@ -114,13 +128,13 @@ public class JarRunner {
 
         try {
             return tryJsonApplyInternal(inputObject);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             errorPair.registerNewException(e);
         }
 
         try {
             return tryAppliesInternal(SignatureUtilities.getGenericKey(inputObject.length), inputObject);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             errorPair.registerNewException(e);
         }
 
@@ -128,7 +142,7 @@ public class JarRunner {
     }
 
     @SuppressWarnings("unchecked")
-    public AlgorithmResult tryJsonApplyInternal(Object[] inputObject) throws Exception {
+    public AlgorithmResult tryJsonApplyInternal(Object[] inputObject) throws Throwable {
         if (jsonApplyMethodData == null) {
             return tryAppliesInternal(SignatureUtilities.METHOD_KEY_OBJECT, inputObject);
         }
@@ -225,15 +239,15 @@ public class JarRunner {
 
 
     private class ErrorPair {
-        public Exception callError;
-        public Exception algorithmError;
+        public Throwable callError;
+        public Throwable algorithmError;
 
-        public void registerNewException(Exception e) {
+        public void registerNewException(Throwable e) {
             if (e instanceof AlgorithmiaRunnerException) {
                 if (callError == null) {
                     callError = e;
                 }
-            } else if (e instanceof ClassCastException || e instanceof IllegalArgumentException || e instanceof IllegalAccessException) {
+            } else if (e instanceof ClassCastException || e instanceof IllegalAccessException) {
                 if (callError == null) {
                     callError = new AlgorithmiaRunnerException("failed to invoke algorithm", e);
                 }
@@ -254,7 +268,7 @@ public class JarRunner {
 
         public AlgorithmResult getResult() {
             AlgorithmResult.ErrorType errorType = algorithmError != null ? AlgorithmResult.ErrorType.RUNNING : AlgorithmResult.ErrorType.INVOCATION;
-            Exception e = algorithmError != null ? algorithmError : callError;
+            Throwable e = algorithmError != null ? algorithmError : callError;
 
             StringWriter writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
