@@ -50,9 +50,11 @@ public class Pipe {
         try {
             runner = new JarRunner(classPath, WORKING_DIRECTORY);
         } catch (Throwable t) {
-            System.out.println("There was an error loading the algorithm");
-            System.out.println(t);
-            System.exit(1);
+            if (t instanceof ExceptionInInitializerError && t.getCause() != null) {
+                t = t.getCause();
+            }
+            System.err.println("There was an error loading the algorithm");
+            throw t;
         }
 
         System.out.println("PIPE_INIT_COMPLETE");
