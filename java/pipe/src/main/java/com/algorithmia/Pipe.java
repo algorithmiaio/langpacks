@@ -43,7 +43,7 @@ public class Pipe {
         return "algorithmia." + algoname + "." + algoname;
     }
 
-    public static void main(String[] args) throws java.io.FileNotFoundException, java.io.IOException, Throwable {
+    public static void main(String[] args) throws java.io.FileNotFoundException, java.io.IOException {
         String classPath = getClassPath();
 
         JarRunner runner = null;
@@ -53,8 +53,11 @@ public class Pipe {
             if (t instanceof ExceptionInInitializerError && t.getCause() != null) {
                 t = t.getCause();
             }
-            System.err.println("There was an error loading the algorithm");
-            throw t;
+            System.out.println("There was an error loading the algorithm");
+            StringWriter writer = new StringWriter();
+            t.printStackTrace(new PrintWriter(writer));
+            System.err.println(writer.toString());
+            System.exit(1);
         }
 
         System.out.println("PIPE_INIT_COMPLETE");
