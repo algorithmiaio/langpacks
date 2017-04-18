@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Pipe {
-    private static final String WORKING_DIRECTORY = "/opt/algorithm";
+    private static final String WORKING_DIRECTORY = ".";
     private static final String FIFO_PATH = "/tmp/algoout";
     private static final String CONFIG_FILE_NAME = WORKING_DIRECTORY + "/algorithmia.conf";
     private static final String ALGORITHM_NAME_ENV_VARIABLE = "ALGORITHMIA_ALGORITHM_NAME";
