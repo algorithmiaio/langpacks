@@ -39,6 +39,5 @@ cp /tmp/langserver-java-git/java/template/bin/pipe /bin/javaLangpack/
 cd
 rm -rf /tmp/langserver-java-git
 
-wget https://dl.bintray.com/sbt/native-packages/sbt/0.13.15/sbt-0.13.15.tgz --no-check-certificate
-tar zxvf sbt-0.13.15.tgz -C /usr/local/bin
-rm sbt-0.13.15.tgz
+# Install SBT
+wget http://dl.bintray.com/sbt/debian/sbt-0.13.9.deb -O /tmp/sbt-0.13.9.deb && dpkg -i /tmp/sbt-0.13.9.deb
