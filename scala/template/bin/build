@@ -5,7 +5,7 @@ set -e
 JARS="lib_managed lib target/scala-2.11/*.jar"
 
 # Build jars
-sbt $@ clean package
+/usr/local/bin/sbt/bin/sbt $@ clean package
 
 # Assemble algorithm.zip
 zip -FS -r algorithm.zip $JARS bin/*
