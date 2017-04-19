@@ -4,4 +4,4 @@ set -e
 
 
 mvn package
-zip -r algorithm.zip target/*
+zip -r algorithm.zip target/* bin/*
