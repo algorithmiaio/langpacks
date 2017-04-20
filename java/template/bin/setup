@@ -4,37 +4,39 @@ set -e
 
 DEBIAN_FRONTEND=noninteractive
 
-# Install Java 8
-apt-get update
-apt-get install -y software-properties-common
-add-apt-repository -y ppa:webupd8team/java
-apt-get -y update
-echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
-echo debconf shared/accepted-oracle-license-v1-1 seen true | /usr/bin/debconf-set-selections
+if [ ! -d "/bin/javaLangpack" ]; then
+  # Install Java 8
+  apt-get update
+  apt-get install -y software-properties-common
+  add-apt-repository -y ppa:webupd8team/java
+  apt-get -y update
+  echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+  echo debconf shared/accepted-oracle-license-v1-1 seen true | /usr/bin/debconf-set-selections
 
-apt-get -y install oracle-java8-installer oracle-java8-set-default
-rm -rf /var/cache/oracle-jdk8-installer
-rm -rf /var/lib/apt/lists/*
+  apt-get -y install oracle-java8-installer oracle-java8-set-default
+  rm -rf /var/cache/oracle-jdk8-installer
+  rm -rf /var/lib/apt/lists/*
 
-# Enable multiverse, Install Ant, Ivy, cURL
-add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse"
-apt-get -y update
-apt-get install -u -y ant ivy curl
-ln -s /usr/share/java/ivy.jar /usr/share/ant/lib/ivy.jar
+  # Enable multiverse, Install Ant, Ivy, cURL
+  add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) multiverse"
+  apt-get -y update
+  apt-get install -u -y ant ivy curl
+  ln -s /usr/share/java/ivy.jar /usr/share/ant/lib/ivy.jar
 
-# Install generally useful packages
-apt-get install -y zip maven git
+  # Install generally useful packages
+  apt-get install -y zip maven git
 
-mkdir /tmp/langserver-java-git
-cd /tmp/langserver-java-git
-git init
-git remote add origin https://github.com/algorithmiaio/langpacks.git
-git pull origin master
-cd java/pipe
-mvn package
+  mkdir /tmp/langserver-java-git
+  cd /tmp/langserver-java-git
+  git init
+  git remote add origin https://github.com/algorithmiaio/langpacks.git
+  git pull origin master
+  cd java/pipe
+  mvn package
 
-mv target /bin/javaLangpack
+  mv target /bin/javaLangpack
 
-cp /tmp/langserver-java-git/java/template/bin/pipe /bin/javaLangpack/
-cd
-rm -rf /tmp/langserver-java-git
+  cp /tmp/langserver-java-git/java/template/bin/pipe /bin/javaLangpack/
+  cd
+  rm -rf /tmp/langserver-java-git
+fi
