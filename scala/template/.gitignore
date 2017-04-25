@@ -1,0 +1,8 @@
+# Algorithmia gitignore
+
+target
+
+/target
+/project/target
+
+algorithm.zip

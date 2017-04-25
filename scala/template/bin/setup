@@ -40,3 +40,7 @@ if [ ! -d "/bin/javaLangpack" ]; then
   cd
   rm -rf /tmp/langserver-java-git
 fi
+
+# Install SBT
+apt-get install -y wget
+wget http://dl.bintray.com/sbt/debian/sbt-0.13.9.deb -O /tmp/sbt-0.13.9.deb && dpkg -i /tmp/sbt-0.13.9.deb
