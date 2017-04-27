@@ -25,6 +25,8 @@ libraryDependencies ++= Seq(
   "com.google.code.gson" % "gson" % "2.5"
 )
 
+libraryDependencies += "org.scalatest" % "scalatest_2.11" % "3.0.1" % "test"
+
 retrieveManaged := true
 
 // Don't convert name to lowercase
