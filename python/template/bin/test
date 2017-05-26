@@ -21,4 +21,5 @@ if [ $LANGUAGE_VERSION == "python3" ] && [ -e /cntk/cntk/activate-cntk ]; then
   source /cntk/cntk/activate-cntk
 fi
 
-PYTHONPATH=$PYTHONPATH:$DIR/../dependencies exec $PYTHON -m pytest
+PYTHONPATH=$PYTHONPATH:$DIR/../dependencies exec 
+$PYTHON -m pytest src
