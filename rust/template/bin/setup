@@ -7,6 +7,10 @@ if [[ "$1" == "--runtime" ]]; then
 else
   apt-get -y update
   apt-get install -y libssl-dev pkg-config
-  echo "Running rustup"
+
+  echo "Installing Rust"
   curl -sSf https://static.rust-lang.org/rustup.sh | sh
+
+  echo "Installing sccache"
+  cargo install --git https://github.com/mozilla/sccache.git --rev 39fdfd83a84ccf1f1a8df58588c33953bebe702d --root /usr/local --no-default-features sccache
 fi
