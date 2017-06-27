@@ -2,10 +2,7 @@
 name = "__ALGO__"
 version = "0.1.0"
 
-# Changing [[bin]] and [lib] sections may have unintended consequences
-[[bin]]
-name = "pipe"
-path = "bin/pipe.rs"
+# The lib name is hard-coded into pipe.rs
 [lib]
 name = "algorithm"
 
