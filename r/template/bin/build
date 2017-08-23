@@ -3,7 +3,7 @@
 set -e
 
 # When installing from CRAN, use this mirror as a default
-echo "options(repos=structure(c(CRAN=\"http://lib.stat.cmu.edu/R/CRAN/\")))" > ~/.Rprofile
+echo "options(repos=structure(c(CRAN=\"http://cran.rstudio.com/\")))" > ~/.Rprofile
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
