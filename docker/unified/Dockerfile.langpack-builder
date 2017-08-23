@@ -1,0 +1,11 @@
+FROM algorithmia/langpack:base
+
+ARG LANGPACK
+COPY $LANGPACK/template/bin/setup /tmp/lang/setup
+
+RUN /tmp/lang/setup
+
+WORKDIR /tmp/build
+CMD ["bin/build"]
+
+USER algo

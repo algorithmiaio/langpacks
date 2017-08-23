@@ -5,9 +5,6 @@ set -e
 if [[ "$1" == "--runtime" ]]; then
   echo "Rust has no runtime. Nothing to install."
 else
-  apt-get -y update
-  apt-get install -y libssl-dev pkg-config
-
   echo "Installing Rust"
   curl -sSf https://static.rust-lang.org/rustup.sh | sh
 
