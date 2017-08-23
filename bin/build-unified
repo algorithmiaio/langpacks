@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+LANGS=(ruby python javascript rust java scala)
+
+if [[ $# -lt 1 ]]; then
+    cat << EOF
+Usage: ./bin/build-unified LANGPACK_NAME [TAG_SUFFIX]
+  LANGPACK_NAME must be one of: ${LANGS[@]}
+  TAG_SUFFIX if supplied will be appended to the name of the generated images
+EOF
+    exit 1
+fi
+ALGO_UID=${ALGO_UID:-$(id -u)}
+LANGPACK=$1
+TAG_SUFFIX=${2:-empty}
+
+docker build --build-arg ALGO_UID=$ALGO_UID -f docker/unified/Dockerfile.base -t algorithmia/langpack:base .
+
+BUILDER_TAG=$LANGPACK
+if [[ $TAG_SUFFIX != "empty" ]]; then
+    BUILDER_TAG=${BUILDER_TAG}-$TAG_SUFFIX
+fi
+
+docker build --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack-builder -t algorithmia/langpack-builder:$BUILDER_TAG .

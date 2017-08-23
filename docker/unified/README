@@ -1,0 +1,3 @@
+The current design of dockerfiles in docker/ ends up relying on certain libraries being built/included by a particular language (most notably, python installs GPU drivers and such).  Since that's rather ugly and means that the creation of individual per-language builders/runners will result in duplicating install directives, dockerfiles in this directory attempt to create a single "base" image containing packages/libraries that are really common, and a simpler setup for individual language installations.
+
+Not yet finished, but the goal is going to have separate dockerfiles for GPU/non-GPU builders.

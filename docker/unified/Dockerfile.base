@@ -1,0 +1,60 @@
+FROM ubuntu:14.04
+
+# Install base packages that would be needed for any builder or runner
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get -y install software-properties-common && \
+    add-apt-repository -y ppa:george-edison55/cmake-3.x && \
+    apt-get update && \
+    apt-get -y install \
+        build-essential \
+        cmake \
+        curl \
+        fontconfig \
+        fonts-wqy-microhei \
+        libatlas-base-dev \
+        libblas-dev \
+        libfreetype6-dev \
+        liblapack-dev \
+        libjpeg8-dev \
+        libmagickwand-dev \
+        libopenblas-dev \
+        libpng-dev \
+        libssl-dev \
+        pandoc \
+        pkg-config \
+        unzip \
+        texlive \
+        zip && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install drivers and CUDA for interacting with GPU
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes \
+        gcc-4.6 g++-4.6 gcc-4.6-multilib g++-4.6-multilib gfortran \
+        linux-headers-generic
+
+RUN curl -LO http://us.download.nvidia.com/XFree86/Linux-x86_64/367.57/NVIDIA-Linux-x86_64-367.57.run && \
+        chmod +x NVIDIA-Linux-x86_64-367.57.run && \
+        sh ./NVIDIA-Linux-x86_64-367.57.run -s --no-kernel-module && \
+        rm ./NVIDIA-Linux-x86_64-367.57.run
+
+RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cuda_8.0.44_linux.run && \
+    chmod +x cuda_8.0.44_linux.run && \
+    sh ./cuda_8.0.44_linux.run --toolkit --silent && \
+    rm ./cuda_8.0.44_linux.run
+
+RUN curl -LO https://s3.amazonaws.com/algorithmia-docker/docker-deps/cudnn-8.0-linux-x64-v5.1.tgz && \
+    tar -xf cudnn-8.0-linux-x64-v5.1.tgz && \
+    mv cuda/include/* /usr/local/cuda/include && \
+    mv cuda/lib64/* /usr/local/cuda/lib64 && \
+    rm cudnn-8.0-linux-x64-v5.1.tgz
+
+RUN ldconfig /usr/local/cuda/lib64
+ENV PATH=/usr/local/cuda/bin:$PATH \
+	LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# Set options that should be defined everywhere
+ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+ENV LANG C.UTF-8
+
+ARG ALGO_UID=1000
+RUN adduser --disabled-password --gecos "" --uid $ALGO_UID algo
