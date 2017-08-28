@@ -76,11 +76,13 @@ pub struct ErrorMessage {
 
     #[serde(skip_serializing_if="Option::is_none")]
     pub stacktrace: Option<String>,
+
+    pub code: Option<String>,
 }
 
 impl ErrorMessage {
     pub fn new(error: Error) -> ErrorMessage {
-        ErrorMessage { message: error.to_string(), error_type: ErrorType::SystemExit, stacktrace: None }
+        ErrorMessage { message: error.to_string(), error_type: ErrorType::SystemExit, stacktrace: None, code: None }
     }
 }
 

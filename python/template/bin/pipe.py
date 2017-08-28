@@ -4,6 +4,7 @@ import sys
 import traceback
 import six
 from six.moves import input
+from Algorithmia.errors import AlgorithmException
 
 with open('algorithmia.conf') as config_file:
     config = json.load(config_file)
@@ -62,12 +63,17 @@ def get_response(request):
                 'content_type': content_type
             }
         })
-    except Exception as e:
+    except AlgorithmException as e:
+        if hasattr(e, 'code'):
+            code = e.code
+        else:
+            code = None
         response_string = json.dumps({
             'error': {
                 'message': str(e),
                 'stacktrace': traceback.format_exc(),
-                'error_type': 'AlgorithmError'
+                'error_type': 'AlgorithmError',
+                'code': code
             }
         })
 
