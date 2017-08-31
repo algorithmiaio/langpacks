@@ -14,16 +14,25 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
         libatlas-base-dev \
         libblas-dev \
         libfreetype6-dev \
+        # For including gdal.h (geo-spatial data)
+        libgdal-dev \
         liblapack-dev \
+        libjasper-dev \
+        libjpeg-dev \
         libjpeg8-dev \
         libmagickwand-dev \
         libopenblas-dev \
         libpng-dev \
         libssl-dev \
+        libtbb-dev \
+        libtiff-dev \
+        # For X11/X11lib.h
+        libx11-dev \
         pandoc \
         pkg-config \
         unzip \
         texlive \
+        wget \
         zip && \
     rm -rf /var/lib/apt/lists/*
 

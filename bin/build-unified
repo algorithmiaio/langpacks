@@ -17,9 +17,10 @@ TAG_SUFFIX=${2:-empty}
 
 docker build --build-arg ALGO_UID=$ALGO_UID -f docker/unified/Dockerfile.base -t algorithmia/langpack:base .
 
-BUILDER_TAG=$LANGPACK
+IMAGE_TAG=$LANGPACK
 if [[ $TAG_SUFFIX != "empty" ]]; then
-    BUILDER_TAG=${BUILDER_TAG}-$TAG_SUFFIX
+    IMAGE_TAG=${IMAGE_TAG}-$TAG_SUFFIX
 fi
 
-docker build --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack-builder -t algorithmia/langpack-builder:$BUILDER_TAG .
+docker build --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack-runner -t algorithmia/langpack-runner:$IMAGE_TAG .
+docker build --build-arg RUNNER_TAG=$IMAGE_TAG --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack-builder -t algorithmia/langpack-builder:$IMAGE_TAG .
