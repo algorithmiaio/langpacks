@@ -1,9 +1,11 @@
-FROM algorithmia/langpack:base
+ARG RUNNER_TAG
+FROM algorithmia/langpack-runner:${RUNNER_TAG}
 
+USER root
 ARG LANGPACK
-COPY $LANGPACK/template/bin/setup /tmp/lang/setup
+COPY $LANGPACK/template/bin/install-buildtime /tmp/lang/install-buildtime
 
-RUN /tmp/lang/setup
+RUN /tmp/lang/install-buildtime && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp/build
 CMD ["bin/build"]

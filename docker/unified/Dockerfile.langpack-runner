@@ -1,0 +1,19 @@
+FROM algorithmia/langpack:base
+
+ARG LANGPACK
+COPY $LANGPACK/template/bin/install-runtime /tmp/lang/install-runtime
+
+RUN /tmp/lang/install-runtime --runtime && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/algorithm && \
+    chown algo /opt/algorithm
+
+WORKDIR /opt/algorithm
+EXPOSE 9999
+
+ADD bin/init-langserver /bin/
+ADD target/release/langserver /bin/
+CMD ["/bin/init-langserver"]
+
+USER algo
+
