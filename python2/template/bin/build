@@ -1,48 +1,27 @@
 #!/bin/bash
 
 set -e
-shopt -s extglob
+ROOT=$(readlink -f $(dirname "${BASH_SOURCE[0]}"))
 
-export PATH=/opt/anaconda2/bin:$PATH
+SHORT=d
+LONG=install-dependencies
+PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"`
 
-function install_dependencies {
-  # Touch a file to know what files are new
-  touch /tmp/start-time
-  pip install -r requirements.txt
+eval set -- "$PARSED"
+while true; do
+    case "$1" in
+        -d|--install-dependencies)
+            $ROOT/bundle-dependencies
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Unknown option $1"
+            ;;
+    esac
+done
 
-  if [[ -d dependencies ]]; then
-      echo "Unable to compile due to pre-existing dependencies directory!"
-      exit 1
-  fi
-  mkdir dependencies
-
-  # -maxdepth 1 : Only need to move files or top-level directories
-  # -mindepth 1  : Don't want to include the site-packages directory (i.e. must be below that)
-  for f in $(find /opt/anaconda2/lib/python2.7/site-packages -maxdepth 1 -mindepth 1 -newer /tmp/start-time); do
-      echo "Adding dependency: $f"
-      mv $f dependencies
-  done
-
-  # Some python packages will install binaries, so we also copy over those files
-  if [[ ! -d dependencies/bin ]]; then
-    mkdir dependencies/bin
-  fi
-  for f in $(find /opt/anaconda2/bin -maxdepth 1 -mindepth 1 -newer /tmp/start-time); do
-      echo "Adding dependency/bin: $f"
-      mv $f dependencies/bin
-  done
-  
-  zip -q -r dependencies.zip dependencies
-}
-
-function compile_algorithm {
-  # filter dependencies.zip
-  zip -q -r algorithm.zip !(dependencies*)
-}
-
-# Use getopts here
-if [[ $1 == "--install-dependencies" ]]; then
-    install_dependencies
-fi 
-
-compile_algorithm
+$ROOT/bundle-algorithm
