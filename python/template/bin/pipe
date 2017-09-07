@@ -17,8 +17,4 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ $LANGUAGE_VERSION == "python3" ] && [ -e /cntk/cntk/activate-cntk ]; then
-  source /cntk/cntk/activate-cntk
-fi
-
 PYTHONPATH=$PYTHONPATH:$DIR/../dependencies exec $PYTHON $ROOTDIR/bin/pipe.py
