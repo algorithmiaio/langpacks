@@ -1,6 +1,6 @@
 #!/bin/bash
 
 set -e
-shopt -s extglob
 
-zip -q -r algorithm.zip !(dependencies*)
+# python doesn't need to do anything but ensure algorithm is installed
+cp -R . /opt/algorithm
