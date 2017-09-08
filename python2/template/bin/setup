@@ -23,6 +23,8 @@ apt-get install -u -y \
     python-sklearn
 
 /opt/anaconda2/bin/pip install scibag pil-compat cvxopt==1.1.8 python-dateutil joblib simplejson
+# Don't need anything special for compile time other than testing library
+/opt/anaconda2/bin/pip install pytest
 
 # Install opencv
 /opt/anaconda2/bin/conda install -c https://conda.anaconda.org/menpo opencv3
@@ -31,3 +33,4 @@ apt-get install -u -y \
 chown -R algo:algo /opt/anaconda2/lib/python2.7/site-packages
 chown algo:algo /opt/anaconda2/bin
 chown algo:algo /opt/anaconda2/pkgs  # Anaconda installs stuff into here and then hardlinks into the environment
+

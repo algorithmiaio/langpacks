@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-
-# Don't need anything special for compile time other than testing library
-/opt/anaconda2/bin/pip install pytest
