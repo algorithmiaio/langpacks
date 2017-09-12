@@ -15,16 +15,22 @@ ALGO_UID=${ALGO_UID:-$(id -u)}
 LANGPACK=$1
 TAG_SUFFIX=${2:-empty}
 
-# First build the new langserver binary if needed
-cargo build --release
-
-docker build --build-arg ALGO_UID=$ALGO_UID -f docker/unified/Dockerfile.base -t algorithmia/langpack:base .
-
 IMAGE_TAG=$LANGPACK
 if [[ $TAG_SUFFIX != "empty" ]]; then
     IMAGE_TAG=${IMAGE_TAG}-$TAG_SUFFIX
 fi
 
-docker build --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack-runner -t algorithmia/langpack-runner:$IMAGE_TAG .
+# First build the new langserver binary if needed
+cargo build --release
 
-docker build --build-arg RUNNER_TAG=$IMAGE_TAG --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack-builder -t algorithmia/langpack-builder:$IMAGE_TAG .
+# Then ensure the base image is up to date
+docker build --build-arg ALGO_UID=$ALGO_UID -f docker/unified/Dockerfile.base -t algorithmia/langpack:base .
+
+# If desired, build the GPU version of the image
+if [[ -z ${GPU+x} ]]; then
+    docker build --build-arg ALGO_UID=$ALGO_UID -f docker/unified/Dockerfile.base-gpu -t algorithmia/langpack:base-gpu .
+    IMAGE_TAG=${IMAGE_TAG}-gpu
+    docker build --build-arg GPU=-gpu --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack -t algorithmia/langpack-runner:$IMAGE_TAG .
+fi
+
+docker build --build-arg LANGPACK=$LANGPACK -f docker/unified/Dockerfile.langpack -t algorithmia/langpack-runner:$IMAGE_TAG .
