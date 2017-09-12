@@ -1,0 +1,19 @@
+ARG GPU
+FROM algorithmia/langpack:base$GPU
+
+ARG LANGPACK
+COPY $LANGPACK/template/bin/setup /tmp/lang/setup
+
+RUN /tmp/lang/setup && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/algorithm && \
+    chown algo /opt/algorithm
+
+EXPOSE 9999
+
+ADD bin/init-langserver /bin/
+ADD target/release/langserver /bin/
+CMD ["/bin/init-langserver"]
+
+USER algo
+
