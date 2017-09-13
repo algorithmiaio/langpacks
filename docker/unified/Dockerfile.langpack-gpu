@@ -1,4 +1,4 @@
-FROM algorithmia/langpack:base
+FROM algorithmia/langpack:base-gpu
 
 ARG LANGPACK
 COPY $LANGPACK/template/bin/setup /tmp/lang/setup
@@ -15,4 +15,5 @@ ADD target/release/langserver /bin/
 CMD ["/bin/init-langserver"]
 
 USER algo
+
 
