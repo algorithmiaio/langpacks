@@ -6,6 +6,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     add-apt-repository -y ppa:george-edison55/cmake-3.x && \
     apt-get update && \
     apt-get -y install \
+        autoconf \
+        automake \
         build-essential \
         cmake \
         curl \
