@@ -20,6 +20,7 @@ conda install nomkl
 # Install dependencies
 apt-get install -u -y \
     libboost-python-dev \
+    python-dev \
     python-sklearn
 
 /opt/anaconda2/bin/pip install scibag pil-compat cvxopt==1.1.8 python-dateutil joblib simplejson
