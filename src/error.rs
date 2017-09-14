@@ -1,7 +1,8 @@
 use {hyper, serde_json};
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::{Visitor};
-use std::{fmt, env, io};
+use std::{env, io};
+
+pub const SYSTEM_ERROR: &'static str = "SystemError";
+pub const SYSTEM_EXIT: &'static str = "SystemExit";
 
 // quick_error generates a lot of the standard error boilerplate
 quick_error! {
@@ -72,7 +73,8 @@ pub struct ErrorMessage {
 }
 
 impl ErrorMessage {
-    pub fn new(error: Error) -> ErrorMessage {
-        ErrorMessage { message: error.to_string(), error_type: "SystemExit", stacktrace: None }
+    pub fn exit(error: Error) -> ErrorMessage {
+        ErrorMessage { message: error.to_string(), error_type: SYSTEM_EXIT.to_owned(), stacktrace: None }
     }
 }
+

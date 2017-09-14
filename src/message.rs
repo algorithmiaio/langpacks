@@ -2,7 +2,7 @@ use serde_json::{Value};
 use std::time::Duration;
 use std::env;
 
-use super::error::{Error, ErrorType, ErrorMessage};
+use super::error::{Error, ErrorMessage, SYSTEM_EXIT};
 
 pub enum RunnerState {
     Completed(RunnerOutput),
@@ -74,7 +74,7 @@ impl RunnerState {
             }
             RunnerState::Exited(err) => {
                 RunnerMessage::Failure {
-                    error: ErrorMessage::new(err),
+                    error: ErrorMessage::exit(err),
                     metadata: Metadata::new(duration, None),
                 }
             }
@@ -85,8 +85,8 @@ impl RunnerState {
 impl RunnerMessage {
     pub fn exited_early(&self) -> bool {
         match *self {
-            RunnerMessage::Failure{ ref error, ..} => match error.error_type {
-                ErrorType::SystemExit => true,
+            RunnerMessage::Failure{ ref error, ..} => match &*error.error_type {
+                SYSTEM_EXIT => true,
                 _ => false,
             },
             _ => false,
@@ -103,7 +103,7 @@ impl StatusMessage {
         StatusMessage {
             slot_id: env::var("SLOT_ID").ok(),
             status: status.to_owned(),
-            error: error.map(ErrorMessage::new),
+            error: error.map(ErrorMessage::exit),
             metadata: Metadata {
                 duration: load_time.as_secs() as f64 + (load_time.subsec_nanos() as f64 / 1_000_000_000f64),
                 content_type: None,
