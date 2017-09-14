@@ -62,13 +62,6 @@ quick_error! {
     }
 }
 
-#[derive(Debug)]
-pub enum ErrorType {
-    SystemError,
-    SystemExit,
-    AlgorithmError(String),
-}
-
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ErrorMessage {
     pub message: String,
