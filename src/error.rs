@@ -72,7 +72,7 @@ pub enum ErrorType {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ErrorMessage {
     pub message: String,
-    pub error_type: ErrorType,
+    pub error_type: String,
 
     #[serde(skip_serializing_if="Option::is_none")]
     pub stacktrace: Option<String>,
