@@ -176,12 +176,13 @@ If no error is encountered, the return value should written written directly to 
 }
 ```
 
-If an error is encountered, the error message and [optional] stacktrace should be written to the `algoout` pipe as compact JSON in the following format:
+If an error is encountered, the error message, [optional] stacktrace and error_type should be written to the `algoout` pipe as compact JSON in the following format:
 
 ```
 {
     "message": "The algorithm exploded like the TARDIS",
-    "stacktrace": "VanGoughException occurred in /algo/src/ExplodingTardis.py:1890\n\tin /algo/src/PandoricaOpens.py:512"
+    "stacktrace": "VanGoughException occurred in /algo/src/ExplodingTardis.py:1890\n\tin /algo/src/PandoricaOpens.py:512",
+    "error_type": "VanGoughException"
 }
 ```
 
