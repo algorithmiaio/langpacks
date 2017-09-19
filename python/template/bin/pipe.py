@@ -63,15 +63,15 @@ def get_response(request):
             }
         })
     except Exception as e:
-        if hasattr(e, 'error_type'):
-            error_type = e.error_type
+        if hasattr(e, 'errorType'):
+            errorType = e.errorType
         else:
-            error_type = None
+            errorType = None
         response_string = json.dumps({
             'error': {
                 'message': str(e),
                 'stacktrace': traceback.format_exc(),
-                'error_type': error_type
+                'errorType': errorType
             }
         })
 

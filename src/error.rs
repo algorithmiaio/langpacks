@@ -66,7 +66,7 @@ quick_error! {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ErrorMessage {
     pub message: String,
-    pub error_type: String,
+    pub errorType: String,
 
     #[serde(skip_serializing_if="Option::is_none")]
     pub stacktrace: Option<String>,
@@ -74,7 +74,7 @@ pub struct ErrorMessage {
 
 impl ErrorMessage {
     pub fn exit(error: Error) -> ErrorMessage {
-        ErrorMessage { message: error.to_string(), error_type: SYSTEM_EXIT.to_owned(), stacktrace: None }
+        ErrorMessage { message: error.to_string(), errorType: SYSTEM_EXIT.to_owned(), stacktrace: None }
     }
 }
 
