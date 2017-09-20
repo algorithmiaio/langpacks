@@ -85,7 +85,7 @@ impl RunnerState {
 impl RunnerMessage {
     pub fn exited_early(&self) -> bool {
         match *self {
-            RunnerMessage::Failure{ ref error, ..} => match &*error.errorType {
+            RunnerMessage::Failure{ ref error, ..} => match &*error.error_type {
                 SYSTEM_EXIT => true,
                 _ => false,
             },
