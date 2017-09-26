@@ -52,15 +52,18 @@ ENV LANG C.UTF-8
 RUN adduser --disabled-password --gecos "" --uid {{algo_uid}} algo
 
 {% for library in libraries %}
-# -- Install {{library.name}} --
-ADD libraries/{{ library.name }} /opt/algorithmia/setup/{{library.name}}
+# --------
+# Install {{library.name}}
+  {% for file in library.files %}
+ADD libraries/{{ library.name }}/{{file}} /opt/algorithmia/setup/{{library.name}}/{{file}}
+  {% endfor %}
   {% for script in library.install_scripts %}
+ADD libraries/{{ library.name }}/{{script}} /opt/algorithmia/setup/{{library.name}}/{{script}}
 RUN /opt/algorithmia/setup/{{ library.name }}/{{script}} && rm -rf /var/lib/apt/lists/*
   {% endfor %}
   {% for name, value in library.env_variables.items()|sort %}
 ENV {{name}}={{value}}
   {% endfor %}
-# --------
 {% endfor %}
-
+# --------
 USER algo
