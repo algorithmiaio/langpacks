@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+'''
+Creates a dockerfile, templating in any needed files and environment variables to set up different
+libraries.  Libraries will be installed _in order specified_ so if one needs to be installed before
+another, then list them in that order on the command line
+
+Will then run a docker build and tag operation
+
+Library directories should include the following:
+ - install.sh : a script to install the library
+ - config.json (optional): a json file containing environment variables to set at the end of execution
+'''
+
+import argparse
+import jinja2
+import json
+import os
+import subprocess
+
+from datetime import datetime
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-l','--library', action='append', default=[], help='library directories to include in generating this dockerfile')
+    parser.add_argument('-p','--template', default='docker/Dockerfile.j2', help='location of the dockerfile template file')
+    parser.add_argument('-t','--tag', required=True, help='tag to label the docker image once produced')
+    parser.add_argument('-o','--output', default='Dockerfile.{}'.format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S')), help='name of file to write output to')
+    parser.add_argument('-u','--user_id', default=None, help='user id to use for the "algo" user, defaults to current user')
+    args = parser.parse_args()
+
+    if args.user_id is None:
+        algo_uid = os.getuid()
+    else:
+        algo_uid = args.user_id
+
+    env = jinja2.environment.Environment(trim_blocks=True, lstrip_blocks=True)
+    env.loader = jinja2.FileSystemLoader('.')
+    template = env.get_template(args.template)
+
+    libraries = get_libraries(args.library)
+
+    with open(args.output, 'w') as output:
+        output.write(template.render(libraries=libraries, algo_uid=algo_uid))
+
+    subprocess.check_call(['docker','build','-f',args.output,'-t',args.tag,'.'])
+
+def get_libraries(libs):
+    libraries = []
+    for lib in libs:
+        l = {'env_variables':{}}
+        l['name'] = lib
+        config_path = 'libraries/{lib}/config.json'.format(lib=lib) 
+        if os.path.isfile(config_path):
+            with open(config_path) as config_file:
+                config = json.loads(config_file.read())
+                if 'env_variables' in config:
+                    if type(config['env_variables'] == dict):
+                        l['env_variables'] = config['env_variables']
+                    else:
+                        raise ValueError('invalid config for {lib} - env_variables must be a dictionary if specified'.format(lib=lib))
+        libraries.append(l)
+    return libraries
+
+if __name__ == '__main__':
+    main()
