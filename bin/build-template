@@ -49,21 +49,26 @@ def main():
 def get_libraries(libs):
     libraries = []
     for lib in libs:
-        l = {'env_variables':{}, 'name': lib, 'install_scripts': ['install.sh']}
+        l = {'env_variables':{}, 'name': lib, 'install_scripts': ['install.sh'], 'files':[]}
         config_path = 'libraries/{lib}/config.json'.format(lib=lib) 
         if os.path.isfile(config_path):
             with open(config_path) as config_file:
                 config = json.loads(config_file.read())
                 if 'env_variables' in config:
-                    if type(config['env_variables'] == dict):
+                    if type(config['env_variables']) == dict:
                         l['env_variables'] = config['env_variables']
                     else:
                         raise ValueError('invalid config for {lib} - env_variables must be a dictionary if specified'.format(lib=lib))
                 if 'install_scripts' in config:
-                    if type(config['install_scripts'] == list):
+                    if type(config['install_scripts']) == list:
                         l['install_scripts'] = config['install_scripts']
                     else:
                         raise ValueError('invalid config for {lib} - install_scripts must be a list if specified'.format(lib=lib))
+                if 'files' in config:
+                    if type(config['files']) == list:
+                        l['files'] = config['files']
+                    else:
+                        raise ValueError('invalid config for {lib} - files must be a list if specified.'.format(lib=lib))
         libraries.append(l)
     return libraries
 
