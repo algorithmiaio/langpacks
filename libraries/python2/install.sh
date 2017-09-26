@@ -30,8 +30,8 @@ apt-get install -u -y \
 # Install opencv
 /opt/anaconda2/bin/conda install -c https://conda.anaconda.org/menpo opencv3
 
+# Users might need to un-install a previously installed verison of a package hence chowning the full directory
 # Give algo user ability to write into lib directory and bin directory (some python packages install CLI tools into bin)
 chown -R algo:algo /opt/anaconda2/lib/python2.7/site-packages
-chown algo:algo /opt/anaconda2/bin
-chown algo:algo /opt/anaconda2/pkgs  # Anaconda installs stuff into here and then hardlinks into the environment
-
+chown -R algo:algo /opt/anaconda2/bin
+chown -R algo:algo /opt/anaconda2/pkgs  # Anaconda installs stuff into here and then hardlinks into the environment
