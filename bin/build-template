@@ -8,7 +8,9 @@ Will then run a docker build and tag operation
 
 Library directories should include the following:
  - install.sh : a script to install the library
- - config.json (optional): a json file containing environment variables to set at the end of execution
+ - config.json (optional): a json file containing configuration such as:
+   - env_variables: dictionary of environment variables to set at the end of execution
+   - install_scripts: list of order to run scripts in to create multiple layers (particularly for testing)
 '''
 
 import argparse
@@ -47,8 +49,7 @@ def main():
 def get_libraries(libs):
     libraries = []
     for lib in libs:
-        l = {'env_variables':{}}
-        l['name'] = lib
+        l = {'env_variables':{}, 'name': lib, 'install_scripts': ['install.sh']}
         config_path = 'libraries/{lib}/config.json'.format(lib=lib) 
         if os.path.isfile(config_path):
             with open(config_path) as config_file:
@@ -58,6 +59,11 @@ def get_libraries(libs):
                         l['env_variables'] = config['env_variables']
                     else:
                         raise ValueError('invalid config for {lib} - env_variables must be a dictionary if specified'.format(lib=lib))
+                if 'install_scripts' in config:
+                    if type(config['install_scripts'] == list):
+                        l['install_scripts'] = config['install_scripts']
+                    else:
+                        raise ValueError('invalid config for {lib} - install_scripts must be a list if specified'.format(lib=lib))
         libraries.append(l)
     return libraries
 
