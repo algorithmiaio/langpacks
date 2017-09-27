@@ -9,10 +9,6 @@ elif [[ -d /tmp/algorithm ]]; then
   cp -rn /tmp/algorithm/. .
 fi
 
-if [[ -f /tmp/dependencies.zip ]]; then
-  unzip -n -q /tmp/dependencies
-fi
-
 if [[ -x bin/pipe ]]; then
   exec /bin/langserver
 elif [[ "$LANGUAGE_VERSION" == "java8" ]] || [[ "$LANGUAGE_VERSION" == "scala2.11" ]] ; then
