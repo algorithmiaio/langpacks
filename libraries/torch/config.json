@@ -1,0 +1,1 @@
+{"env_variables":{"PATH":"/opt/torch/install/bin:$PATH"},"install_scripts":["install-torch.sh", "install-rocks.sh", "install-cuda-rocks.sh"]}
