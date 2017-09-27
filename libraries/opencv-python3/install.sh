@@ -29,3 +29,4 @@ rm -rf opencv_contrib-${OPENCV_VERSION}
 
 ldconfig
 
+find $PYTHON_LIB_PATH/$PYTHON_VERSION/site-packages -user root | xargs chown algo:algo
