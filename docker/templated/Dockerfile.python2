@@ -59,4 +59,9 @@ ENV PATH=/opt/anaconda2/bin:$PATH
 ENV PYTHON_LIB_PATH=/opt/anaconda2/lib
 ENV PYTHON_VERSION=python2.7
 # --------
+
+# Add langserver binary and algorithm directory
+RUN mkdir /opt/algorithm && chown algo /opt/algorithm
+ADD bin/init-langserver /bin/
+ADD target/release/langserver /bin/
 USER algo

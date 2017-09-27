@@ -66,4 +66,9 @@ ENV {{name}}={{value}}
   {% endfor %}
 {% endfor %}
 # --------
+
+# Add langserver binary and algorithm directory
+RUN mkdir /opt/algorithm && chown algo /opt/algorithm
+ADD bin/init-langserver /bin/
+ADD target/release/langserver /bin/
 USER algo
