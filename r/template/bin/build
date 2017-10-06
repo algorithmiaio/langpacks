@@ -2,8 +2,10 @@
 
 set -e
 
+CRAN_MIRROR=${CRAN_MIRROR:=http://cran.rstudio.com/}
+
 # When installing from CRAN, use this mirror as a default
-echo "options(repos=structure(c(CRAN=\"http://cran.rstudio.com/\")))" > ~/.Rprofile
+echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 

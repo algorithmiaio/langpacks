@@ -4,8 +4,9 @@ set -e
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
-# When installing from CRAN, use this mirror as a default
-echo "options(repos=structure(c(CRAN=\"http://cran.rstudio.com/\")))" > ~/.Rprofile
+CRAN_MIRROR=${CRAN_MIRROR:=http://cran.rstudio.com/}
+
+echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
 
 echo "R_LIBS_USER=$ROOTDIR/dependencies" > ~/.Renviron
 
