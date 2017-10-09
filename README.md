@@ -4,7 +4,7 @@
 
 *LangServer*: A server that serve a LangPack's `bin/pipe` runner in a way that emulates a light-weight version of the Algorithmia API.
 
-## Building LangServer(s)
+## Building LangServer(s) (Partially deprecated)
 
 Disclaimer: The intent was to prototype langserver in rust (because I knew it better), but finally write it in go (lower barrier to entry), but it turned into an official project before the rewrite happened. So, for now: start by installing [latest stable rust](https://www.rust-lang.org/downloads.html), and then:
 
@@ -18,6 +18,65 @@ bin/build single         # builds the single-runner and single-builder
 ```
 
 Note: the initial plan is to NOT use these images, but they are helpful for implementing and testing langpacks locally, as well as provide some "code documentation" for how setup/build/pipe/langserver all fit together.
+
+## Building LangServer with Libraries
+We're in the process of refactoring the way that images get generated and algorithms are compiled.  The initial approach would create an `algorithm.zip` that contains a compiled binary (or source for interpreted languages) along with any dependencies needed.  Additionally, a number of libraries were installed side-by-side which made it difficult to debug in certain scenarios or independently evolve various languages.  In particular, some libraries required certain variables set during install/compilation but not during execution and it was difficult to determine what variables or even system packages were needed for what libraries in particular.
+
+The new process (still experimental) involves templating a Dockerfile based on a set of desired `libraries` (which could be language runtimes/buildtimes, services, or deep-learning frameworks) and then building an image with just that subset of libraries.  Ideally, libraries' install.sh script should be able to run on an Ubuntu 16.04 host/VM the same as it could during docker build time (this greatly eases creating the install script).
+
+Algorithms no longer have a single `bin/build` script but two separate scripts, one to `install-dependencies` (which would do an appropriate pip/npm/cargo/etc install/fetch) and one to `install-algorithm` which compiles or bundles the algorithm source to `/opt/algorithmia`.
+
+Templating and building a dockerfile:
+```
+$ ./bin/build-template --help
+usage: build-template [-h] [-l LIBRARY] [-p TEMPLATE] -t TAG [-o OUTPUT]
+                      [-u USER_ID]
+
+Creates a dockerfile, templating in any needed files and environment variables
+to set up different libraries. Libraries will be installed _in order
+specified_ so if one needs to be installed before another, then list them in
+that order on the command line
+
+Will then run a docker build and tag operation
+
+Library directories should include the following:
+  - install.sh : a script to install the library
+  - config.json (optional): a json file containing configuration such as:
+    - env_variables: dictionary of environment variables to
+      set at the end of execution
+    - install_scripts: list of order to run scripts in to create
+      multiple layers (particularly for testing)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l LIBRARY, --library LIBRARY
+                        library directories to include in generating this
+                        dockerfile
+  -p TEMPLATE, --template TEMPLATE
+                        location of the dockerfile template file
+  -t TAG, --tag TAG     tag to label the docker image once produced
+  -o OUTPUT, --output OUTPUT
+                        name of file to write output to
+  -u USER_ID, --user_id USER_ID
+                        user id to use for the "algo" user, defaults to
+                        current user
+```
+Examples:
+```
+# Create a langpack consisting only of python2 and tag it as algorithmia/langpack-runner:python2
+./bin/build-template -u 1001 -t algorithmia/langpack-runner:python2 -l python2 -o docker/templated/Dockerfile.python2
+
+# Create a langpack with NVIDIA GPU drivers, python and caffe and tag it as algorithmia/langpack-runner:python2-caffe
+./bin/build-template -u 1001 -t algorithmia/langpack-runner:python2-caffe -l gpu-driver -l python2 -l caffe -o Dockerfile.python2-advanced
+```
+### Building an algorithm
+1. Bind mount an algorithm working directory to `/tmp/build` - `docker run -it -v \`pwd\`:/tmp/build algorithmia/langpack-runner:python2`
+2. Run `/tmp/build/bin/install-dependencies`
+3. Run `/tmp/build/bin/install-algorithm`
+4. Outside of the container commit the image with appropriate entrypoint - `docker commit -c 'ENTRYPOINT /bin/init-langserver' -c 'WORKDIR /opt/algorithm' <container_id> algorithmia/<algorithm_name>`
+
+### Running an algorithm
+1. `docker run --rm -ti -p 9999:9999 algorithmia/<algorithm_name>`
 
 ## Building an algorithm
 
