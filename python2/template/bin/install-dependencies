@@ -2,6 +2,13 @@
 
 set -e
 
+
+if [[ -n "$PYTHON_INDEX_URL" ]]; then
+    extra_args="-i $PYTHON_INDEX_URL"
+else
+    extra_args=""
+fi
+
 export PATH=/opt/anaconda2/bin:$PATH
 
-pip install -r requirements.txt
+pip install $extra_args -r requirements.txt
