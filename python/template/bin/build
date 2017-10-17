@@ -2,6 +2,12 @@
 
 set -e
 
+if [[ -n "$PYTHON_INDEX_URL" ]]; then
+	extra_args="-i $PYTHON_INDEX_URL"
+else
+	extra_args=""
+fi
+
 if [[ "$LANGUAGE_VERSION" == "python2" ]]; then
     export PATH=/opt/anaconda2/bin:$PATH
 elif [[ "$LANGUAGE_VERSION" == "python3" ]]; then
@@ -11,6 +17,6 @@ else
     exit 1
 fi
 
-pip install -r requirements.txt --target dependencies
+pip install $extra_args -r requirements.txt --target dependencies
 
 zip -r algorithm.zip *

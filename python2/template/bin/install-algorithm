@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+# python doesn't need to do anything but ensure algorithm is installed
+cp -R . /opt/algorithm

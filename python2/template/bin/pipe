@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
+# Adding dependencies/bin to path just in case
+export PATH=/opt/anaconda2/bin:$ROOTDIR/dependencies/bin:$PATH
+
+PYTHONPATH=$PYTHONPATH:$ROOTDIR/dependencies exec python2 $ROOTDIR/bin/pipe.py
