@@ -28,8 +28,8 @@ pip3 install pytest
 
 pip3 install sklearn
 
-pip install pandas
-pip3 install pandas
+pip install pandas==0.19.2
+pip3 install pandas==0.19.2
 
 # Install Anaconda for Python2
 wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda2-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
