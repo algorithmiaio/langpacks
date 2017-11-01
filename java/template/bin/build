@@ -2,5 +2,23 @@
 
 set -e
 
+if [[ -n "$MAVEN_MIRROR" ]]; then
+	mkdir -p ~/.m2
+	cat > ~/.m2/settings.xml << EOF
+<settings>
+
+  <mirrors>
+    <mirror>
+      <id>private-shared-repository</id>
+      <name>Internal Maven Repository Manager</name>
+      <url>$MAVEN_MIRROR</url>
+      <mirrorOf>*</mirrorOf>
+    </mirror>
+  </mirrors>
+
+</settings>
+EOF
+fi
+
 mvn package
 zip -r algorithm.zip target/* bin/* lib/*
