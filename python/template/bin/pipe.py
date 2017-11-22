@@ -66,7 +66,7 @@ def get_response(request):
         if hasattr(e, 'error_type'):
             error_type = e.error_type
         else:
-            error_type = None
+            error_type = 'AlgorithmError'
         response_string = json.dumps({
             'error': {
                 'message': str(e),
