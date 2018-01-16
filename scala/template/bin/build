@@ -3,9 +3,21 @@
 set -e
 
 JARS="lib_managed lib target/scala-2.11/*.jar"
+EXTRA_ARGS=""
+
+if [[ -n "$IVY_MIRROR" && -n "$MAVEN_MIRROR" ]]; then
+	EXTRA_ARGS="-Dsbt.override.build.repos=true"
+	mkdir -p ~/.sbt
+	cat > ~/.sbt/repositories << EOF
+[repositories]
+  local
+  my-ivy-proxy-releases: $IVY_MIRROR, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+  my-maven-proxy-releases: $MAVEN_MIRROR
+EOF
+fi
 
 # Build jars
-sbt $@ clean package
+sbt $@ $EXTRA_ARGS clean package
 
 # Assemble algorithm.zip
 zip -FS -r algorithm.zip $JARS bin/*
