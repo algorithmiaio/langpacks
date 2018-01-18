@@ -3,8 +3,9 @@
 set -e
 
 if [[ -n "$NPM_REGISTRY" ]]; then
-    npm config set registry "$NPM_REGISTRY"
+    npm install --registry "$NPM_REGISTRY"
+else
+    npm install
 fi
 
-npm install
 zip -r algorithm.zip *
