@@ -11,8 +11,8 @@ apt-get install -y python2.7 python2.7-dev
 apt-get install -y python-pip
 pip install --upgrade pip
 
-# Same thing but now for python 3.4
-apt-get install -y python3.4 python3.4-dev
+# Same thing but now for python 3
+apt-get install -y python3 python3-dev
 apt-get install -y python3-pip
 pip3 install --upgrade pip
 
