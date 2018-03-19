@@ -200,8 +200,8 @@ public class JarRunner {
     private ClassLoader loadJars(String workingDirectory) {
         // Load JARs
         String[] extensions = {"jar"};
-        File absolutePath = new File((new File(workingDirectory)).getAbsolutePath());
-        Collection<File> jarFiles = FileUtils.listFiles(new File(absolutePath), extensions, true); // Recursively find jars
+        File absolutePath = (new File(workingDirectory)).getAbsoluteFile();
+        Collection<File> jarFiles = FileUtils.listFiles(absolutePath, extensions, true); // Recursively find jars
         List<URL> jarUrls = new ArrayList<URL>(jarFiles.size());
 
 
