@@ -193,11 +193,15 @@ public class JarRunner {
 
     /**
      * Resolve algorithm with ivy and load JARs into a ClassLoader
+     * Changed by James Sutton on March 19th, 2018
+     * relative path `new File(".")` formatting breaks reflective URI classPath lookup that some algorithms need
+     *  
      */
     private ClassLoader loadJars(String workingDirectory) {
         // Load JARs
         String[] extensions = {"jar"};
-        Collection<File> jarFiles = FileUtils.listFiles(new File(workingDirectory), extensions, true); // Recursively find jars
+        File absolutePath = (new File(workingDirectory)).getAbsoluteFile();
+        Collection<File> jarFiles = FileUtils.listFiles(absolutePath, extensions, true); // Recursively find jars
         List<URL> jarUrls = new ArrayList<URL>(jarFiles.size());
 
 
