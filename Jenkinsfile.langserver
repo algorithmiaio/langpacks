@@ -1,0 +1,23 @@
+pipeline {
+    agent {
+        docker { image 'rust:1.23.0' }
+    }
+        
+    stages { 
+        git credentialsId: 'github', url: 'git@github.com:algorithmiaio/langpacks.git'
+
+        stage ('test') {
+            steps {
+                sh 'cargo test'
+            }
+        }
+
+        stage('build-langserver') {
+            steps {
+                sh 'cargo build --release'
+		archiveArtifacts artifacts: 'target/release/langserver', fingerprint: true
+                stash includes: 'target/release/langserver', name: 'langserver'
+            }   
+        }
+    }
+}
