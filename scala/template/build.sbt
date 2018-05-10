@@ -9,7 +9,7 @@ organization := "algorithmia"
 // Allow version to be overwritten with "-DalgoVersion=XXX"
 version := System.getProperty("algo.version", "1.0-SNAPSHOT")
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 mainClass in Compile := Some("algorithmia.Main")
 
