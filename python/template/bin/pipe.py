@@ -90,7 +90,7 @@ def call_algorithm(request):
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
 
-    # Check if algo code has initialized
+    # Check if algo code has been initialized
     if not algo_init_flag:
         algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
         algo_init_flag = True
