@@ -11,7 +11,7 @@ with open('algorithmia.conf') as config_file:
 import sys
 sys.path.append("./")
 
-algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
+algo_init_flag = False
 
 FIFO_PATH = '/tmp/algoout'
 
@@ -85,6 +85,11 @@ def call_algorithm(request):
         data = wrap_binary_data(base64.b64decode(request['data']))
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
+
+    # Check if algo code has initialized
+    if not algo_init_flag:
+        algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
+        algo_init_flag = True
 
     return algorithm.apply(data)
 
