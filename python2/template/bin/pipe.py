@@ -11,9 +11,24 @@ with open('algorithmia.conf') as config_file:
 import sys
 sys.path.append("./")
 
-algo_init_flag = False
-
 FIFO_PATH = '/tmp/algoout'
+
+try:
+    algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
+except Exception as e:
+    response_string = json.dumps({
+        'error': {
+            'message': str(e),
+            'stacktrace': traceback.format_exc(),
+            'error_type': 'AlgorithmError'
+        }
+    })
+    # Flush stdout before writing back response
+    sys.stdout.flush()
+
+    with open(FIFO_PATH, 'w') as f:
+        f.write(response_string)
+        f.write('\n')
 
 def main():
     print('PIPE_INIT_COMPLETE')
@@ -85,11 +100,6 @@ def call_algorithm(request):
         data = wrap_binary_data(base64.b64decode(request['data']))
     else:
         raise Exception("Invalid content_type: {}".format(request['content_type']))
-
-    # Check if algo code has been initialized
-    if not algo_init_flag:
-        algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
-        algo_init_flag = True
 
     return algorithm.apply(data)
 
