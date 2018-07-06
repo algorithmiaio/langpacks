@@ -6,56 +6,27 @@ DEBIAN_FRONTEND=noninteractive
 
 apt-get -y update
 
-# Getting python 2.7
-apt-get install -y python2.7 python2.7-dev
-apt-get install -y python-pip
-pip install --upgrade pip
-
-# Same thing but now for python 3
-apt-get install -y python3 python3-dev
-apt-get install -y python3-pip
-pip3 install --upgrade pip
-
 # Install dependencies
 apt-get install -u -y unzip wget git-core \
     pkg-config libblas-dev liblapack-dev libpng-dev libjpeg8-dev libfreetype6-dev \
-    libatlas-base-dev gfortran libboost-python-dev \
-    python-numpy  python-scipy  python-sklearn \
-    python3-numpy python3-scipy
-
-pip install pytest
-pip3 install pytest
-
-pip3 install sklearn
-
-pip install pandas==0.19.2
-pip3 install pandas==0.19.2
+    libatlas-base-dev gfortran libboost-python-dev
 
 # Install Anaconda for Python2
 wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda2-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
 bash Anaconda2-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda2
 rm /opt/anaconda2/bin/curl /opt/anaconda2/bin/curl-config
 export PATH=/opt/anaconda2/bin:$PATH
-/opt/anaconda2/bin/conda install nomkl
 
 /opt/anaconda2/bin/pip install --upgrade pip
-/opt/anaconda2/bin/pip install scibag pil-compat cvxopt==1.1.8 python-dateutil joblib simplejson
+/opt/anaconda2/bin/pip install scibag pil-compat cvxopt==1.1.8
 
-# Install Anaconda for Python3
-wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda3-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
-bash Anaconda3-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda3
-rm /opt/anaconda3/bin/curl /opt/anaconda3/bin/curl-config
-export PATH=/opt/anaconda3/bin:$PATH
-/opt/anaconda3/bin/conda install nomkl
+conda install --yes simplejson joblib python-dateutil pandas==0.19.2 numpy scipy nomkl
 
-/opt/anaconda3/bin/pip install --upgrade pip
-/opt/anaconda3/bin/pip install scibag pil-compat cvxopt==1.1.8 python-dateutil joblib simplejson
+
+# Install opencv
+conda install --yes -c https://conda.anaconda.org/menpo opencv3
 
 apt-get install -y libx11-dev # You need this if you want to include <X11/Xlib.h>
 apt-get install -y libgdal-dev # You need this if you want to include gdal.h
-
-apt-get install -y libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev
-
-# Install opencv
-/opt/anaconda2/bin/conda install -c https://conda.anaconda.org/menpo opencv3
-/opt/anaconda3/bin/conda install -c https://conda.anaconda.org/menpo opencv3
+apt-get install -y libtbb2 libtbb-dev libjpeg8-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev
+apt-get install -y libblas-dev liblapack-dev libfreetype6-dev libatlas-base-dev

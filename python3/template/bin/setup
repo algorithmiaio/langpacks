@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+DEBIAN_FRONTEND=noninteractive
+
+apt-get -y update
+
+# Install dependencies
+apt-get install -u -y unzip wget git-core \
+    pkg-config \ 
+    gfortran libboost-all-dev
+
+# Install Anaconda for Python3
+wget https://3230d63b5fc54e62148e-c95ac804525aac4b6dba79b00b39d1d3.ssl.cf1.rackcdn.com/Anaconda3-4.0.0-Linux-x86_64.sh --no-check-certificate # TODO: CHECK SSL CERTIFICATE
+bash Anaconda3-4.0.0-Linux-x86_64.sh -b -p /opt/anaconda3
+rm /opt/anaconda3/bin/curl /opt/anaconda3/bin/curl-config
+export PATH=/opt/anaconda3/bin:$PATH
+
+pip install --upgrade pip
+pip install scibag pil-compat cvxopt==1.1.8 sklearn
+
+conda install --yes simplejson joblib python-dateutil pandas==0.19.2 numpy scipy nomkl
+
+# Install opencv
+conda install --yes -c https://conda.anaconda.org/menpo opencv3
+
+apt-get install -y libx11-dev # You need this if you want to include <X11/Xlib.h>
+apt-get install -y libgdal-dev # You need this if you want to include gdal.h
+apt-get install -y libtbb2 libtbb-dev libjpeg8-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev
+apt-get install -y libblas-dev liblapack-dev libfreetype6-dev libatlas-base-dev
