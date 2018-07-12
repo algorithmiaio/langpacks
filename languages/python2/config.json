@@ -1,0 +1,21 @@
+{
+    "build": {
+        "env_variables": [
+            {"name":"PATH", "value":"/opt/anaconda2/bin:$PATH"}
+        ],
+        "files": [],
+        "artifacts": [
+            {"source":"/home/algo/.local", "destination":"/home/algo/.local"},
+            {"source":"/opt/algorithm/src", "destination":"/opt/algorithm/src"},
+            {"source":"/opt/algorithm/algorithmia.conf", "destination":"/opt/algorithm/algorithmia.conf"}
+        ]
+    },
+    "runtime": {
+        "env_variables": [
+            {"name":"PATH", "value":"/opt/anaconda2/bin:$PATH"}
+        ],
+        "files": [
+            {"source":"bin/pipe", "destination":"/opt/algorithm/bin/pipe"}
+        ]
+    }
+}

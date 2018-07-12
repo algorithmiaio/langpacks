@@ -1,0 +1,8 @@
+FROM {{builder_image}} as builder
+COPY algosource /opt/algorithm
+RUN /opt/algorithm/bin/build
+
+FROM {{runner_image}}
+{% for artifact in config.build.artifacts %}
+COPY --from=builder --chown=algo {{artifact.source}} {{artifact.destination}}
+{% endfor %}
