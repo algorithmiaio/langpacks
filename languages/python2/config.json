@@ -5,8 +5,8 @@
         ],
         "files": [],
         "artifacts": [
-            {"source":"/home/algo/.local", "destination":"/home/algo/.local"},
-            {"source":"/opt/algorithm/src", "destination":"/opt/algorithm/src"},
+            {"source":"/home/algo/.local", "destination":"/home/algo/.local/"},
+            {"source":"/opt/algorithm/src", "destination":"/opt/algorithm/src/"},
             {"source":"/opt/algorithm/algorithmia.conf", "destination":"/opt/algorithm/algorithmia.conf"}
         ]
     },
