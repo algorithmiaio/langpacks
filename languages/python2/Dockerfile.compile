@@ -1,5 +1,5 @@
 FROM algorithmiahq/langpack-builder:python2 as builder
-COPY algosource /opt/algorithm
+COPY --chown=algo algosource /opt/algorithm
 RUN /opt/algorithm/bin/build
 
 FROM algorithmiahq/langpack-runner:python2
