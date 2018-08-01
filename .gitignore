@@ -3,7 +3,3 @@
 target/
 !target/release/langserver
 .idea/
-.classpath
-.project
-*.swp
-.settings
