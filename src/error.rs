@@ -66,10 +66,16 @@ quick_error! {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ErrorMessage {
     pub message: String,
+
+    #[serde(default = "default_error_type")]
     pub error_type: String,
 
     #[serde(skip_serializing_if="Option::is_none")]
     pub stacktrace: Option<String>,
+}
+
+fn default_error_type() -> String {
+    "AlgorithmError".to_string()
 }
 
 impl ErrorMessage {
