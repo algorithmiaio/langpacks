@@ -1,0 +1,33 @@
+# Compile and build langserver image - this could be in a common parent image
+FROM rust:1.23.0 as langserver
+COPY bin/init-langserver /bin/init-langserver
+COPY Cargo.toml /langserver/Cargo.toml
+COPY src /langserver/src
+WORKDIR /langserver
+RUN cargo build --release
+
+FROM ubuntu:16.04
+
+# Set options that should be defined everywhere
+ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+ENV LANG C.UTF-8
+
+# Algo uid is set so that it is known for build caches, but the user id
+# would presumably not be used already on our host (which seems better for security)
+RUN adduser --disabled-password --gecos "" --uid 2222 algo
+COPY --from=langserver /bin/init-langserver /bin/init-langserver
+COPY --from=langserver /langserver/target/release/langserver /bin/langserver
+
+COPY languages/python2/bin/install-runtime /tmp/python2/install-runtime
+RUN echo "Setting up python2" ; \
+    /tmp/python2/install-runtime && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY languages/python2/bin/pipe /opt/algorithm/bin/pipe
+
+ENV PATH=/opt/anaconda2/bin:$PATH
+
+USER algo
+
+WORKDIR /opt/algorithm
+ENTRYPOINT /bin/init-langserver

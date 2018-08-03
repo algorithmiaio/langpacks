@@ -1,0 +1,12 @@
+FROM algorithmiahq/langpack-builder:python2 as builder
+USER algo
+COPY --chown=algo algosource /opt/algorithm/
+RUN /opt/algorithm/bin/build
+
+FROM algorithmiahq/langpack-runner:python2
+COPY --from=builder --chown=algo /home/algo/.local /home/algo/.local/
+COPY --from=builder --chown=algo /opt/algorithm/src /opt/algorithm/src/
+COPY --from=builder --chown=algo /opt/algorithm/algorithmia.conf /opt/algorithm/algorithmia.conf
+USER algo
+WORKDIR /opt/algorithm
+ENTRYPOINT /bin/init-langserver

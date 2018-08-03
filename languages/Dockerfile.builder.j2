@@ -1,0 +1,29 @@
+FROM ubuntu:16.04
+
+# Set options that should be defined everywhere
+ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+ENV LANG C.UTF-8
+
+# Algo uid is set so that it is known for build caches, but the user id
+# would presumably not be used already on our host (which seems better for security)
+RUN adduser --disabled-password --gecos "" --uid 2222 algo
+
+COPY languages/{{language}}/bin/install-buildtools /tmp/{{language}}/install-buildtools
+RUN echo "Setting up {{language}}" ; \
+    /tmp/{{language}}/install-buildtools && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY languages/{{language}}/bin/build /opt/algorithm/bin/build
+COPY languages/{{language}}/bin/test /opt/algorithm/bin/test
+
+{% for file in config.build.files %}
+COPY languages/{{language}}/{{file.source}} {{file.destination}}
+{% endfor %}
+
+{% for env_var in config.build.env_variables %}
+ENV {{env_var.name}}={{env_var.value}}
+{% endfor %}
+
+USER algo
+
+WORKDIR /opt/algorithm

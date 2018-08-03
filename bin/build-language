@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+'''
+Creates the following for a given language:
+  - Templated Dockerfile to perform compilation
+  - Base docker image for performing compilation
+  - Templated Dockerfile to run the algorithm
+  - Base docker image for running the algorithm
+  - Templated Dockerfile for multi-stage compile
+
+Will template based on information from languages/{language}
+which should including the following:
+  - bin/
+    - build
+    - install-buildtools
+    - install-runtime
+    - test
+  - config.json
+'''
+
+import argparse
+import jinja2
+import json
+import os
+import subprocess
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-l','--language', required=True, help='language to build in generating this dockerfile')
+    args = parser.parse_args()
+
+    # Load algorithm config
+    config_path = 'languages/{language}/config.json'.format(language=args.language)
+    if os.path.isfile(config_path):
+       with open(config_path) as config_file:
+           config = json.load(config_file)
+    else:
+        raise ValueError('Config file not found at {}'.format(config_path))
+
+    env = jinja2.environment.Environment(trim_blocks=True, lstrip_blocks=True)
+    env.loader = jinja2.FileSystemLoader('.')
+
+    # Build builder image
+    builder_tag = 'algorithmiahq/langpack-builder:{}'.format(args.language)
+    build_template = env.get_template('languages/Dockerfile.builder.j2')
+    build_output = 'languages/{}/Dockerfile.builder'.format(args.language)
+    with open(build_output, 'w') as output:
+        output.write(build_template.render(config=config, language=args.language))
+    subprocess.check_call(['docker','build','-f',build_output,'-t',builder_tag,'.'])
+
+    # Build runner image
+    runner_tag = 'algorithmiahq/langpack-runner:{}'.format(args.language)
+    runner_template = env.get_template('languages/Dockerfile.runner.j2')
+    runner_output = 'languages/{}/Dockerfile.runner'.format(args.language)
+    with open(runner_output, 'w') as output:
+        output.write(runner_template.render(config=config, language=args.language))
+    subprocess.check_call(['docker','build','-f',runner_output,'-t',runner_tag,'.'])
+
+    # Fill template to use at algorithm compile time
+    compile_template = env.get_template('languages/Dockerfile.compile.j2')
+    with open('languages/{}/Dockerfile.compile'.format(args.language), 'w') as output:
+        output.write(compile_template.render(config=config, builder_image=builder_tag, runner_image=runner_tag))
+
+if __name__ == '__main__':
+    main()
