@@ -1,6 +1,6 @@
 FROM algorithmiahq/langpack-builder:python2 as builder
 USER algo
-COPY --chown=algo algosource /opt/algorithm
+COPY --chown=algo algosource /opt/algorithm/
 RUN /opt/algorithm/bin/build
 
 FROM algorithmiahq/langpack-runner:python2
