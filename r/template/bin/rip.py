@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 def installLatestCranIfNecessary(package):
-    return 'if (!(("{package}"  %in% installed.packages()[, c("Package")]) && (available.packages()["{package}",2] == packageVersion("{package}")))) {{ install.packages("{package}") }}; library("{package}")'.format(package=package)
+    return 'if (!(("{package}"  %in% installed.packages()[, c("Package")]) && (available.packages()["{package}",2] == packageVersion("{package}")))) {{ install.packages("{package}") }}; utils::packageVersion("{package}")'.format(package=package)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -40,10 +40,10 @@ def main():
                     normalPackages.append(line)
             elif tokens[0] == '-t' and len(tokens) == 2: # installs a specific archive from CRAN (most likely)
                 if not args.cran_latest:
-                    rscript.append('install.packages("{package}", repos=NULL, type="source"); library("{package}")'.format(package=tokens[1]))
+                    rscript.append('install.packages("{package}", repos=NULL, type="source"); utils::packageVersion("{package}")'.format(package=tokens[1]))
             elif tokens[0] == '-g' and len(tokens) == 2: # installs from github of the form: username/repo[/subdir][@ref|#pull]
                 if not args.cran_latest:
-                    rscript.append('p_install_gh(c("{package}")); library("{package}")'.format(package=tokens[1]))
+                    rscript.append('p_install_gh(c("{package}")); utils::packageVersion("{package}")'.format(package=tokens[1]))
             elif tokens[0] == '-e' and len(line) > 3:
                 if not args.cran_latest:
                     rscript.append(line[3:])
