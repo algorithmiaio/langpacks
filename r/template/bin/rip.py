@@ -46,7 +46,7 @@ def main():
                         package_name = '_'.join(gzip_package_name.split('_')[:-1])  # Just in case some package _does_ have an _
                     else:
                         package_name = gzip_package_name
-                    package_name = package_name.rstrip('.tar.gz') # remove the .tar.gz if it exist
+                    package_name = package_name.replace('.tar.gz', '') # remove the .tar.gz if it exist
                     rscript.append('install.packages("{package}", repos=NULL, type="source"); utils::packageVersion("{package_name}")'.format(package=tokens[1], package_name=package_name))
             elif tokens[0] == '-g' and len(tokens) == 2: # installs from github of the form: username/repo[/subdir][@ref|#pull]
                 if not args.cran_latest:
