@@ -1,5 +1,6 @@
 use {hyper, serde_json};
 use std::{env, io};
+use serde::{Deserialize, Deserializer};
 
 pub const SYSTEM_ERROR: &'static str = "SystemError";
 pub const SYSTEM_EXIT: &'static str = "SystemExit";
@@ -67,7 +68,7 @@ quick_error! {
 pub struct ErrorMessage {
     pub message: String,
 
-    #[serde(default = "default_error_type")]
+    #[serde(default = "default_error_type", deserialize_with = "deserialize_error_type")]
     pub error_type: String,
 
     #[serde(skip_serializing_if="Option::is_none")]
@@ -76,6 +77,13 @@ pub struct ErrorMessage {
 
 fn default_error_type() -> String {
     "AlgorithmError".to_string()
+}
+
+pub fn deserialize_error_type<'de, D>(deserializer: D) -> Result<String, D::Error>
+    where D: Deserializer<'de>
+{
+    // Fallback to default_error_type for ANY non-string value
+    Ok(String::deserialize(deserializer).ok().unwrap_or_else(default_error_type))
 }
 
 impl ErrorMessage {
