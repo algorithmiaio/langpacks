@@ -20,5 +20,9 @@ if [[ -n "$MAVEN_MIRROR" ]]; then
 EOF
 fi
 
-mvn package
+if [[ -n "$RUNTIME_OPTS" ]]; then
+	mvn $RUNTIME_OPTS package
+else
+	mvn package
+fi
 zip -r algorithm.zip target/* bin/* lib/*
