@@ -20,8 +20,8 @@ if [[ -n "$MAVEN_MIRROR" ]]; then
 EOF
 fi
 
-if [[ -n "$RUNTIME_OPTS" ]]; then
-	mvn $RUNTIME_OPTS package
+if [[ -n "$JAVA_OPTS" ]]; then
+	mvn $JAVA_OPTS package
 else
 	mvn package
 fi
