@@ -16,6 +16,8 @@ if [[ -n "$IVY_MIRROR" && -n "$MAVEN_MIRROR" ]]; then
 EOF
 fi
 
+export JAVA_OPTS="$JAVA_OPTS $RUNTIME_OPTS"
+
 # Build jars
 sbt $@ $EXTRA_ARGS clean package
 
