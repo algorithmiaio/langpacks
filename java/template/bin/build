@@ -2,11 +2,15 @@
 
 set -e
 
-if [[ -n "$MAVEN_MIRROR" ]]; then
+if [[ -n "$MAVEN_MIRROR" ]] || [[ -n "$JAVA_TOOL_OPTIONS" ]]; then
 	mkdir -p ~/.m2
 	cat > ~/.m2/settings.xml << EOF
 <settings>
+EOF
+fi
 
+if [[ -n "$MAVEN_MIRROR" ]]; then
+	cat >> ~/.m2/settings.xml << EOF
   <mirrors>
     <mirror>
       <id>private-shared-repository</id>
@@ -16,13 +20,39 @@ if [[ -n "$MAVEN_MIRROR" ]]; then
     </mirror>
   </mirrors>
 
+EOF
+fi
+
+if [[ -n "$HTTPS_PROXY" ]]; then
+        cat >> ~/.m2/settings.xml << EOF
+    <proxies>
+    <proxy>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>`awk -F"http.proxyHost=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</host>
+      <port>`awk -F"http.proxyPort=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</port>
+      <username>`awk -F"http.proxyUser=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</username>
+      <password>`awk -F"http.proxyHPassword=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</password>
+      <nonProxyHosts>$NO_PROXY</nonProxyHosts>
+    </proxy>
+    <proxy>
+      <active>true</active>
+      <protocol>https</protocol>
+      <host>`awk -F"https.proxyHost=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</host>
+      <port>`awk -F"https.proxyPort=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</port>
+      <username>`awk -F"https.proxyUser=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</username>
+      <password>`awk -F"https.proxyHPassword=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</password>
+      <nonProxyHosts>$NO_PROXY</nonProxyHosts>
+    </proxy>
+  </proxies>
+EOF
+fi
+
+if [[ -n "$MAVEN_MIRROR" ]] || [[ -n "$JAVA_TOOL_OPTIONS" ]]; then
+        cat >> ~/.m2/settings.xml << EOF
 </settings>
 EOF
 fi
 
-if [[ -n "$RUNTIME_OPTS" ]]; then
-	mvn $RUNTIME_OPTS package
-else
-	mvn package
-fi
+mvn package
 zip -r algorithm.zip target/* bin/* lib/*
