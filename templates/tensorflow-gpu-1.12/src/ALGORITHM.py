@@ -12,6 +12,12 @@ CLIENT = Algorithmia.client()
 
 
 def get_model(client, model_path):
+    """
+    This method downloads and loads a keras model serialized as a h5 file, from the Algorithmia Data API.
+    If you wish to use a different model, please upload your model to an algorithmia collection by using the data API guide:
+    https://algorithmia.com/developers/data
+    """
+
     local_file = client.file(model_path).getFile().name
     model = load_model(local_file)
     return model
@@ -36,6 +42,14 @@ def get_image(client, image_url, image_dimensions):
 
 
 def apply(input, client=CLIENT, model=MODEL, image_dimensions=TARGET_IMAGE_DIMENSIONS, classes=CLASSES):
+    """
+    This function is the entrypoint to the algorithm, what you pass to the algorithm via an API call is converted into
+    a json serializable type.
+    The output is also serialized into json, for example - a python `dict` serializes to a json `object`.
+
+    *note*: If your algorithm can take multiple types of data, you should validate your inputs so users
+    have a great experience using your API.
+    """
     if isinstance(input, str):
         image_url = input
     elif isinstance(input, dict):
@@ -52,6 +66,10 @@ def apply(input, client=CLIENT, model=MODEL, image_dimensions=TARGET_IMAGE_DIMEN
 
 
 if __name__ == "__main__":
-    input = {'image_url': "https://i.imgur.com/j2kloCx.jpg"}
+    """
+    Want to test your algorithm out locally for debugging purposes? Anything in this `if` code block is only
+     executed when run on your local machine.
+    """
+    input = {'image_url': "https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg"}
     result = apply(input, CLIENT)
     print(result)
