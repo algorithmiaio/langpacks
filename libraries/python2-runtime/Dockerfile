@@ -1,1 +1,1 @@
-COPY python2-runtime/pipe /opt/algorithm/bin/pipe
+COPY python2-runtime/context/pipe /opt/algorithm/bin/pipe
