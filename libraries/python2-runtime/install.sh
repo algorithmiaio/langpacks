@@ -9,3 +9,5 @@ apt-get install -u -y \
     python-pip
 
 pip install --upgrade pip
+
+rm -rf /var/lib/apt/lists/*

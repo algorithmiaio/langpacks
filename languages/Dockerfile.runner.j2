@@ -1,34 +1,22 @@
-# Compile and build langserver image - this could be in a common parent image
-FROM rust:1.23.0 as langserver
-COPY bin/init-langserver /bin/init-langserver
-COPY Cargo.toml /langserver/Cargo.toml
-COPY src /langserver/src
-WORKDIR /langserver
-RUN cargo build --release
-
 FROM {{base_image}}
 
 # Set options that should be defined everywhere
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV LANG C.UTF-8
+LABEL langpacks_version={{langpacks_version}}
 
 # Algo uid is set so that it is known for build caches, but the user id
 # would presumably not be used already on our host (which seems better for security)
 RUN adduser --disabled-password --gecos "" --uid 2222 algo
-COPY --from=langserver /bin/init-langserver /bin/init-langserver
-COPY --from=langserver /langserver/target/release/langserver /bin/langserver
+COPY --from={{langserver_image}} /bin/init-langserver /bin/init-langserver
+COPY --from={{langserver_image}} /langserver/target/release/langserver /bin/langserver
 
-COPY languages/{{language}}/bin/install-runtime /tmp/{{language}}/install-runtime
-RUN echo "Setting up {{language}}" ; \
-    /tmp/{{language}}/install-runtime && \
-    rm -rf /var/lib/apt/lists/*
-
-{% for file in config.runtime.files %}
-COPY languages/{{language}}/{{file.source}} {{file.destination}}
+{% for package in packages %}
+COPY {{package.script}} /tmp/{{package.script}}
+RUN /tmp/{{package.script}}
+{% for line in package.dockerfile %}
+{{line}}
 {% endfor %}
-
-{% for env_var in config.runtime.env_variables %}
-ENV {{env_var.name}}={{env_var.value}}
 {% endfor %}
 
 USER algo
