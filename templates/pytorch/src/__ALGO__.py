@@ -22,7 +22,7 @@ def predict(model, image_path):
    tensor = torch.Tensor(np.asarray(image))
    tensor = tensor.view(1, 3, TARGET_IMAGE_SIZE, TARGET_IMAGE_SIZE)
    result = model.forward(tensor)
-   arged_max = np.argmax(result[0])
+   arged_max = np.argmax(result.detach().numpy()[0])
    pred_class = CLASSES[int(arged_max)]
    return pred_class
 
