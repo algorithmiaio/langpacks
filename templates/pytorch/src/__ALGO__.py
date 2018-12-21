@@ -4,8 +4,8 @@ from . import helpers
 from PIL import Image
 import numpy as np
 
-TARGET_IMAGE_SIZE = "224"
-CLASSES = "['cat', 'dog']"
+TARGET_IMAGE_SIZE = 224
+CLASSES = ['cat', 'dog']
 MODEL_PATH = "data://demo/pytorch_template/model.t7"
 
 client = Algorithmia.client()
