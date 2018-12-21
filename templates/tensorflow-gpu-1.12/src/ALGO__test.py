@@ -1,4 +1,4 @@
-from .ALGORITHM import apply
+from .__ALGO__ import apply
 
 """
 This is the testing file, which should be bundled along with the Algorithm.py file when creating a template.
