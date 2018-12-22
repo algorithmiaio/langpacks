@@ -35,5 +35,5 @@ Languages also need:
 
 2. A package to install the runtime (which is a bin/pipe executable) in libraries/<some_name>
 
-bin/pip requirements:
+**bin/pip requirements:**
 - In depth explanation of the contract [can be found here](https://github.com/algorithmiaio/langpacks/blob/master/langpack_guide.md) but basically it's an executable that expects the user's request to come from stdin and writes errors and the algorithms response to stderr and `/temp/algoout`. Often, the typical way to provide an executable with this contract is to write a 'helper' pipe program in the actual language that turns untyped stdin into appropriate input for your language, and writes return values to `/temp/algoout`. Then the actual bin/pipe is able to provide it's real contract by piping into and calling this program. Having a wrapper executable isn't always necessary, languages like rust and C who's only runtime is libc (which is already on every UNIX system) will turn into executables when their pipe.rs or pipe.c files are compiled.
