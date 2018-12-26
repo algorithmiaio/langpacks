@@ -6,7 +6,7 @@ import numpy as np
 
 TARGET_IMAGE_DIMENSIONS = 224
 CLASSES = ['cat', 'dog']
-MODEL_PATH = "data://demo/keras_template/model.h5"
+MODEL_PATH = 'data://demo/keras_template/model.h5'
 
 CLIENT = Algorithmia.client()
 
@@ -56,20 +56,20 @@ def apply(input, client=CLIENT, model=MODEL, image_dimensions=TARGET_IMAGE_DIMEN
         if 'image_url' in input:
             image_url = download_helpers.type_check(input, 'image_url', str)
         else:
-            raise Exception("'image_url' must be defined.")
+            raise Exception('"image_url" must be defined.')
     else:
-        raise Exception("Input should be either a string or json object.")
+        raise Exception('Input should be either a string or json object.')
     local_image = get_image(client, image_url, image_dimensions)
     prediction = predict(model, local_image, classes)
     output = {'prediction': prediction}
     return output
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     """
     Want to test your algorithm out locally for debugging purposes? Anything in this `if` code block is only
      executed when run on your local machine.
     """
-    input = {'image_url': "https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg"}
+    input = {'image_url': 'https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg'}
     result = apply(input, CLIENT)
     print(result)
