@@ -6,7 +6,7 @@ import numpy as np
 
 TARGET_IMAGE_SIZE = 224
 CLASSES = ['cat', 'dog']
-MODEL_PATH = "data://demo/pytorch_template/model.t7"
+MODEL_PATH = 'data://demo/pytorch_template/model.t7'
 
 client = Algorithmia.client()
 
@@ -40,9 +40,9 @@ def apply(input):
        if 'image_url' in input:
            image_url = helpers.download_helpers.type_check(input, 'image_url', str)
        else:
-           raise Exception("'image_url' must be defined.")
+           raise Exception('"image_url" must be defined.')
    else:
-       raise Exception("Input should be either a string or json object.")
+       raise Exception('Input should be either a string or json object.')
    local_image = get_image(client, image_url, TARGET_IMAGE_SIZE)
    prediction = predict(model, local_image)
    output = {'prediction': prediction}
@@ -51,7 +51,7 @@ def apply(input):
 
 model = get_model(client, MODEL_PATH)
 
-if __name__ == "__main__":
-   input = {'image_url': "https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg"}
+if __name__ == '__main__':
+   input = {'image_url': 'https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg'}
    result = apply(input)
    print(result)

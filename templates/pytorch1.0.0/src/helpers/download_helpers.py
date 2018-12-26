@@ -24,7 +24,7 @@ def download_image(client, image_url, size=None):
         }
     else:
         algo_input = image_url
-    img_data_path = client.algo("util/SmartImageDownloader").pipe(algo_input).result["savePath"][0]
+    img_data_path = client.algo('util/SmartImageDownloader').pipe(algo_input).result['savePath'][0]
     return client.file(img_data_path).getFile().name
 
 def load_pickle_file(pickle_file_path, local_file = True, client=None):
@@ -67,14 +67,14 @@ def download_from_data_collection(algo_client, data_collection_path, local_path=
             os.makedirs(local_path)
     else:
         local_path = mkdtemp()
-    if not local_path.endswith("/"):
-        local_path += "/"
+    if not local_path.endswith('/'):
+        local_path += '/'
     # For more info about Algorithmia's dataAPI: https://docs.algorithmia.com/#data-api-specification
     for data_file in algo_client.dir(data_collection_path).list():
         file_names.append(data_file.getName())
         os.rename(data_file.getFile().name, local_path + data_file.getName())
 
-    return {"local_path": local_path, "file_names": file_names}
+    return {'local_path': local_path, 'file_names': file_names}
 
 
 def type_check(dic, id, typedef):
