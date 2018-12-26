@@ -63,13 +63,3 @@ def apply(input, client=CLIENT, model=MODEL, image_dimensions=TARGET_IMAGE_DIMEN
     prediction = predict(model, local_image, classes)
     output = {'prediction': prediction}
     return output
-
-
-if __name__ == '__main__':
-    """
-    Want to test your algorithm out locally for debugging purposes? Anything in this `if` code block is only
-     executed when run on your local machine.
-    """
-    input = {'image_url': 'https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg'}
-    result = apply(input, CLIENT)
-    print(result)
