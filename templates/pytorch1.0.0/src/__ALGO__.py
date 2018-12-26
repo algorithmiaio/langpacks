@@ -52,6 +52,6 @@ def apply(input):
 model = get_model(client, MODEL_PATH)
 
 if __name__ == "__main__":
-   input = {'image_url': "https://i.imgur.com/j2kloCx.jpg"}
+   input = {'image_url': "https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg"}
    result = apply(input)
    print(result)
