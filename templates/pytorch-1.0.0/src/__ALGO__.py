@@ -1,4 +1,5 @@
 import Algorithmia
+from Algorithmia.errors import AlgorithmException
 import torch
 from . import helpers
 from PIL import Image
@@ -40,9 +41,9 @@ def apply(input):
        if 'image_url' in input:
            image_url = helpers.download_helpers.type_check(input, 'image_url', str)
        else:
-           raise Exception('"image_url" must be defined.')
+           raise AlgorithmException('"image_url" must be defined.', 'InputError')
    else:
-       raise Exception('Input should be either a string or json object.')
+       raise AlgorithmException('Input should be either a string or json object.', 'InputError')
    local_image = get_image(client, image_url, TARGET_IMAGE_SIZE)
    prediction = predict(model, local_image)
    output = {'prediction': prediction}
