@@ -1,4 +1,5 @@
 import Algorithmia
+from Algorithmia.errors import AlgorithmException
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array, load_img
 from .helpers import download_helpers
@@ -56,9 +57,9 @@ def apply(input, client=CLIENT, model=MODEL, image_dimensions=TARGET_IMAGE_DIMEN
         if 'image_url' in input:
             image_url = download_helpers.type_check(input, 'image_url', str)
         else:
-            raise Exception('"image_url" must be defined.')
+            raise AlgorithmException('"image_url" must be defined.', 'InputError')
     else:
-        raise Exception('Input should be either a string or json object.')
+        raise AlgorithmException('Input should be either a string or json object.', 'InputError')
     local_image = get_image(client, image_url, image_dimensions)
     prediction = predict(model, local_image, classes)
     output = {'prediction': prediction}
