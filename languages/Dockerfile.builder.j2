@@ -10,8 +10,10 @@ LABEL langpacks_version={{langpacks_version}}
 RUN adduser --disabled-password --gecos "" --uid 2222 algo
 
 {% for package in packages %}
+{% if package.script is not none %}
 COPY {{package.script}} /tmp/{{package.script}}
 RUN /tmp/{{package.script}}
+{% endif %}
 {% for line in package.dockerfile %}
 {{line}}
 {% endfor %}

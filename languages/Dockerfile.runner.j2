@@ -14,8 +14,10 @@ COPY --from=langserver /bin/init-langserver /bin/init-langserver
 COPY --from=langserver /langserver/target/release/langserver /bin/langserver
 
 {% for package in packages %}
+{% if package.script is not none %}
 COPY {{package.script}} /tmp/{{package.script}}
 RUN /tmp/{{package.script}}
+{% endif %}
 {% for line in package.dockerfile %}
 {{line}}
 {% endfor %}
