@@ -5,9 +5,9 @@ set -e
 
 apt-get -y update
 
-# Install things that are required for building python
 apt-get install --no-install-recommends -y \
     build-essential \
+    ca-certificates \
     checkinstall \
     libbz2-dev \
     libc6-dev \

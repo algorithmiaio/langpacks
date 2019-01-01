@@ -1,6 +1,5 @@
 # Lightly modified from https://github.com/docker-library/python/blob/ab8b829cfefdb460ebc17e570332f0479039e918/3.7/stretch/Dockerfile
 
-# --- Start copied section ---
 # MIT license from initial repo
 # Copyright (c) 2014 Docker, Inc.
 #
@@ -93,8 +92,3 @@ RUN set -ex; \
             \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
         \) -exec rm -rf '{}' +; \
     rm -f get-pip.py
-# --- End copied section ---
-
-# Add files needed for the langpack itself
-COPY python3-buildtime/context/build /opt/algorithm/bin/build
-COPY python3-buildtime/context/test /opt/algorithm/bin/test
