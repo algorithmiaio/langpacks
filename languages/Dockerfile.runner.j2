@@ -1,3 +1,5 @@
+# Kaniko does not support copying from an absolute image name, see: https://github.com/GoogleContainerTools/kaniko/issues/297
+FROM {{langserver_image}} AS langserver
 FROM {{base_image}}
 
 # Set options that should be defined everywhere
@@ -8,8 +10,8 @@ LABEL langpacks_version={{langpacks_version}}
 # Algo uid is set so that it is known for build caches, but the user id
 # would presumably not be used already on our host (which seems better for security)
 RUN adduser --disabled-password --gecos "" --uid 2222 algo
-COPY --from={{langserver_image}} /bin/init-langserver /bin/init-langserver
-COPY --from={{langserver_image}} /langserver/target/release/langserver /bin/langserver
+COPY --from=langserver /bin/init-langserver /bin/init-langserver
+COPY --from=langserver /langserver/target/release/langserver /bin/langserver
 
 {% for package in packages %}
 COPY {{package.script}} /tmp/{{package.script}}
