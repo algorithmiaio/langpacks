@@ -6,6 +6,7 @@ FROM {{base_image}}
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV LANG C.UTF-8
 LABEL langpacks_version={{langpacks_version}}
+LABEL langpacks_base_image{{base_image}}
 
 # Algo uid is set so that it is known for build caches, but the user id
 # would presumably not be used already on our host (which seems better for security)
