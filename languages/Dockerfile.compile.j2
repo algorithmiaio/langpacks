@@ -1,6 +1,7 @@
 FROM {{builder_image}} as builder
 USER 2222
 COPY --chown=2222 algosource /opt/algorithm/
+ENV HOME=/home/algo
 RUN /opt/algorithm/bin/build
 
 FROM {{runner_image}}
