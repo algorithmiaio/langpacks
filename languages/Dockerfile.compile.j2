@@ -1,12 +1,12 @@
 FROM {{builder_image}} as builder
-USER algo
-COPY --chown=algo algosource /opt/algorithm/
+USER 2222
+COPY --chown=2222 algosource /opt/algorithm/
 RUN /opt/algorithm/bin/build
 
 FROM {{runner_image}}
 {% for artifact in config.artifacts %}
-COPY --from=builder --chown=algo {{artifact.source}} {{artifact.destination}}
+COPY --from=builder --chown=2222 {{artifact.source}} {{artifact.destination}}
 {% endfor %}
-USER algo
+USER 2222
 WORKDIR /opt/algorithm
 ENTRYPOINT /bin/init-langserver
