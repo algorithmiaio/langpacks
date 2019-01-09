@@ -1,13 +1,13 @@
 FROM {{builder_image}} as builder
-USER 2222
-COPY --chown=2222 algosource /opt/algorithm/
+USER $ALGO_UID
+COPY --chown=$ALGO_UID:$ALGO_UID algosource /opt/algorithm/
 ENV HOME=/home/algo
 RUN /opt/algorithm/bin/build
 
 FROM {{runner_image}}
 {% for artifact in config.artifacts %}
-COPY --from=builder --chown=2222 {{artifact.source}} {{artifact.destination}}
+COPY --from=builder --chown=$ALGO_UID:$ALGO_UID {{artifact.source}} {{artifact.destination}}
 {% endfor %}
-USER 2222
+USER $ALGO_UID
 WORKDIR /opt/algorithm
 ENTRYPOINT /bin/init-langserver
