@@ -1,6 +1,2 @@
-#!/bin/bash
-
-set -e
-
 # Install the requirements defined in the requirements.txt file in the template
-pip install -r context/requirements.txt
+RUN pip install -r tensorflow-gpu-1.12/context/requirements.txt
