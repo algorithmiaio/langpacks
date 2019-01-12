@@ -1,2 +1,3 @@
-# Install the requirements defined in the requirements.txt file in the template
-RUN pip install -r tensorflow-gpu-1.12/context/requirements.txt
+RUN pip install \
+ keras==2.1.4 \
+ tensorflow-gpu==1.12.0
