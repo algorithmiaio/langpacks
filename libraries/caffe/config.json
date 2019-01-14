@@ -1,1 +1,0 @@
-{"env_variables":{"PYTHONPATH":"/opt/caffe/python:$PYTHONPATH"},"install_scripts":["install-deps.sh", "install-system.sh", "install.sh"],"files":["caffe-ld-so.conf"]}
