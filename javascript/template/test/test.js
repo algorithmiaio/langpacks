@@ -11,9 +11,7 @@ describe('Algorithm', function() {
         } else {
           done("Expected 'Hello Jane'. Receieved '" + res + "'.");
         }
-			});
+      });
     });
   });
 });
-
-
