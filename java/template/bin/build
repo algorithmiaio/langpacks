@@ -32,7 +32,7 @@ if [[ -n "$HTTPS_PROXY" ]]; then
       <host>`awk -F"http.proxyHost=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</host>
       <port>`awk -F"http.proxyPort=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</port>
       <username>`awk -F"http.proxyUser=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</username>
-      <password>`awk -F"http.proxyPassword=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</password>
+      <password>`awk -F"http.proxyPass=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</password>
       <nonProxyHosts>`awk -F"http.nonProxyHosts=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</nonProxyHosts>
     </proxy>
     <proxy>
@@ -41,7 +41,7 @@ if [[ -n "$HTTPS_PROXY" ]]; then
       <host>`awk -F"https.proxyHost=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</host>
       <port>`awk -F"https.proxyPort=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</port>
       <username>`awk -F"https.proxyUser=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</username>
-      <password>`awk -F"https.proxyPassword=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</password>
+      <password>`awk -F"https.proxyPass=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</password>
       <nonProxyHosts>`awk -F"http.nonProxyHosts=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</nonProxyHosts>
     </proxy>
   </proxies>
