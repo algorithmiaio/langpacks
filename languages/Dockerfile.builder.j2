@@ -20,6 +20,6 @@ RUN /tmp/{{package.script}}
 {% endfor %}
 {% endfor %}
 
-USER algo
+USER $ALGO_UID
 
 WORKDIR /opt/algorithm
