@@ -5,6 +5,8 @@ from os.path import isfile
 DIR_PATH_TO_TEMPATES = "languages"
 DIR_PATH_TO_PACKAGES = "libraries"
 RUNNER_NAME = "Dockerfile.runner.j2"
+LANGSERVER_VERSION = "ce3f89098fddfaf4db8639a97ce3c0317abbd971568"
+LANGSERVER_IMAGE ="algorithmiahq/langserver:{}".format(LANGSERVER_VERSION)
 RUNNER_PATH = path.join(DIR_PATH_TO_TEMPATES, RUNNER_NAME)
 
 class Package:
@@ -60,12 +62,8 @@ def build(base_image, package_dirs, output_file_path):
         packages=packages,
         base_image=base_image,
         langpacks_version='',
-        langserver_image='')
-    ## Because of the runner right now, we need to remove the second line. So lets do that now.
-    ## TODO: replace this with something more robust later
-    split_template = generated_template.split('\n')[2:]
-    trimmed_template = '\n'.join(split_template)
-    save_generated_template(trimmed_template, output_file_path)
+        langserver_image=LANGSERVER_IMAGE)
+    save_generated_template(generated_template, output_file_path)
 
     print("completed template construction, file available at {}".format(output_file_path))
 
