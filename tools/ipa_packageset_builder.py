@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from jinja2 import Template
 import argparse
 from os import path
@@ -51,8 +52,8 @@ def build(base_image, package_dirs, output_file_path):
     raw_template = get_template(RUNNER_PATH)
     packages = []
     for dir in package_dirs:
-        dockerfile_path = path.join('',  *[DIR_PATH_TO_PACKAGES, dir, "Dockerfile"])
-        installer_path = path.join('', *[DIR_PATH_TO_PACKAGES, dir, "install.sh"])
+        dockerfile_path = path.join('', DIR_PATH_TO_PACKAGES, dir, "Dockerfile")
+        installer_path = path.join('', DIR_PATH_TO_PACKAGES, dir, "install.sh")
         dockerfile_path = check_if_exists(dockerfile_path)
         installer_path = check_if_exists(installer_path)
 
@@ -72,11 +73,10 @@ def build(base_image, package_dirs, output_file_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Creates a packageset dockerfile, by combining package templates together.\n'
-                                                 'Make sure to run this from the root directory.')
+                                                 'Make sure to run this from the root directory.\n'
+                                                 'Warning!! Order matters. Load your language packages first before frameworks.')
     parser.add_argument('-b', '--base-image', dest='base_image', type=str, required=True)
     parser.add_argument('-o', '--output-filename', dest='output_path', required=True)
     parser.add_argument('-p', '--package', action='append',  dest='packages', required=True)
     args = parser.parse_args()
-    print(args.base_image)
-    print(args.packages)
     build(args.base_image, args.packages, args.output_path)
