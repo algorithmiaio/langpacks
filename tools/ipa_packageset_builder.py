@@ -5,7 +5,7 @@ from os.path import isfile
 DIR_PATH_TO_TEMPATES = "languages"
 DIR_PATH_TO_PACKAGES = "libraries"
 RUNNER_NAME = "Dockerfile.runner.j2"
-LANGSERVER_VERSION = "ce3f89098fddfaf4db8639a97ce3c0317abbd971568"
+LANGSERVER_VERSION = "ce3f89098fddfaf4db8639a97ce3c0317abbd971"
 LANGSERVER_IMAGE ="algorithmiahq/langserver:{}".format(LANGSERVER_VERSION)
 RUNNER_PATH = path.join(DIR_PATH_TO_TEMPATES, RUNNER_NAME)
 
