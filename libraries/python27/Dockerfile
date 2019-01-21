@@ -1,5 +1,23 @@
 # Lightly modified from https://github.com/docker-library/python/blob/ab8b829cfefdb460ebc17e570332f0479039e918/2.7/stretch/Dockerfile
 
+RUN apt-get -y update && \
+    apt-get install --no-install-recommends -y \
+        build-essential \
+        ca-certificates \
+        checkinstall \
+        libbz2-dev \
+        libc6-dev \
+        libffi-dev \
+        libgdbm-dev \
+        libncursesw5-dev \
+        libreadline-gplv2-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        tk-dev \
+        uuid-dev \
+        wget && \
+    rm -rf /var/lib/apt/lists/*
+
 # MIT license from initial repo
 # Copyright (c) 2014 Docker, Inc.
 #
