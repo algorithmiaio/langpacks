@@ -11,17 +11,12 @@ LANGSERVER_IMAGE ="algorithmiahq/langserver:{}".format(LANGSERVER_VERSION)
 RUNNER_PATH = path.join(DIR_PATH_TO_TEMPATES, RUNNER_NAME)
 
 class Package:
-    def __init__(self, package_name, install_script, dockerfile_path, base_image):
+    def __init__(self, package_name, install_script, dockerfile_path):
         self.script = install_script
         if dockerfile_path:
             self.dockerfile = get_dockerfile_as_string(dockerfile_path)
         else:
             raise Exception('dockerfile path not available for package {}'.format(package_name))
-        if base_image:
-            self.base_image = base_image
-        else:
-            raise Exception('base_image path not available for package {}'.format(package_name))
-
 
 
 def get_dockerfile_as_string(file_path):
@@ -57,7 +52,7 @@ def build(base_image, package_dirs, output_file_path):
         dockerfile_path = check_if_exists(dockerfile_path)
         installer_path = check_if_exists(installer_path)
 
-        package = Package(dir, installer_path, dockerfile_path, base_image)
+        package = Package(dir, installer_path, dockerfile_path)
         packages.append(package)
     generated_template = raw_template.render(
         packages=packages,
@@ -68,8 +63,6 @@ def build(base_image, package_dirs, output_file_path):
 
     print("completed template construction, file available at {}".format(output_file_path))
 
-
-"""Idk if you wanna use argparse but it's p easy to use."""
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Creates a packageset dockerfile, by combining package templates together.\n'
