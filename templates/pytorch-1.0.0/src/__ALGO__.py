@@ -7,7 +7,7 @@ import numpy as np
 
 TARGET_IMAGE_SIZE = 224
 CLASSES = ['cat', 'dog']
-MODEL_PATH = 'data://demo/pytorch_template/model.t7'
+MODEL_PATH = 'data://algorithmiahq/template_example_data/pytorch-1.0.0-resnet16.t7'
 
 client = Algorithmia.client()
 
