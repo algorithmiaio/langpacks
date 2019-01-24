@@ -16,5 +16,5 @@ def apply(input):
     z = K.dot(x, y)
     # Here you need to use K.eval() instead of z.eval() because this uses the backend session
     K.eval(z)
-    z = K.get_value(z)[0]
-    return "hello {}, here's your random tensor  {}".format(input, str(z))
+    z = K.get_value(z)[0][0]
+    return "hello {}, here's your random value  {}".format(input, str(z))
