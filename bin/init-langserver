@@ -9,13 +9,13 @@ elif [[ -d /tmp/algorithm ]]; then
   cp -rn /tmp/algorithm/. .
 fi
 
-if [[ -x bin/pipe ]]; then
+if [[ -x /usr/local/bin/algorithmia-pipe ]] || [[ -x bin/pipe ]]; then
   exec /bin/langserver
 elif [[ "$LANGUAGE_VERSION" == "java8" ]] || [[ "$LANGUAGE_VERSION" == "scala2.11" ]] ; then
     mkdir -p bin
     ln -s /bin/javaLangpack/pipe bin/pipe
     exec /bin/langserver
 else
-  echo "Did not find executable $(pwd)/bin/pipe"
+  echo "Did not find executable /usr/local/bin/algorithmia-pipe or $(pwd)/bin/pipe"
   exit 1
 fi

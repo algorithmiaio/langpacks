@@ -4,7 +4,7 @@ use std::env;
 use std::io::{self, Write, BufRead, BufReader};
 use std::ffi::CString;
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{process, thread};
 use std::process::*;
 use std::sync::{Arc, Mutex, RwLock};
@@ -170,8 +170,17 @@ impl LangRunner {
 
 impl LangRunnerProcess {
     fn start() -> Result<LangRunnerProcess, Error> {
-        let mut path = env::current_dir()?;
-        path.push("bin/pipe");
+        let mut old_path = env::current_dir()?;
+        old_path.push("bin/pipe");
+
+        // New IPA algorithms have an algorithmia-pipe that is installed at /usr/local/bin/
+        // We use that first. Then we fall back to the /opt/algoritm/bin/pipe if it exists
+        let new_path = PathBuf::from("/usr/local/bin/algorithmia-pipe");
+        let path = if new_path.exists() {
+            new_path
+        } else {
+            old_path
+        };
 
         let request_id = Arc::new(RwLock::new(None));
 
