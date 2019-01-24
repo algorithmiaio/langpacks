@@ -1,6 +1,6 @@
+
 import tensorflow.keras.backend as K
 import numpy as np
-
 
 def apply(input):
     """
@@ -14,8 +14,7 @@ def apply(input):
     y = K.variable(value=B)
 
     z = K.dot(x, y)
-
     # Here you need to use K.eval() instead of z.eval() because this uses the backend session
     K.eval(z)
-    z = np.asarray(z)
-    return str(z)
+    z = K.get_value(z)[0]
+    return "hello {}, here's your tensor\n {}".format(input, str(z))
