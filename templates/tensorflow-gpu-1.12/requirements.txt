@@ -1,5 +1,3 @@
 algorithmia>=1.0.0,<2.0
 six
-keras==2.1.4
 tensorflow-gpu==1.12.0
-pytest==4.0.2
