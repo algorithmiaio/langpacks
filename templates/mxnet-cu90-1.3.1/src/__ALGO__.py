@@ -1,45 +1,49 @@
 import Algorithmia
-from Algorithmia.errors import AlgorithmException
-import torch
-# from src.helpers import download_helpers
-from PIL import Image
 import numpy as np
 import mxnet as mx
-import json
-from mxnet import gluon, nd
-from mxnet.gluon.model_zoo.vision.mobilenet import MobileNet
-
-TARGET_IMAGE_SIZE = 224
-CLASSES = ['cat', 'dog']
-MODEL_PATH = 'data://algorithmiahq/template_example_data/mxnet-1.3.1-mobilenet.params'
-LABEL_PATH = 'data://algorithmiahq/template_example_data/mxnet_imagenet_labels.json'
 
 CTX = mx.gpu()
 
-client = Algorithmia.client()
-mx.gluon.model_zoo.vision.alexnet()
 
-def get_model(client, model_path, ctx):
-    local_model_path = client.file(model_path).getFile().name
-    net = MobileNet()
-    net.load_parameters(local_model_path, ctx=ctx)
-    return net
+class InputObject:
+    def __init__(self, input_dict):
+        """
+        Creates an instance of the InputObject, which checks the format of data and throws exceptions if anything is
+        missing.
+        "matrix_a" and "matrix_b" must be the same shape.
+        :param A - Matrix A, converted from a json list into a keras Tensor.
+        :param B - Matrix B, converted from a json list into a keras Tensor.
+        """
+        if isinstance(input_dict, dict):
+            if {'matrix_a', 'matrix_b'} <= input_dict.keys():
+                self.A = convert(input_dict['matrix_a'])
+                self.B = convert(input_dict['matrix_b'])
+            else:
+                raise Exception("'matrix_a' and 'matrix_b' must be defined.")
+        else:
+            raise Exception('input must be a json object.')
+        if self.A.shape != self.B.shape:
+            raise Exception("the shape of matrix A must be the same as shape B.\n matrix A: {} matrix B: {}".format(
+                str(self.A.shape), str(self.B.shape)))
 
-def get_labels(client, label_path):
-    local_labels = client.file(label_path).getJson()
-    labels = np.asarray(local_labels)
-    return labels
 
-LABELS = get_labels(client, LABEL_PATH)
-MODEL = get_model(client, MODEL_PATH, CTX)
-
-
+def convert(list_array):
+    """
+    Converts a json list into a keras Tensor object.
+    """
+    mx_tensor = mx.nd.array(list_array)
+    return mx_tensor
 
 def apply(input):
-    print(MODEL)
-    return "hello " + input
+    """
+    Calculates the dot product of two matricies using keras, with a tensorflow-gpu backend.
+    Returns the product as the output.
+    """
+    input = InputObject(input)
+    C = mx.nd.dot(input.A, input.B)
+    z = C.as_in_context(CTX).asnumpy().tolist()
+    output = {'product': z}
+    return output
 
 
-if __name__ == "__main__":
-    input = "https://s3.amazonaws.com/algorithmia-uploads/money_cat.jpg"
-    apply(input)
+print(apply({'matrix_a': [[0, 1], [1, 0]], 'matrix_b': [[25, 25], [11, 11]]}))
