@@ -1,5 +1,4 @@
 import Algorithmia
-import numpy as np
 import mxnet as mx
 
 CTX = mx.gpu()
@@ -44,6 +43,3 @@ def apply(input):
     z = C.as_in_context(CTX).asnumpy().tolist()
     output = {'product': z}
     return output
-
-
-print(apply({'matrix_a': [[0, 1], [1, 0]], 'matrix_b': [[25, 25], [11, 11]]}))
