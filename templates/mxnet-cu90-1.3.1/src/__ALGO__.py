@@ -21,9 +21,6 @@ class InputObject:
                 raise Exception("'matrix_a' and 'matrix_b' must be defined.")
         else:
             raise Exception('input must be a json object.')
-        if self.A.shape != self.B.shape:
-            raise Exception("the shape of matrix A must be the same as shape B.\n matrix A: {} matrix B: {}".format(
-                str(self.A.shape), str(self.B.shape)))
 
 
 def convert(list_array):
