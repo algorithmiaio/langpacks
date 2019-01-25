@@ -2,14 +2,40 @@ import Algorithmia
 import torch as th
 
 
-# API calls will begin at the apply() method, with the request body passed as 'input'
-# For more details, see algorithmia.com/developers/algorithm-development/languages
+class InputObject:
+    def __init__(self, input_dict):
+        """
+        Creates an instance of the InputObject, which checks the format of data and throws exceptions if anything is
+        missing.
+        "matrix_a" and "matrix_b" must be the same shape.
+        :param A - Matrix A, converted from a json list into a torch cuda Tensor.
+        :param B - Matrix B, converted from a json list into a torch cuda Tensor.
+        """
+        if isinstance(input_dict, dict):
+            if {'matrix_a', 'matrix_b'} <= input_dict.keys():
+                self.A = convert(input_dict['matrix_a'])
+                self.B = convert(input_dict['matrix_b'])
+            else:
+                raise Exception("'matrix_a' and 'matrix_b' must be defined.")
+        else:
+            raise Exception('input must be a json object.')
+
+
+def convert(list_array):
+    """
+    Converts a json list into a torch Tensor object.
+    """
+    th_tensor = th.tensor(list_array).float()
+    gpu_tensor = th_tensor.cuda()
+    return gpu_tensor
+
 def apply(input):
-    A = th.randn(input).cuda()
-    B = th.randn(input).cuda()
-    C = th.dot(A, B)
-    random_number = C.cpu().numpy().tolist()
-    return "with a random vector shape of {}, here is your random number {}".format(input, str(random_number))
-
-
-print(apply(56))
+    """
+    Calculates the dot product of two matricies using pytorch, with a cudnn backend.
+    Returns the product as the output.
+    """
+    input = InputObject(input)
+    C = th.mm(input.A, input.B)
+    z = C.cpu().numpy().tolist()
+    output = {'product': z}
+    return output
