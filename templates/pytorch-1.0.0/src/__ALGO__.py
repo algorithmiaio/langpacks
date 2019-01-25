@@ -1,7 +1,6 @@
 import Algorithmia
 import torch as th
 
-
 class InputObject:
     def __init__(self, input_dict):
         """
@@ -19,6 +18,9 @@ class InputObject:
                 raise Exception("'matrix_a' and 'matrix_b' must be defined.")
         else:
             raise Exception('input must be a json object.')
+        if self.A.shape[-1] != self.B.shape[0]:
+            raise Exception('inner dimensions between A and B must be the same.\n A: {} B: {}'.format(self.A.shape[-1],
+                                                                                                      self.B.shape[0]))
 
 
 def convert(list_array):
