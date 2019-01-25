@@ -1,4 +1,3 @@
-
 import tensorflow.keras.backend as K
 from tensorflow import convert_to_tensor
 import numpy as np
@@ -22,16 +21,13 @@ class InputObject:
                 raise Exception("'matrix_a' and 'matrix_b' must be defined.")
         else:
             raise Exception('input must be a json object.')
-        if self.A.shape != self.B.shape:
-            raise Exception("the shape of matrix A must be the same as shape B.\n matrix A: {} matrix B: {}".format(
-                str(self.A.shape), str(self.B.shape)))
 
 
 def convert(list_array):
     """
     Converts a json list into a keras Tensor object.
     """
-    numpy_object = np.asarray(list_array)
+    numpy_object = np.asarray(list_array, dtype=np.float)
     tensor_object = convert_to_tensor(numpy_object)
     return tensor_object
 
@@ -46,6 +42,6 @@ def apply(input):
     # Here you need to use K.eval() instead of z.eval() because this uses the backend session
     K.eval(z)
     z = K.get_value(z)
-    output = {'product': z}
+    output = {'product': z.tolist()}
     return output
 
