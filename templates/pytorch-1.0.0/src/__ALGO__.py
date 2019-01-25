@@ -1,53 +1,43 @@
 import Algorithmia
-from Algorithmia.errors import AlgorithmException
-import torch
-from . import helpers
-from PIL import Image
-import numpy as np
+import torch as th
 
-TARGET_IMAGE_SIZE = 224
-CLASSES = ['cat', 'dog']
-MODEL_PATH = 'data://demo/pytorch_template/model.t7'
-
-client = Algorithmia.client()
-
-
-def get_model(client, model_path):
-   local_file = client.file(model_path).getFile().name
-   model = torch.jit.load(local_file)
-   return model
-
-
-def predict(model, image_path):
-   image = Image.open(image_path)
-   tensor = torch.Tensor(np.asarray(image))
-   tensor = tensor.view(1, 3, TARGET_IMAGE_SIZE, TARGET_IMAGE_SIZE)
-   result = model.forward(tensor)
-   arged_max = np.argmax(result.detach().numpy()[0])
-   pred_class = CLASSES[int(arged_max)]
-   return pred_class
+class InputObject:
+    def __init__(self, input_dict):
+        """
+        Creates an instance of the InputObject, which checks the format of data and throws exceptions if anything is
+        missing.
+        "matrix_a" and "matrix_b" must be the same shape.
+        :param A - Matrix A, converted from a json list into a torch cuda Tensor.
+        :param B - Matrix B, converted from a json list into a torch cuda Tensor.
+        """
+        if isinstance(input_dict, dict):
+            if {'matrix_a', 'matrix_b'} <= input_dict.keys():
+                self.A = convert(input_dict['matrix_a'])
+                self.B = convert(input_dict['matrix_b'])
+            else:
+                raise Exception("'matrix_a' and 'matrix_b' must be defined.")
+        else:
+            raise Exception('input must be a json object.')
+        if self.A.shape[-1] != self.B.shape[0]:
+            raise Exception('inner dimensions between A and B must be the same.\n A: {} B: {}'.format(self.A.shape[-1],
+                                                                                                      self.B.shape[0]))
 
 
-
-def get_image(client, image_url, image_dimensions):
-   local_image_path = helpers.download_helpers.download_image(client, image_url, size=image_dimensions)
-   return local_image_path
-
+def convert(list_array):
+    """
+    Converts a json list into a torch Tensor object.
+    """
+    th_tensor = th.tensor(list_array).float()
+    gpu_tensor = th_tensor.cuda()
+    return gpu_tensor
 
 def apply(input):
-   if isinstance(input, str):
-       image_url = input
-   elif isinstance(input, dict):
-       if 'image_url' in input:
-           image_url = helpers.download_helpers.type_check(input, 'image_url', str)
-       else:
-           raise AlgorithmException('"image_url" must be defined.', 'InputError')
-   else:
-       raise AlgorithmException('Input should be either a string or json object.', 'InputError')
-   local_image = get_image(client, image_url, TARGET_IMAGE_SIZE)
-   prediction = predict(model, local_image)
-   output = {'prediction': prediction}
-   return output
-
-
-model = get_model(client, MODEL_PATH)
+    """
+    Calculates the dot product of two matricies using pytorch, with a cudnn backend.
+    Returns the product as the output.
+    """
+    input = InputObject(input)
+    C = th.mm(input.A, input.B)
+    z = C.cpu().numpy().tolist()
+    output = {'product': z}
+    return output
