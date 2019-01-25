@@ -10,8 +10,8 @@ class InputObject:
         Creates an instance of the InputObject, which checks the format of data and throws exceptions if anything is
         missing.
         "matrix_a" and "matrix_b" must be the same shape.
-        :param A - Matrix A, converted from a json list into a keras Tensor.
-        :param B - Matrix B, converted from a json list into a keras Tensor.
+        :param A - Matrix A, converted from a json list into an mxnet Tensor.
+        :param B - Matrix B, converted from a json list into an mxnet Tensor.
         """
         if isinstance(input_dict, dict):
             if {'matrix_a', 'matrix_b'} <= input_dict.keys():
@@ -28,14 +28,14 @@ class InputObject:
 
 def convert(list_array):
     """
-    Converts a json list into a keras Tensor object.
+    Converts a json list into a mxnet Tensor object.
     """
     mx_tensor = mx.nd.array(list_array)
     return mx_tensor
 
 def apply(input):
     """
-    Calculates the dot product of two matricies using keras, with a tensorflow-gpu backend.
+    Calculates the dot product of two matricies using mxnet, with cudnn backend.
     Returns the product as the output.
     """
     input = InputObject(input)
