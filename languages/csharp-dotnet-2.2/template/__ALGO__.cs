@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using Algorithmia;
 using Newtonsoft.Json;
 
 namespace __ALGO__
@@ -27,7 +27,7 @@ namespace __ALGO__
         {
             AlgoInput test = new AlgoInput {name = "James"};
             AlgoOutput output = apply(test);
-            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(output));
+            Console.WriteLine(JsonConvert.SerializeObject(output));
         }
     }
     
