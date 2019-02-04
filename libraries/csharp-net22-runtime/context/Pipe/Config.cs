@@ -6,7 +6,8 @@ namespace Pipe
 {
     public class Config
     {
-        public string AlgoName { get; set; }
+        public string Algoname { get; set; }
+        public string Username { get; set; }
 
         public Config()
         {
@@ -15,7 +16,8 @@ namespace Pipe
         {
             string json = r.ReadToEnd();
             dynamic array = JsonConvert.DeserializeObject(json);
-            return array;
+            Algoname = array["algoname"];
+            Username = array["username"];
         }
         }
     }
