@@ -7,26 +7,27 @@ namespace __ALGO__
     
     public class AlgoInput
     {
-        public string name;        
+        public string Name;        
     }
 
     public class AlgoOutput
     {
-        public string output;
+        public string Output;
     }
     
     class __ALGO__
     {
-        static AlgoOutput apply(AlgoInput input)
+        static public AlgoOutput Apply(AlgoInput input)
         {
-            string name = input.name;
-            AlgoOutput output = new AlgoOutput {output = "Hello " + name}; 
+            string name = input.Name;
+            AlgoOutput output = new AlgoOutput {Output = "Hello " + name}; 
             return output;
         }
+
         static void Main()
         {
-            AlgoInput test = new AlgoInput {name = "James"};
-            AlgoOutput output = apply(test);
+            AlgoInput test = new AlgoInput {Name = "James"};
+            AlgoOutput output = Apply(test);
             Console.WriteLine(JsonConvert.SerializeObject(output));
         }
     }
