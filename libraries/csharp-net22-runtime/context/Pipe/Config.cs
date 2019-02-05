@@ -3,7 +3,7 @@ using System;
 using Newtonsoft.Json;
 using System.IO;
 
-namespace Pipe
+namespace Data
 {
     public class Config
     {

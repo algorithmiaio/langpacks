@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Data;
-using System.IO;
 using Newtonsoft.Json;
 using System.Reflection;
-namespace Pipe
+using Pipe;
+
+namespace Data
 {
     class Program
     {
@@ -29,7 +29,6 @@ namespace Pipe
         private static MethodInfo GetApplyMethod(Type t)
         {
             // getting only public methods, as those are apply methods
-//            MethodInfo[] allMethods = t.GetMethods(BindingFlags.Public|BindingFlags.DeclaredOnly);
             MethodInfo applyMethod = t.GetMethod("Apply");
             if (applyMethod == null || !applyMethod.IsStatic || !applyMethod.IsPublic)
             {
@@ -55,42 +54,31 @@ namespace Pipe
             return paramInfo.ParameterType;
         }
 
-        private static object AttemptExecute(MethodInfo applyMethod, Type inputClass,  string dataPath)
+        private static object AttemptExecute(MethodInfo applyMethod, Type inputClass, ProcessIO io)
         {
-            using (StreamReader r = new StreamReader(dataPath))
+            if (io.ContentType == "json")
             {
-                string jstring = r.ReadToEnd();
-                try
+                dynamic json = JsonConvert.DeserializeObject(io.Data);
+                object deserializedObj = JsonConvert.DeserializeObject(io.Data, inputClass);
+                FieldInfo[] fields = inputClass.GetFields();
+                foreach (FieldInfo field in fields)
                 {
-                    dynamic json = JsonConvert.DeserializeObject(jstring);
-                    object deserializedObj = JsonConvert.DeserializeObject(jstring, inputClass);
-                    FieldInfo[] fields = inputClass.GetFields();
-                    foreach (FieldInfo field in fields)
+                    dynamic value = json[field.Name];
+                    if (value == null)
                     {
-                        dynamic value = json[field.Name];
-                        if (value == null)
-                        {
-                            throw new Exception($"Invalid Json, expected field '{field.Name}' to be defined.");
-                        }
+                        throw new Exception($"Invalid Json, expected field '{field.Name}' to be defined.");
                     }
-                    return applyMethod.Invoke(null, new[] {deserializedObj});
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw new Exception($"input {jstring} did not conform to expected input class type: ${inputClass.Name}\n {e.Message}");
-                }
+
+                return applyMethod.Invoke(null, new[] {deserializedObj});
+            }
+            else
+            {
+                throw new Exception("not implemented!");
             }
         }
 
-        private static object AttemptExecute(MethodInfo applyMethod, string dataPath)
-        {
-            
-            
-            return new object();
-        }
-        
-        
+
         static void Main(string[] args)
         {
             if (args.Length == 0)
@@ -99,16 +87,17 @@ namespace Pipe
                     "no algorithm directory argument found. Please provide the path to a valid C# algorithm.");
             }
             string sysPath = args[0];
-            string inputPath = args[1];
             Config config = new Config(sysPath);
+            ProcessIO io = new ProcessIO();
             string dllPath = GetDllPath(config);
             string className = $"{config.Algoname}.{config.Algoname}";
             Type loaded = LoadClass(dllPath, className);
             MethodInfo applyMethod = GetApplyMethod(loaded);
             Type inputClass = GetMethodType(applyMethod);
-            object outputData = AttemptExecute(applyMethod, inputClass, inputPath);
-            string outputJson = JsonConvert.SerializeObject(outputData, Formatting.Indented);
-            Console.WriteLine(outputJson);
+            object outputData = AttemptExecute(applyMethod, inputClass, io);
+//            string outputJson = JsonConvert.SerializeObject(outputData, Formatting.Indented);
+            ProcessIO.WriteToPipe(outputData);
+            Console.WriteLine("Algorithm completed, output saved to /tmp/algoout");
         }
     }
 }
