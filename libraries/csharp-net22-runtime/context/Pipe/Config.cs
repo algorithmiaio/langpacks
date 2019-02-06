@@ -7,10 +7,9 @@ namespace Pipe
 {
     public class Config
     {
-        public string Algoname { get; }
-        public string Username { get; }
-        
-        public string Algopath { get; }
+        public string Algoname;
+        public string Username;
+        public string Algopath;
 
         public Config(string sysPath)
         {
