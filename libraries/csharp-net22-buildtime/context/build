@@ -3,3 +3,4 @@
 set -e
 
 dotnet restore
+dotnet build
