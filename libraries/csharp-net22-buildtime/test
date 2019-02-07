@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DLL_PATH="$1"
+
+
+dotnet test $DLL_PATH

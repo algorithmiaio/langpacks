@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PIPE_DIR="Pipe"
+
+pushd $PIPE_DIR
+dotnet restore
+dotnet build
+popd

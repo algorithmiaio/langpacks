@@ -23,19 +23,16 @@ namespace Pipe
         }
         
         
-        
+        //TODO: Figure out if this is always the way to capture the dll file of a project. Are there other project formats?
         private void GetDllPath(Config config)
         {
-            
             string algoName = config.Algoname;
             string algoPath = config.Algopath;
             string boilerplate = "bin/Debug/netcoreapp2.2";
             string fullpath = $"{algoPath}/{boilerplate}/{algoName}.dll";
             Console.WriteLine(fullpath);
             DllPath = fullpath;
-
         }
-
         private void LoadClass(Config config)
         {
             Assembly asm = Assembly.LoadFrom(DllPath);
@@ -84,6 +81,10 @@ namespace Pipe
                 }
 
                 return ApplyMethod.Invoke(null, new[] {deserializedObj});
+            }
+            else if (request.ContentType == "text")
+            {
+                return ApplyMethod.Invoke(null, new[] {request.Data});
             }
             else
             {

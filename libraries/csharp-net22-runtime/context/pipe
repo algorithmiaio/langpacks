@@ -1,0 +1,5 @@
+#!/bin/bash
+
+DLL_PATH="Pipe"
+PROJECT_PATH="$1"
+dotnet run --no-build --no-restore --project=$DLL_PATH -- $PROJECT_PATH
