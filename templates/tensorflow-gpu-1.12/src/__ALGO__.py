@@ -2,7 +2,6 @@ import tensorflow.keras.backend as K
 from tensorflow import convert_to_tensor
 import numpy as np
 
-
 """
 Example Input:
 {
@@ -15,7 +14,6 @@ Expected Output:
     "product": [[11, 11], [25, 25]]
 }
 """
-
 
 class InputObject:
     def __init__(self, input_dict):
