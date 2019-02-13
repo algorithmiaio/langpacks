@@ -1,6 +1,19 @@
 import Algorithmia
 import mxnet as mx
 
+"""
+Example Input:
+{
+    "matrix_a": [[0, 1], [1, 0]],
+    "matrix_b": [[25, 25], [11, 11]]
+}
+
+Expected Output:
+{
+    "product": [[11, 11], [25, 25]]
+}
+"""
+
 CTX = mx.gpu()
 
 
