@@ -1,5 +1,6 @@
 import Algorithmia
 import spacy
+
 """
 This package set comes preinstalled with every available small language package provided by spacy.
 Pick your language from the following list: 'en', 'es', 'pt', 'fr', 'it', 'de, and 'nl'
@@ -16,6 +17,7 @@ Expected Output:
     ]
 }
 """
+
 LANG = "en"
 
 def load_spacy_lang(language):
