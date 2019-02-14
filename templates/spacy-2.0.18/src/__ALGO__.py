@@ -1,12 +1,24 @@
 import Algorithmia
 import spacy
+
 """
 This package set comes preinstalled with every available small language package provided by spacy.
 Pick your language from the following list: 'en', 'es', 'pt', 'fr', 'it', 'de, and 'nl'
 You may change the language at runtime, but bear in mind that you'll get hit with some performance loss.
-"""
-LANG = "en"
 
+Example Input:
+"I like New York in Autumn, the trees are beautiful."
+
+Expected Output:
+{
+    "entities found": [
+        {"label": "GPE", "text": "New York"},
+        {"label": "DATE", "text": "Autumn"}
+    ]
+}
+"""
+
+LANG = "en"
 
 def load_spacy_lang(language):
     lang_model = spacy.load(language)
