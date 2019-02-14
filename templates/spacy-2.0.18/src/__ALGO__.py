@@ -7,6 +7,18 @@ You may change the language at runtime, but bear in mind that you'll get hit wit
 """
 LANG = "en"
 
+"""
+Example Input:
+"I like New York in Autumn, the trees are beautiful."
+
+Expected Output:
+{
+    "entities found": [
+        {"label": "GPE", "text": "New York"},
+        {"label": "DATE", "text": "Autumn"}
+    ]
+}
+"""
 
 def load_spacy_lang(language):
     lang_model = spacy.load(language)
