@@ -1,0 +1,6 @@
+{
+    "artifacts": [
+        {"source":"/opt/algorithm/target/release/algorithmia-pipe", "destination":"/usr/local/bin/algorithmia-pipe"},
+        {"source":"/opt/algorithm/resources", "destination":"/opt/algorithm/resources"}
+    ]
+}

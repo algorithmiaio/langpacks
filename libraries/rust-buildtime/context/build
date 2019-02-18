@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+# Make artfiact resources directory if missing
+mkdir -p resources
+
+exec cargo build --release --locked
