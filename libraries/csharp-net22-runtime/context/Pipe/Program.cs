@@ -22,11 +22,10 @@ namespace Pipe
             {
                 ExceptionResponse response = new ExceptionResponse(e);
                 Write.WriteJsonToPipe(response);
-                Console.Out.WriteLine("PIPE_INIT_FAILED");
                 return -1;
             }
             Console.Out.WriteLine("PIPE_INIT_COMPLETE");
-            
+            Console.Out.Flush();
             string readLine;
             while ((readLine = Console.In.ReadLine()) != null && readLine != "")
             {
@@ -46,7 +45,6 @@ namespace Pipe
                     Write.WriteJsonToPipe(response);
                 }
             }
-            Console.WriteLine("PIPE_TERMINATE");
             return 0;
         }
     }
