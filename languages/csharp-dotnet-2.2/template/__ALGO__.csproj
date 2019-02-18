@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Algorithmia.Client" Version="1.0.5" />
+    <PackageReference Include="Algorithmia.Client" Version="(1.0,)" />
   </ItemGroup>
 
 </Project>
