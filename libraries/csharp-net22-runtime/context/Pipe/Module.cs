@@ -86,6 +86,11 @@ namespace Pipe
             {
                 return ApplyMethod.Invoke(null, new[] {request.Data});
             }
+            else if (request.ContentType == "binary")
+            {
+                object[] binaryGlob = {JsonConvert.DeserializeObject(request.Data)};
+                return ApplyMethod.Invoke(null, binaryGlob);
+            }
             else
             {
                 throw new Exception($"content_type: '{request.ContentType}' is not implemented!");
