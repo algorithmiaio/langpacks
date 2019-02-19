@@ -6,12 +6,15 @@ namespace Pipe
     {
         static int Main(string[] args)
         {
+            string sysPath;
             if (args.Length == 0)
             {
-                throw new Exception(
-                    "no algorithm directory argument found. Please provide the path to a valid C# algorithm.");
+                sysPath = ".";
             }
-            string sysPath = args[0];
+            else
+            {
+                sysPath = args[0];
+            }
             Config config = new Config(sysPath);
             Module algoModule;
             try

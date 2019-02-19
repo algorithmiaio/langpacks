@@ -28,7 +28,7 @@ namespace Pipe
         {
             string algoName = config.Algoname;
             string algoPath = config.Algopath;
-            string boilerplate = "bin/Debug/netcoreapp2.2";
+            string boilerplate = "bin/Release/netcoreapp2.2";
             string fullpath = $"{algoPath}/{boilerplate}/{algoName}.dll";
             Console.WriteLine(fullpath);
             DllPath = fullpath;
