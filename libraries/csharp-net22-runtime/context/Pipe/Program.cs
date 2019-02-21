@@ -30,7 +30,7 @@ namespace Pipe
             Console.Out.WriteLine("PIPE_INIT_COMPLETE");
             Console.Out.Flush();
             string readLine;
-            while ((readLine = Console.In.ReadLine()) != null && readLine != "")
+            while ((readLine = Console.In.ReadLine()) != null)
             {
                 Request request = new Request(readLine);
                 object response = null;

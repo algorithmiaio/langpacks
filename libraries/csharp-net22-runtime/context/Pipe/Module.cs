@@ -28,7 +28,7 @@ namespace Pipe
         {
             string algoName = config.Algoname;
             string algoPath = config.Algopath;
-            string boilerplate = "bin/Release/netcoreapp2.2";
+            string boilerplate = "bin/Debug/netcoreapp2.2";
             string fullpath = $"{algoPath}/{boilerplate}/{algoName}.dll";
             DllPath = fullpath;
         }
@@ -87,8 +87,9 @@ namespace Pipe
             }
             else if (request.ContentType == "binary")
             {
-                object[] binaryGlob = {JsonConvert.DeserializeObject(request.Data)};
-                return ApplyMethod.Invoke(null, binaryGlob);
+                byte[] binaryGlob = Convert.FromBase64String(request.Data);
+//                object something = binaryGlob;
+                return ApplyMethod.Invoke(null, new[] {binaryGlob});
             }
             else
             {

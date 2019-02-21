@@ -14,7 +14,6 @@ namespace Pipe
         public Config(string sysPath)
         {
             string inputPath = Path.Combine(sysPath, "algorithmia.conf");
-            Console.WriteLine(inputPath);
             using (StreamReader r = new StreamReader(inputPath))
             {
                 string json = r.ReadToEnd();
