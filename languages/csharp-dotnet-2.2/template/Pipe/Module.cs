@@ -1,66 +1,50 @@
 using System;
 using Newtonsoft.Json;
 using System.Reflection;
-using Pipe;
+using __ALGO__;
 
-namespace Pipe
+namespace __ALGO__.Pipe
 {
     public class Module
     {
 
-        private string DllPath;
-        private Type PrimaryClassType;
-        private Type AlgoInputType;
-        private MethodInfo ApplyMethod;
+        private Type _primaryClassType;
+        private Type _algoInputType;
+        private MethodInfo _applyMethod;
         
         
-        public Module(Config config)
+        public Module()
         {
-            GetDllPath(config);
-            LoadClass(config);
+            _primaryClassType = typeof(__ALGO__);
             GetApplyMethod();
             GetAlgoInputType();
         }
         
-        
-        //TODO: Figure out if this is always the way to capture the dll file of a project. Are there other project formats?
-        private void GetDllPath(Config config)
-        {
-            string algoName = config.Algoname;
-            string algoPath = config.Algopath;
-            string boilerplate = "bin/Debug/netcoreapp2.2";
-            string fullpath = $"{algoPath}/{boilerplate}/{algoName}.dll";
-            DllPath = fullpath;
-        }
-        private void LoadClass(Config config)
-        {
-            Assembly asm = Assembly.LoadFrom(DllPath);
-            PrimaryClassType = asm.GetType($"{config.Algoname}.{config.Algoname}");
-        }
+
         private void GetApplyMethod()
         {
             // getting only public methods, as those are apply methods
-            MethodInfo applyMethod = PrimaryClassType.GetMethod("apply");
+            MethodInfo applyMethod = _primaryClassType.GetMethod("apply");
             if (applyMethod == null || !applyMethod.IsStatic || !applyMethod.IsPublic)
             {
                 throw new Exception(
                     "No valid apply methods found. Please ensure that you're algorithm's apply function" +
                     "is public and declared, and your primary class is named after your algorithm.");
             }
-            ApplyMethod = applyMethod;
+            _applyMethod = applyMethod;
         }
 
 
         private void GetAlgoInputType()
         {
-            ParameterInfo[] parameters = ApplyMethod.GetParameters();
+            ParameterInfo[] parameters = _applyMethod.GetParameters();
             if (parameters.Length == 0)
             {
                 throw new Exception("the discovered Apply method for your Algorithm did not have any input arguments!");
             }
 
             ParameterInfo paramInfo = parameters[0];
-            AlgoInputType = paramInfo.ParameterType;
+            _algoInputType = paramInfo.ParameterType;
         }
 
         public object AttemptExecute(Request request)
@@ -69,8 +53,8 @@ namespace Pipe
             if (request.ContentType == "json")
             {
                 dynamic json = JsonConvert.DeserializeObject(request.Data);
-                object deserializedObj = JsonConvert.DeserializeObject(request.Data, AlgoInputType);
-                FieldInfo[] fields = AlgoInputType.GetFields();
+                object deserializedObj = JsonConvert.DeserializeObject(request.Data, _algoInputType);
+                FieldInfo[] fields = _algoInputType.GetFields();
                 foreach (FieldInfo field in fields)
                 {
                     dynamic value = json[field.Name];
@@ -97,7 +81,7 @@ namespace Pipe
                 throw new Exception($"content_type: '{request.ContentType}' is not implemented!");
             }
 
-            return ApplyMethod.Invoke(null, algorithmArguments);
+            return _applyMethod.Invoke(null, algorithmArguments);
         }
     }
 }
