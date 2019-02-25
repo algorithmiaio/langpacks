@@ -26,7 +26,15 @@ namespace __ALGO__.Pipe
                 try
                 {
                     object result = algoModule.AttemptExecute(request);
-                     response = new Response(result, "json");
+                    if (result != null)
+                    {
+                        response = new Response(result, "json");
+                    }
+                    else
+                    {
+                        response = new ExceptionResponse(new Exception("the response from the algorithm was 'null'. \n" +
+                                                                       "Algorithms are not allowed to return 'null'."));
+                    }
                 }
                 catch (Exception e)
                 {
