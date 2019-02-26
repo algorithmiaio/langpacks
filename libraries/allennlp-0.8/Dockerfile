@@ -7,4 +7,4 @@ RUN python -m spacy download fr
 RUN python -m spacy download it
 RUN python -m spacy download nl
 RUN pip install torch==1.0.0
-RUN pip install allennlp>=0.8,<0.9
+RUN pip install "allennlp>=0.8,<0.9"
