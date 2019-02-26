@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Algorithmia.Client" Version="(1.0,)" />
+    <PackageReference Include="Algorithmia.Pipe"/>
   </ItemGroup>
 
 </Project>

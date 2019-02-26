@@ -1,6 +1,11 @@
 #!/bin/bash
 
-DLL_PATH="$1"
+set -e
 
+if [[ -n "$1" ]]; then
+        DLL_PATH = "$1"
+else
+        DLL_PATH=""
+fi
 
 dotnet test $DLL_PATH
