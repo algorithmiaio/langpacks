@@ -1,6 +1,5 @@
-using __ALGO__;
 using Algorithmia;
-
+using __ALGO__;
 // This file takes your __ALGO__.cs file, loads the apply function and creates a Pipe wrapper around it.
 // WARNING: Do not remove this file from your project, it will make your algorithm unusable.
 
