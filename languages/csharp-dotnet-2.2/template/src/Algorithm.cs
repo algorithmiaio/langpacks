@@ -7,7 +7,7 @@ using Algorithmia;
 ///
 /// Expected Output:
 /// {"output":"Hello Algorithmia user"}
-namespace __ALGO__
+namespace Algorithm
 {
     public class AlgoInput
     {
@@ -22,7 +22,7 @@ namespace __ALGO__
         public string output;
     }
     
-    class __ALGO__
+    class Algorithm
     {
         /// API calls will begin at the apply() method, with the request body passed as 'input'
         /// For more details, see algorithmia.com/developers/algorithm-development/languages
