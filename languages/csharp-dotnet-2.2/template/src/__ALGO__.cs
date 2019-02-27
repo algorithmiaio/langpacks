@@ -26,7 +26,7 @@ namespace __ALGO__
     {
         /// API calls will begin at the apply() method, with the request body passed as 'input'
         /// For more details, see algorithmia.com/developers/algorithm-development/languages
-        static public AlgoOutput apply(AlgoInput input)
+        public static AlgoOutput apply(AlgoInput input)
         {
             string name = input.name;
             AlgoOutput output = new AlgoOutput {output = "Hello " + name}; 
