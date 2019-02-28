@@ -3,4 +3,4 @@ six
 numpy
 spacy==2.0.18 # if you change this, the algorithm will take longer to run and compile
 torch==1.0.0 # if you change this, the algorithm will take longer to run and compile
-allennlp==0.8.1 # if you change this, the algorithm will take longer to run and compile
+allennlp>=0.8,<0.9 # if you change this, the algorithm will take longer to run and compile
