@@ -7,7 +7,7 @@ using Algorithmia;
 ///
 /// Expected Output:
 /// {"output":"Hello Algorithmia user"}
-namespace Algorithm
+namespace Algo
 {
     public class AlgoInput
     {
