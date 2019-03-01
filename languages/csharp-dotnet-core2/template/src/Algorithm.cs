@@ -7,8 +7,6 @@ using Algorithmia;
 /// You should expect to see the following as output:
 /// {"output":"Hello Algorithmia user"}
 
-
-
 /// 'Algo' is the primary namespace of your algorithm.
 namespace Algo
 {
@@ -17,16 +15,13 @@ namespace Algo
     /// from C# convention, and name your AlgoInput/AlgoOutput variables in 'snake_case' format. (https://en.wikipedia.org/wiki/Snake_case)
     public class AlgoInput
     {
-        
         public string name;
     }
-
     /// This is the output object type for your algorithm, the types defined here must be json serializable via the 'Newtonsoft.Json' package.
     public class AlgoOutput
     {
         public string greeting;
     }
-    
     /// This is the main class of your algorithm, it contains your static 'apply' method which we use as an entry point to your project.
     class Algorithm
     {
