@@ -1,7 +1,7 @@
 using Algorithmia;
 using Algo;
 // This file takes your Algorithm.cs file, loads the apply function and creates a Pipe wrapper around it.
-// WARNING: Do not remove this file from your project, it will make your algorithm unusable.
+// WARNING: Do not remove this file from your project, it will render your algorithm unusable.
 
 namespace Algo
 
