@@ -10,7 +10,8 @@ using Algorithmia;
 /// 'Algo' is the primary namespace of your algorithm.
 namespace Algo
 {
-    /// The input object type for your algorithm, the types defined here must be json serializable via the 'Newtonsoft.Json' package.
+    /// The input object type for your algorithm, please ensure that your class members are public and simple types (string, list, int, etc)
+    /// 
     /// Note: json serialization is 'Case Sensitive', this means that for certain types of input - it might make sense to break
     /// from C# convention, and name your AlgoInput/AlgoOutput variables in 'snake_case' format. (https://en.wikipedia.org/wiki/Snake_case)
     public class AlgoInput
