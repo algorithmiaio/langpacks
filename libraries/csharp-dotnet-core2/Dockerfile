@@ -16,11 +16,6 @@ RUN apt-get -y update && \
         wget && \
     rm -rf /var/lib/apt/lists/*
 
-#RUN TEMP_DEB="$(mktemp)" && \
-#wget -O "$TEMP_DEB" 'https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb' && \
-#dpkg -i "$TEMP_DEB" && \
-#rm -f "$TEMP_DEB"
-
 RUN apt-get update
 
 RUN wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
