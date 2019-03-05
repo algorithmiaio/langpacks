@@ -1,8 +1,7 @@
 {
     "artifacts": [
-        {"source":"/opt/algorithm/bin/Release/*/*.dll", "destination":"/opt/algorithm/Algorithm.dll"},
-        {"source":"/opt/algorithm/bin/Release/*/*.runtimeconfig.json", "destination":"/opt/algorithm/Algorithm.runtimeconfig.json"},
-        {"source":"/opt/algorithm/resources/", "destination":"/opt/algorithm/resources/"},
-        {"source":"/home/algo/.nuget", "destination":"/home/algo/.nuget"}
+        {"source":"/opt/algorithm/bin/Release/*", "destination":"/opt/algorithm/"},
+        {"source":"/opt/algorithm/resources", "destination":"/opt/algorithm/resources/"},
+        {"source":"/home/algo/.nuget", "destination":"/home/algo/.nuget/"}
     ]
 }
