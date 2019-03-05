@@ -25,6 +25,9 @@ RUN /tmp/{{package.script}}
 {% endfor %}
 {% endfor %}
 
+RUN mkdir /opt/algorithm
+RUN chown $ALGO_UID:$ALGO_UID -R /opt/algorithm
+# Needed for run operations that download/use files in pwd
 USER $ALGO_UID
 
 WORKDIR /opt/algorithm

@@ -20,6 +20,10 @@ RUN /tmp/{{package.script}}
 {% endfor %}
 {% endfor %}
 
+# This is needed for compiled languages, otherwise we get permission errors everywhere
+RUN mkdir /opt/algorithm
+RUN chown $ALGO_UID:$ALGO_UID -R /opt/algorithm
+
 USER $ALGO_UID
 
 WORKDIR /opt/algorithm
