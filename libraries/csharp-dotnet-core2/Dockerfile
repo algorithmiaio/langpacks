@@ -13,10 +13,7 @@ RUN apt-get -y update && \
         libssl-dev \
         tk-dev \
         uuid-dev \
-        wget && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update
+        wget
 
 RUN wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 RUN dpkg -i packages-microsoft-prod.deb
