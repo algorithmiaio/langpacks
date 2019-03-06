@@ -20,6 +20,12 @@ RUN /tmp/{{package.script}}
 {% endfor %}
 {% endfor %}
 
+# The code below creates the /opt/algorithm directory writeable by algo user so that build/run scripts can create directories.
+# For example a compiled language like C# creates a bin directory for the compiled binary.
+
+RUN mkdir /opt/algorithm
+RUN chown $ALGO_UID:$ALGO_UID /opt/algorithm
+
 USER $ALGO_UID
 
 WORKDIR /opt/algorithm

@@ -1,0 +1,7 @@
+{
+    "artifacts": [
+        {"source":"/opt/algorithm/bin/Release/*/*", "destination":"/opt/algorithm/"},
+        {"source":"/opt/algorithm/resources", "destination":"/opt/algorithm/resources/"},
+        {"source":"/home/algo/.nuget", "destination":"/home/algo/.nuget/"}
+    ]
+}
