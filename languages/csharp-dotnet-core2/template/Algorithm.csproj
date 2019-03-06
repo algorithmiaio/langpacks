@@ -10,7 +10,7 @@
   <!-- Unsure as to where to find a library you need? You can find everything here: https://www.nuget.org/ -->
   <ItemGroup>
     <PackageReference Include="Algorithmia.Client" Version="1.0.*" />
-    <PackageReference Include="Algorithmia.Pipe" Version="1.0.*" />
+    <PackageReference Include="Algorithmia.Pipe" Version="1.1.*" />
   </ItemGroup>
 
 </Project>
