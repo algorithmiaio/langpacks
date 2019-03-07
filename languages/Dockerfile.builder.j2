@@ -26,6 +26,9 @@ RUN /tmp/{{package.script}}
 RUN mkdir /opt/algorithm
 RUN chown $ALGO_UID:$ALGO_UID /opt/algorithm
 
+
+# WORKDIR does not respect the USER operation, which means that /opt/algorithm is owned by root unless previously created
+# https://github.com/moby/moby/issues/20295
 USER $ALGO_UID
 
 WORKDIR /opt/algorithm
