@@ -1,4 +1,4 @@
-# Sourced in part from https://github.com/algorithmiaio/langpacks/blob/master/libraries/python36/Dockerfile
+# Sourced in part from https://dotnet.microsoft.com/download/linux-package-manager/ubuntu16-04/sdk-current
 
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y \
@@ -38,6 +38,7 @@ ENV UBUNTU_VERSION 16.04
 RUN wget -q https://packages.microsoft.com/config/ubuntu/$UBUNTU_VERSION/packages-microsoft-prod.deb
 RUN dpkg -i packages-microsoft-prod.deb
 
+# Installs necessary apt-transport-https package, defined in packages-microsoft-prod.deb
 RUN apt-get install -y apt-transport-https && \
     apt-get update && \
     apt-get install -y dotnet-sdk-$DOTNET_SDK_VERSION
