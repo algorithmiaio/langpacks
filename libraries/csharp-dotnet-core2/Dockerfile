@@ -41,6 +41,7 @@ RUN dpkg -i packages-microsoft-prod.deb
 # Installs necessary apt-transport-https package, defined in packages-microsoft-prod.deb
 RUN apt-get install -y apt-transport-https && \
     apt-get update && \
-    apt-get install -y dotnet-sdk-$DOTNET_SDK_VERSION
+    apt-get install -y dotnet-sdk-$DOTNET_SDK_VERSION && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN dotnet help
