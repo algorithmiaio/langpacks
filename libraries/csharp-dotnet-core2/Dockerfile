@@ -1,5 +1,5 @@
 # Sourced in part from https://dotnet.microsoft.com/download/linux-package-manager/ubuntu16-04/sdk-current
-
+# We also used some parts of https://github.com/dotnet/dotnet-docker/blob/master/2.2/sdk/stretch/amd64/Dockerfile
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y \
         build-essential \
