@@ -5,6 +5,7 @@ RUN apt-get -y update && \
         build-essential \
         ca-certificates \
         libssl-dev \
+        apt-transport-https \
         wget && \
         rm -rf /var/lib/apt/lists/*
 
@@ -35,13 +36,9 @@ ENV DOTNET_SDK_VERSION 2.2
 ENV UBUNTU_VERSION 16.04
 
 # Downloads latest dpkg for current ubuntu version
-RUN wget -q https://packages.microsoft.com/config/ubuntu/$UBUNTU_VERSION/packages-microsoft-prod.deb
-RUN dpkg -i packages-microsoft-prod.deb
-
-# Installs necessary apt-transport-https package, defined in packages-microsoft-prod.deb
-RUN apt-get install -y apt-transport-https && \
+RUN wget -q https://packages.microsoft.com/config/ubuntu/$UBUNTU_VERSION/packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
     apt-get update && \
     apt-get install -y dotnet-sdk-$DOTNET_SDK_VERSION && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN dotnet help
+    rm -rf /var/lib/apt/lists/* && \
+    dotnet help
