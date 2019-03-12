@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+
+CRAN_MIRROR=${CRAN_MIRROR:=http://cran.rstudio.com/}
+
+echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
+
+echo "R_LIBS_USER=$ROOTDIR/dependencies" > ~/.Renviron
+
+exec Rscript $ROOTDIR/bin/pipe.r
