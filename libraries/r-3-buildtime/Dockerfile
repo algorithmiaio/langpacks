@@ -5,5 +5,5 @@ COPY --chown=0:0 r-3-buildtime/context/rip.py /usr/local/bin/algorithmia-rip.py
 ENV PATH=$PATH:/home/algo/.local/bin
 
 # Install Python2.7 to support the 2 python scripts included in the R builder
-RUN apt-get -y update
-RUN apt-get install -y python2.7
+RUN apt-get -y update && \
+	apt-get install -y python2.7
