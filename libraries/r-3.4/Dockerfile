@@ -6,10 +6,10 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/" >> /etc/apt/sources.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-RUN apt-get -y update
-RUN apt-get install -y r-base=3.4.4-1trusty0
-RUN apt-get install -y r-base-dev=3.4.4-1trusty0
-RUN apt-get install -y libcurl4-gnutls-dev=7.35.0-1ubuntu2.10 # This is needed for RCurl
+RUN apt-get -y update && \
+	apt-get install -y r-base=3.4.4-1trusty0 && \
+	apt-get install -y r-base-dev=3.4.4-1trusty0 && \
+	apt-get install -y libcurl4-gnutls-dev=7.35.0-1ubuntu2.10 # This is needed for RCurl
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN echo "options(repos=structure(c(CRAN=\"http://cran.rstudio.com/\")))" > ~/.Rprofile
