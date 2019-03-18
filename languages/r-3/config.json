@@ -1,6 +1,5 @@
 {
     "artifacts": [
-        {"source":"/home/algo/.local", "destination":"/home/algo/.local/"},
         {"source":"/opt/algorithm", "destination":"/opt/algorithm/"},
         {"source":"/home/algo/.Renviron", "destination":"/home/algo/.Renviron"}
     ]
