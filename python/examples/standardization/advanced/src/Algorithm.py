@@ -6,12 +6,11 @@ import Algorithmia
 
 
 def apply(input, context=None):
-    local_path = context['local_path']
-    if 'metrics' in context:
-        context['metrics'] += 1
+    if context and 'local_path' in context:
+        local_path = context['local_path']
+        return "hello {}, the file {} is installed.".format(input, local_path)
     else:
-        context['metrics'] = 1
-    return "hello {}, the file {} is installed.".format(input, local_path)
+        return "hello {}".format(input)
 
 
 # This is a user defined functor that mutates a 'context' object.
