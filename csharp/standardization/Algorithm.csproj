@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Please ensure that your algorithm only targets a single framework, multiple frameworks are not supported. -->
+   
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>Algo</RootNamespace>
+  </PropertyGroup>
+  
+  <!-- Unsure as to where to find a library you need? You can find everything here: https://www.nuget.org/ -->
+  <ItemGroup>
+    <PackageReference Include="Algorithmia.Client" Version="1.0.*" />
+    <PackageReference Include="Algorithmia.Pipe" Version="1.1.*" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
+  </ItemGroup>
+
+</Project>
