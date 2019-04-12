@@ -8,7 +8,7 @@ import Algorithmia
 def apply(input, context=None):
     if context and 'local_path' in context:
         local_path = context['local_path']
-        return "hello {}, the file {} is installed.".format(input, local_path)
+        return "hello {}, the file {} is installed on the machine.".format(input, local_path)
     else:
         return "hello {}".format(input)
 
