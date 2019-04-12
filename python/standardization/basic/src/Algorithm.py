@@ -1,4 +1,4 @@
-from AlgorithmiaDevtools import AlgorithmHandler
+from Devtools import AlgorithmHandler
 import Algorithmia
 
 # API calls will begin at the apply() method, with the request body passed as 'input'

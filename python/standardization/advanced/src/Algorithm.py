@@ -1,4 +1,4 @@
-import AlgorithmiaDevtools
+import Devtools
 import Algorithmia
 
 # API calls will begin at the apply() method, with the request body passed as 'input'
@@ -25,7 +25,7 @@ def download_model(context):
 
 # Hey this is important don't forget it and don't erase it
 def configure():
-    algorithm = AlgorithmiaDevtools.AlgorithmHandler()
+    algorithm = Devtools.AlgorithmHandler()
     algorithm.set_apply_function(apply)
     algorithm.set_on_load_function(download_model)
     return algorithm
