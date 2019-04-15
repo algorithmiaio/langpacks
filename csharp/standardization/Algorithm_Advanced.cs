@@ -47,6 +47,14 @@ namespace Algo
             output.save_path = remoteFilePath;
             return output;
         }
+        
+        public static string RandomString(int length)
+        {
+            Random random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
 
 
         public static Dictionary<String, dynamic> OnLoad()
@@ -56,7 +64,7 @@ namespace Algo
             return context;
         }
 
-        public static AlgorithmHandler<AlgoInput, AlgoOutput> Configure()
+        public static AlgorithmHandler<AlgoInput, AlgoOutput> SetupHandler()
         {
             AlgorithmHandler<AlgoInput, AlgoOutput> handler = new AlgorithmHandler<AlgoInput, AlgoOutput>();
             handler.SetLoadFunction(OnLoad);
@@ -64,13 +72,5 @@ namespace Algo
             return handler;
         }
 
-
-        public static string RandomString(int length)
-        {
-            Random random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
     }
 }

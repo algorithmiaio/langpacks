@@ -7,7 +7,7 @@ namespace Algo
     {
         public static void Main(string[] args)
         {
-            AlgorithmHandler<string, string> handler =AlgorithmBasic.Configure();
+            AlgorithmHandler<string, string> handler =AlgorithmBasic.SetupHandler();
             handler.Run();
         }
     }

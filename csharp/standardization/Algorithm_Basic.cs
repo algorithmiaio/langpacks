@@ -12,7 +12,7 @@ namespace Algo
                 return $"Hello {input}";
             }
 
-            public static AlgorithmHandler<string, string> Configure()
+            public static AlgorithmHandler<string, string> SetupHandler()
             {
                 AlgorithmHandler<string, string> handler = new AlgorithmHandler<string, string>();
                 handler.SetApplyFunction(Foo);
