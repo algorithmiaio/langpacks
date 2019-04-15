@@ -3,6 +3,4 @@
 target/
 !target/release/langserver
 .idea/
-
-
 *.iml
