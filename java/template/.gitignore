@@ -1,6 +1,5 @@
 # Algorithmia gitignore
 
-bin
 ivy
 dist
 logs
