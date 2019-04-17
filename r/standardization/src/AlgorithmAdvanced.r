@@ -16,7 +16,7 @@ loader <- function(){
 
 
 setupAdvanced <- function(){
-  Sys.setenv(ALGORITHMIA_API_KEY="simP1oZ9sfF7c1cBrYUQ08iBtdP1")
+  Sys.setenv(ALGORITHMIA_API_KEY="API_KEY")
   algo <- getAlgorithmHandler()
   algo$setApplyFunction(algorithmAdvanced)
   algo$setOnLoadFunction(loader)
