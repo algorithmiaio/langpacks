@@ -2,7 +2,7 @@ package com.algorithmia.example;
 
 public class Pipe {
     public static void main(String[] args) throws Exception{
-        AlgorithmPipe algo = AlgorithmBasic.Setup();
+        AlgorithmHandler algo = Algorithm.Setup();
         algo.run();
     }
 }
