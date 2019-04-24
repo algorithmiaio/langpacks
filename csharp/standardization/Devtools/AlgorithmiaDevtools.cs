@@ -8,26 +8,32 @@ namespace Algo.Devtools
 {
 
 
-    public class AlgorithmHandler<I, O>     {
+    public class AlgorithmHandler<I1, I2, O>
+    {
 
-        public delegate OutputType ApplyMethod<InputType, OutputType>(InputType input, Dictionary<String, object> context);
+        public delegate O ApplyMethod1(I1 input);
+        public delegate O ApplyMethod2(I1 input, I2 context);
 
-        public delegate Dictionary<String, object> LoadMethod();
+        public delegate I2 LoadMethod();
 
-        private ApplyMethod<I, O> _applyMethod = (input, context) => {throw new Exception("you must define 'apply'.");};
+        private I2 _context = default;
+        private LoadMethod _loadMethod = () => { return default;};
+        private ApplyMethod1 _applyMethod1;
+        private ApplyMethod2 _applyMethod2;
+        public AlgorithmHandler(ApplyMethod1 func)
+        {
+            _applyMethod1 = func;
+        }
 
-        private Dictionary<string, object> _context = null;
-        private LoadMethod _loadMethod = () => { return new Dictionary<string, object>();};
+        public AlgorithmHandler(ApplyMethod2 func)
+        {
+            _applyMethod2 = func;
+        }
 
 
         public void SetLoadFunction(LoadMethod func)
         {
             _loadMethod = func;
-        }
-
-        public void SetApplyFunction(ApplyMethod<I, O> func)
-        {
-            _applyMethod = func;
         }
 
 
@@ -40,9 +46,19 @@ namespace Algo.Devtools
             Console.Out.Flush();
         }
 
-        private O Invoke(I input)
+        private O Invoke(I1 input)
         {
-            return _applyMethod.Invoke(input, _context);
+            O output;
+            if (_applyMethod2 != null)
+            {
+                output = _applyMethod2.Invoke(input, _context);
+            }
+            else
+            {
+                output =  _applyMethod1.Invoke(input);
+            }
+
+            return output;
         }
 
 
@@ -93,7 +109,7 @@ namespace Algo.Devtools
         private object ValidateInput(Request request)
         {
             object algorithmArguments;
-            Type algorithmInputType = typeof(I);
+            Type algorithmInputType = typeof(I1);
             if (request.ContentType == "json")
             {
                 algorithmArguments = JsonConvert.DeserializeObject(request.Data, algorithmInputType);

@@ -7,16 +7,15 @@ namespace Algo
 {
         public class AlgorithmBasic
         {
-            public static string Foo(string input, Dictionary<String, object> context = null)
+            public static string Foo(string input)
             {
                 return $"Hello {input}";
             }
 
-            public static AlgorithmHandler<string, string> SetupHandler()
+            public static void Main(string[] args)
             {
-                AlgorithmHandler<string, string> handler = new AlgorithmHandler<string, string>();
-                handler.SetApplyFunction(Foo);
-                return handler;
+                var algo = new AlgorithmHandler<String, Dictionary<String, Object>, String>(Foo);
+                algo.Run();
             }
     }
 }
