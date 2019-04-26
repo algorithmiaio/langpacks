@@ -6,12 +6,13 @@ package com.algorithmia.example;
  */
 class AlgorithmBasic
 {
-    static String Apply(String input, String context) throws Exception{
+    String Apply(String input) throws Exception{
         return "hello ".concat(input);
     }
 
     public static void main(String[] args) throws Exception{
-        AlgorithmHandler algo = new AlgorithmHandler(AlgorithmBasic::Apply);
+        AlgorithmBasic defs = new AlgorithmBasic();
+        AlgorithmHandler algo = new AlgorithmHandler<>(defs::Apply);
         algo.run();
     }
 }

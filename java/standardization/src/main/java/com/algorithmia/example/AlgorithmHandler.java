@@ -1,68 +1,50 @@
 package com.algorithmia.example;
 
-import java.io.Console;
-import java.util.HashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
-@FunctionalInterface
-interface FunctionWithException<T1, T2, R> {
-    R apply(T1 t, T2 j) throws Exception;
-}
+public class AlgorithmHandler<INPUT, STATE, OUTPUT> {
 
-@FunctionalInterface
-interface SupplierWithException<R> {
-    R apply() throws Exception;
-}
-
-
-public class AlgorithmHandler<I1, O, I2> {
-
-    private BiFunction<I1, I2, O> applyFunc;
-    private Supplier<I2> loadFunc;
-    private HashMap<String, Object> context;
-
-    private <T, J, L> BiFunction<T, J, L> applyHandler(FunctionWithException<T, J, L> fe) {
-        return (arg1, arg2) -> {
-            try {
-                return fe.apply(arg1, arg2);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
+    @FunctionalInterface
+    interface BifunctionWithException<INPUT, STATE, OUTPUT> {
+        OUTPUT apply(INPUT t, STATE j) throws Exception;
     }
 
-    private <J> Supplier<J> loadHandler(SupplierWithException<J> fe) {
-        return () -> {
-            try {
-                return fe.apply();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-    public AlgorithmHandler(){ }
-
-    public AlgorithmHandler(FunctionWithException<I1,I2, O> applyFunc, SupplierWithException<I2> loadFunc){
-        this.applyFunc = applyHandler(applyFunc);
-        this.loadFunc = loadHandler(loadFunc);
+    @FunctionalInterface
+    interface FunctionWithException<INPUT, OUTPUT>{
+        OUTPUT apply(INPUT t) throws Exception;
     }
 
-    public AlgorithmHandler(FunctionWithException<I1, I2, O> applyFunc){
-        this.applyFunc = applyHandler(applyFunc);
+    @FunctionalInterface
+    interface SupplierWithException<STATE> {
+        STATE apply() throws Exception;
     }
 
-    public void setApply(FunctionWithException<I1, I2, O> func){
-        applyFunc = applyHandler(func);
+
+    private BifunctionWithException<INPUT, STATE, OUTPUT> applyWState;
+    private FunctionWithException<INPUT, OUTPUT> apply;
+    private SupplierWithException<STATE> loadFunc;
+    private STATE context;
+
+
+    public AlgorithmHandler(BifunctionWithException<INPUT, STATE, OUTPUT> applyWState, SupplierWithException<STATE> loadFunc){
+        this.applyWState = applyWState;
+        this.loadFunc = loadFunc;
     }
 
-    public void setLoad(SupplierWithException<I2> func){
-
-        loadFunc = loadHandler(func);
+    public AlgorithmHandler(BifunctionWithException<INPUT, STATE, OUTPUT> applyWState){
+        this.applyWState = applyWState;
     }
-    public void run(){
-        System.out.println(this.applyFunc.getClass());
+
+    public AlgorithmHandler(FunctionWithException<INPUT, OUTPUT> apply){
+        this.apply = apply;
+    }
+
+    public void setLoad(SupplierWithException<STATE> func){
+
+        loadFunc = func;
+    }
+    public void run() throws Exception{
+        loadFunc.apply();
+        System.out.println(this.applyWState.getClass());
         System.out.println(this.loadFunc.getClass());
         System.out.println("Not implemented");
     }
