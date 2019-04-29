@@ -1,9 +1,7 @@
 package com.algorithmia.example;
+import com.algorithmia.algorithmHandler.*;
+import com.algorithmia.*;
 
-/**
- * Hello world!
- *
- */
 class AlgorithmBasic
 {
     String Apply(String input) throws Exception{

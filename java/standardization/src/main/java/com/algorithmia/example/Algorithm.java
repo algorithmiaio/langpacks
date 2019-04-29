@@ -1,4 +1,5 @@
 package com.algorithmia.example;
+import com.algorithmia.algorithmHandler.*;
 import com.algorithmia.*;
 import java.util.HashMap;
 
