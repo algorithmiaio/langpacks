@@ -1,7 +1,4 @@
-package com.algorithmia.algorithmHandler;
-import com.google.gson.*;
-
-import java.io.Console;
+package algorithmHandler;
 
 public class AlgorithmHandler<INPUT, STATE, OUTPUT> {
 

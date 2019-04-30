@@ -1,4 +1,4 @@
-package com.algorithmia.example;
+package algorithmia;
 import com.algorithmia.algorithmHandler.*;
 import com.algorithmia.*;
 

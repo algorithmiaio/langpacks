@@ -1,4 +1,4 @@
-package com.algorithmia.algorithmHandler;
+package algorithmHandler;
 
 public class Request<T>{
     public String content_type;
