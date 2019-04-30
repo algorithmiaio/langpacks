@@ -1,4 +1,4 @@
-package com.algorithmia.algorithmHandler;
+package algorithmHandler;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 

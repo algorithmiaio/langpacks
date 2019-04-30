@@ -1,4 +1,4 @@
-package com.algorithmia.example;
+package algorithmia;
 import com.algorithmia.algorithmHandler.*;
 import com.algorithmia.*;
 import java.util.HashMap;
@@ -17,12 +17,10 @@ public class Algorithm {
             context.put("local_file", localFile);
             return context;
     }
-
     public static void main(String[] args) throws Exception {
         Algorithm defs = new Algorithm();
         AlgorithmHandler<String, HashMap<String, String>, String> algo = new AlgorithmHandler<>(defs::Apply);
         algo.setLoad(defs::DownloadModel);
         algo.run();
     }
-
 }
