@@ -1,34 +1,46 @@
 package com.algorithmia.algorithmHandler;
 
-import com.google.gson.JsonElement;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.apache.commons.codec.binary.Base64;
 
 public class Response<T> {
-    public MetaData metaData;
-    public T result;
+    private MetaData metaData;
+    private T result;
     public class MetaData{
-        public String content_type;
+        private String content_type;
         MetaData(String contentType){this.content_type = contentType;}
     }
-    public Response(T data){
+    public Response(Object rawData){
         String contentType;
-        Response response;
-        if(data == null){
+        T data;
+        if(rawData == null){
             contentType = "json";
-            result = null;
+            data = null;
         }
-        else if(data instanceof String){
+        else if(rawData instanceof String){
             contentType = "text";
+            data = (T)rawData;
         }
-        else if (data instanceof byte[]){
+        else if (rawData instanceof byte[]){
             contentType = "binary";
-            String encoded = Base64.encodeBase64String((byte[])data);
+            data = (T)Base64.encodeBase64String((byte[])rawData);
 
         } else {
             contentType = "json";
+            data = (T)rawData;
         }
 
         metaData = new MetaData(contentType);
         result = data;
+    }
+    public String getJsonOutput(){
+        Gson gson = new Gson();
+        JsonObject node = new JsonObject();
+        JsonObject metaData = new JsonObject();
+        metaData.addProperty("content_type", this.metaData.content_type);
+        node.add("metadata", metaData);
+        node.add("result", gson.toJsonTree(this.result));
+        return node.toString();
     }
 }

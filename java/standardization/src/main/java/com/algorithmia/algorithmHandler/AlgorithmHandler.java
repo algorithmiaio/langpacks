@@ -1,6 +1,8 @@
 package com.algorithmia.algorithmHandler;
 import com.google.gson.*;
 
+import java.io.Console;
+
 public class AlgorithmHandler<INPUT, STATE, OUTPUT> {
 
     @FunctionalInterface
@@ -25,19 +27,27 @@ public class AlgorithmHandler<INPUT, STATE, OUTPUT> {
     private STATE state;
 
 
+    private void Load() throws Throwable{
+        state = this.loadFunc.apply();
+        System.out.println("PIPE_INIT_COMPLETE");
+        System.out.flush();
+    }
 
-    private void Execute(STATE state){
-        RequestHandler<INPUT> in = new RequestHandler<>();
-        ResponseHandler<OUTPUT> out = new ResponseHandler<>();
-        try {
-            Request<INPUT> req = in.GetNextRequest();
-            while (req != null) {
-                OUTPUT output = this.applyWState.apply(req.data, state);
-                out.writeToPipe(output);
-                req = in.GetNextRequest();
-            }
-        } catch (Throwable e){
-            out.writeErrorToPipe(e);
+    private void ExecuteWithoutState(RequestHandler<INPUT> in, ResponseHandler out) throws Throwable {
+        Request<INPUT> req = in.GetNextRequest();
+        while(req != null){
+            OUTPUT output = this.apply.apply(req.data);
+            out.writeToPipe(output);
+            req = in.GetNextRequest();
+        }
+    }
+
+    private void ExecuteWithState(RequestHandler<INPUT> in, ResponseHandler out) throws Throwable{
+        Request<INPUT> req = in.GetNextRequest();
+        while (req != null) {
+            OUTPUT output = this.applyWState.apply(req.data, state);
+            out.writeToPipe(output);
+            req = in.GetNextRequest();
         }
     }
 
@@ -59,13 +69,21 @@ public class AlgorithmHandler<INPUT, STATE, OUTPUT> {
 
         loadFunc = func;
     }
-    public void run(){
-        if (this.applyWState != null && this.loadFunc != null){
+    public void run() throws java.io.FileNotFoundException{
+        RequestHandler<INPUT> in = new RequestHandler<>();
+        ResponseHandler out = new ResponseHandler();
+        try {
 
-        }
-        System.out.println(this.applyWState.getClass());
-        System.out.println(this.loadFunc.getClass());
-        System.out.println("Not implemented");
+            if(this.applyWState != null && this.loadFunc != null) {
+                Load();
+                ExecuteWithState(in, out);
+            } else {
+                ExecuteWithoutState(in, out);
+            }
+
+    } catch (Throwable e){
+        out.writeErrorToPipe(e);
+    }
     }
 
 
