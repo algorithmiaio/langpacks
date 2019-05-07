@@ -10,7 +10,7 @@ class AlgorithmBasic
 
     public static void main(String[] args) throws Exception{
         AlgorithmBasic defs = new AlgorithmBasic();
-        AlgorithmHandler algo = new AlgorithmHandler<>(defs::Apply);
+        AlgorithmHandler algo = new AlgorithmHandler<>(defs::Apply, String.class);
         algo.run();
     }
 }

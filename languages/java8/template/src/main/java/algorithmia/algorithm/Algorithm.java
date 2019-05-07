@@ -27,7 +27,7 @@ public class Algorithm {
     }
     public static void main(String[] args) throws Exception {
         Algorithm defs = new Algorithm();
-        AlgorithmHandler<String, HashMap<String, String>, String> algo = new AlgorithmHandler<>(defs::Apply);
+        AlgorithmHandler<String, HashMap<String, String>, String> algo = new AlgorithmHandler<>(defs::Apply, AdvancedInput.class);
         algo.setLoad(defs::DownloadModel);
         algo.run();
     }
