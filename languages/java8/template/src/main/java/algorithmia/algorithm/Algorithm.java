@@ -4,13 +4,14 @@ import com.algorithmia.*;
 import java.util.HashMap;
 
 
-class AdvancedInput{
-    String name;
-    Integer age;
-}
-
 
 public class Algorithm {
+
+    class AdvancedInput{
+        String name;
+        Integer age;
+    }
+
     String Apply(AdvancedInput input, HashMap<String, String> context) throws Exception{
             if(context.containsKey("local_file")){
                 return "Hello " + input.name + " you are " + input.age +
@@ -27,8 +28,7 @@ public class Algorithm {
     }
     public static void main(String[] args) throws Exception {
         Algorithm defs = new Algorithm();
-        AlgorithmHandler<String, HashMap<String, String>, String> algo = new AlgorithmHandler<>(defs::Apply, AdvancedInput.class);
-        algo.setLoad(defs::DownloadModel);
+        AlgorithmHandler algo = new AlgorithmHandler<>(defs, defs::Apply, defs::DownloadModel);
         algo.run();
     }
 }
