@@ -1,3 +1,4 @@
 #!/bin/bash
+set -e
 
-java -cp /
+java -jar /opt/algorithm/target/Algorithm.jar
