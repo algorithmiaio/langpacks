@@ -1,0 +1,6 @@
+{
+    "artifacts": [
+        {"source":"/home/algo/R", "destination":"/home/algo/R/"},
+        {"source":"/opt/algorithm", "destination":"/opt/algorithm/"}
+    ]
+}
