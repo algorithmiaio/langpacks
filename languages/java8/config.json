@@ -1,7 +1,6 @@
 {
     "artifacts": [
-        {"source":"/opt/algorithm/target/*", "destination":"/opt/algorithm/target/*"},
-        {"source":"/home/algo/.m2", "/home/algo/.m2/"},
-        {"source":"/opt/algorithm/lib/*", "destination":"/opt/algorithm/lib/*"}
+        {"source":"/opt/algorithm/target/*.jar", "destination":"/opt/algorithm/target/algorithm.jar"},
+        {"source":"/opt/algorithm/target/lib, "destination":"/opt/algorithm/target/lib/"}
     ]
 }

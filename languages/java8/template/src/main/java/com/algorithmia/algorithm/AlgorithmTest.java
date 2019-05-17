@@ -1,4 +1,4 @@
-package algorithmia.algorithm;
+package com.algorithmia.algorithm;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;

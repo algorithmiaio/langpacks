@@ -31,9 +31,34 @@
             <artifactId>maven-dependency-plugin</artifactId>
             <version>3.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.1.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <!-- Make sure that we keep our dependencies -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <!-- Build an executable JAR -->
                 <groupId>org.apache.maven.plugins</groupId>
@@ -41,9 +66,12 @@
                 <version>3.0.2</version>
                 <configuration>
                     <archive>
-                        <manifest>
-                        </manifest>
-                    </archive>
+                    <manifest>
+                        <mainClass>com.algorithmia.algorithm.Algorithm</mainClass>
+                        <addClasspath>true</addClasspath>
+                        <classpathPrefix>lib/</classpathPrefix>
+                    </manifest>
+                  </archive>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,6 +1,6 @@
-package algorithmia.algorithm;
+package com.algorithmia.algorithm;
 
-import com.algorithmia.development.Handler;
+import com.algorithmia.development.*;
 import com.algorithmia.*;
 
 class Algorithm {
