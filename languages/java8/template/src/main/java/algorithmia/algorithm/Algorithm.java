@@ -1,17 +1,17 @@
 package algorithmia.algorithm;
 
-import com.algorithmia.algorithmHandler.*;
+import com.algorithmia.development.Handler;
 import com.algorithmia.*;
 
 class Algorithm {
-    String apply(String input) throws Exception {
+    public String apply(String input) throws RuntimeException {
         return "hello ".concat(input);
     }
 
-    public static void main(String[] args) throws Exception {
-        AlgorithmBasic defs = new AlgorithmBasic();
-        AlgorithmHandler algo = new AlgorithmHandler<>(defs, defs::apply);
-        algo.run();
+    public static void main(String[] args) {
+        Algorithm defs = new Algorithm();
+        Handler algo = new Handler<>(defs.getClass(), defs::apply);
+        algo.serve();
     }
 }
 
