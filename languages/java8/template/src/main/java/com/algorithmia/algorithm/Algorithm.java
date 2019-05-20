@@ -9,8 +9,8 @@ class Algorithm {
     }
 
     public static void main(String[] args) {
-        Algorithm defs = new Algorithm();
-        Handler algo = new Handler<>(defs.getClass(), defs::apply);
+        Algorithm algorithm = new Algorithm();
+        Handler algo = new Handler<>(algorithm.getClass(), algorithm::apply);
         algo.serve();
     }
 }
@@ -23,7 +23,7 @@ class Algorithm {
  * For more information, please refer to the advanced user guide in https://docs.algorithmia.com
  */
 
-//public class AlgorithmAdvanced {
+//public class Algorithm {
 //
 //    class AdvancedInput {
 //        String name;
@@ -40,15 +40,13 @@ class Algorithm {
 //
 //    HashMap<String, String> downloadModel() throws Exception {
 //        HashMap<String, String> context = new HashMap<>();
-//        AlgorithmiaClient client = Algorithmia.client();
-//        String localFile = client.file("data://demo/collection/testfile.json").getFile().getName();
-//        context.put("local_file", localFile);
+//        context["local_file"] = "/tmp/some_example.json"
 //        return context;
 //    }
 //
 //    public static void main(String[] args) throws Exception {
-//        AlgorithmAdvanced defs = new AlgorithmAdvanced();
-//        AlgorithmHandler algo = new AlgorithmHandler<>(defs, defs::apply, defs::downloadModel);
+//        Algorithm algorithm = new Algorithm();
+//        AlgorithmHandler algo = new AlgorithmHandler<>(algorithm.getClass(), algorithm::apply, algorithm::downloadModel);
 //        algo.run();
 //    }
 //}
