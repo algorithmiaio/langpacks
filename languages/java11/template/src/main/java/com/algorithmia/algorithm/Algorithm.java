@@ -3,6 +3,8 @@ package com.algorithmia.algorithm;
 import com.algorithmia.development.*;
 import com.algorithmia.*;
 
+
+// This class defines your algorithm.
 class Algorithm implements AlgorithmInterface<String, String>{
 
 
@@ -10,6 +12,7 @@ class Algorithm implements AlgorithmInterface<String, String>{
         return "hello ".concat(input);
     }
 
+    // For more information around how loading works, please check out the algorithm docs in algorithmia.com/developers/
     public void load(){
         System.out.println("Implement this for loading functionality");
     }

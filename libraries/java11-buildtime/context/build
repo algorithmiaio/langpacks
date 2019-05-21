@@ -19,14 +19,13 @@ if [[ -n "$MAVEN_MIRROR" ]]; then
       <mirrorOf>*</mirrorOf>
     </mirror>
   </mirrors>
-
 EOF
 fi
 
 if [[ -n "$HTTPS_PROXY" ]]; then
         cat >> ~/.m2/settings.xml << EOF
     <proxies>
-    <proxy>
+     <proxy>
       <active>true</active>
       <protocol>http</protocol>
       <host>`awk -F"http.proxyHost=" '{print $2}' <<< $JAVA_TOOL_OPTIONS | cut -d' ' -f1`</host>
