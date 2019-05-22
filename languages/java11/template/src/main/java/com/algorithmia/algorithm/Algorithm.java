@@ -9,10 +9,14 @@ import java.util.HashMap;
 // This class defines your algorithm.
 class Algorithm extends AbstractAlgorithm<String, String>{
 
-//     HashMap<String, String> context = new HashMap<>();
-    
+    // This class member can be defined as anything you wish, and stores loaded state and mutable state between requests.
+     HashMap<String, String> context = new HashMap<>();
+
+    // This apply function defines the primary motive driver of your algorithm. Please ensure that the types defined in
+    // your algorithm are the same as those defined in your class implementation above ^
 
     public String apply(String input){
+        // ... = context.get("loaded_model_file")
         return "hello ".concat(input);
     }
 
