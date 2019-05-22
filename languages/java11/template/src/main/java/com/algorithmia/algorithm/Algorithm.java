@@ -5,7 +5,7 @@ import com.algorithmia.*;
 
 
 // This class defines your algorithm.
-class Algorithm implements AlgorithmInterface<String, String>{
+class Algorithm extends AbstractAlgorithm<String, String>{
 
 
     public String apply(String input){
