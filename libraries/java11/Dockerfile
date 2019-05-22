@@ -8,6 +8,6 @@ RUN apt-get -y update && \
         apt-transport-https \
         wget \
         default-jdk \
-        openjdk-8-jdk \
+        openjdk-11-jdk \
         maven && \
         rm -rf /var/lib/apt/lists/*
