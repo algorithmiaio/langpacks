@@ -1,4 +1,5 @@
 # Pull base image.
+
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y \
         software-properties-common \
@@ -8,6 +9,9 @@ RUN apt-get -y update && \
         apt-transport-https \
         wget \
         default-jdk \
-        openjdk-11-jdk \
         maven && \
-        rm -rf /var/lib/apt/lists/*
+	add-apt-repository ppa:openjdk-r/ppa && \
+	apt-get update && \
+	apt-get install -y \
+	openjdk-11-jdk && \
+	rm -rf /var/lib/apt/lists/*
