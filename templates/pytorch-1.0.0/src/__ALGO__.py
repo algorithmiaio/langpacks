@@ -32,8 +32,8 @@ class InputObject:
         else:
             raise Exception('input must be a json object.')
         if self.A.shape[-1] != self.B.shape[0]:
-            raise Exception('inner dimensions between A and B must be the same.\n A: {} B: {}'.format(self.A.shape[-1],
-                                                                                                      self.B.shape[0]))
+            raise Exception('inner dimensions between A and B must be the same.\n A: {} B: {}'\
+                .format(self.A.shape[-1], self.B.shape[0]))
 
 
 def convert(list_array):
