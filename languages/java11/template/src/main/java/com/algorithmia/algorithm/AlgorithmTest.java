@@ -7,9 +7,9 @@ public class AlgorithmTest extends TestCase {
 
     public void testApply() {
         Algorithm algo = new Algorithm();
-        String input = "World";
+        Algorithm.ExampleInput input = algo.new ExampleInput("John", "Doe");
         String result = algo.apply(input);
-        String expectedResult = "hello World";
+        String expectedResult = "hello John Doe";
         Assert.assertEquals(result, expectedResult);
     }
 }
