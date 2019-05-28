@@ -6,28 +6,10 @@ algorithm <- function(input) {
   paste("hello", input)
 }
 
-algo <- getAlgorithmHandler(algorithm)
+load <- function() {
+  # Defines the loading function if defined
+}
+
+algo <- getAlgorithmHandler(algorithm, load)
 algo$run()
 
-
-# For a more advanced example with loading, see the example below.
-'algorithmAdvanced <- function(input, context=NULL) {
-    paste("hello", input)
-}
-
-
-loader <- function(){
-  context <- list()
-  client <- getAlgorithmiaClient()
-  context$local_file <- client$file("data://demo/collection/somefile.json")$getFile()
-  context
-}
-
-
-setupAdvanced <- function(){
-  Sys.setenv(ALGORITHMIA_API_KEY="API_KEY")
-  algo <- getAlgorithmHandler()
-  algo$setApplyFunction(algorithmAdvanced)
-  algo$setOnLoadFunction(loader)
-  algo$run()
-}'
