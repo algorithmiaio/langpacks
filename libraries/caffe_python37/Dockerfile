@@ -115,9 +115,11 @@ RUN set -ex; \
         \) -exec rm -rf '{}' +; \
     rm -f get-pip.py
 
-RUN apt-get update && apt-get -y install caffe-cpu
 
-## Good one: 4c565f3ed3e2
+## Below this line is stuff that is specific to Caffe
+## It is based on the instructions here: https://mc.ai/caffe-installation-on-ubuntu-18-04-lts-python-3-6/
+
+RUN apt-get update && apt-get -y install caffe-cpu
 
 RUN apt install -y python3-opencv
 RUN apt-get install -y libatlas-base-dev libopenblas-dev git \
@@ -140,11 +142,16 @@ RUN cd /caffe && cat Makefile.config.example \
   | python -c "import sys;print(sys.stdin.read().replace('#                 /usr/lib/python3.5/dist-packages/numpy/core/include', '               /usr/lib/python3.6/dist-packages/numpy/core/include'))" \
   | python -c "import sys;print(sys.stdin.read().replace('/usr/local/include', '/usr/local/include /usr/include/hdf5/serial'))" \
   | python -c "import sys;print(sys.stdin.read().replace('/usr/local/lib /usr/lib', '/usr/local/lib /usr/lib/x86_64-linux-gnu/hdf5/serial'))" \
-  | python -c "import sys;print(sys.stdin.read().replace('-gencode arch=compute_20,code=sm_20', ''))" \
+  | python -c "import sys;print(sys.stdin.read().replace('-gencode arch=compute_20,code=sm_20', '-gencode arch=compute_62,code=sm_62'))" \
   | python -c "import sys;print(sys.stdin.read().replace('-gencode arch=compute_20,code=sm_21', ''))" \
   > Makefile.config
 
-# Good one: 4c565f3ed3e2
 RUN cd /caffe && make all -j6 && make pycaffe -j6
 
 ENV PYTHONPATH /caffe/python:$PYTHONPATH
+
+RUN pip install --upgrade pip && pip install python-dateutil>=2.5
+RUN pip install matplotlib algorithmia
+RUN apt-get install nvidia-modprobe
+
+#python -c "import testcode;_=testcode.initialize_model()"
