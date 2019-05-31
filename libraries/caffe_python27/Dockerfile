@@ -1,4 +1,4 @@
-# Works on Docker nvidia/cuda   10.1-devel-ubuntu18.04      ea87ef28cacb
+# Works on Docker nvidia/cuda   10.1-devel-ubuntu18.04
 
 FROM nvidia/cuda
 
