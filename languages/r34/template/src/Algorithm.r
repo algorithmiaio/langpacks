@@ -7,9 +7,9 @@ algorithm <- function(input) {
 }
 
 load <- function() {
-  # Defines the loading function if defined
+  # Here you can optionally define a function called when the algorithm is loaded
 }
 
 algo <- getAlgorithmHandler(algorithm, load)
-algo$run()
+algo$serve()
 
