@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 CRAN_MIRROR=${CRAN_MIRROR:=http://cran.rstudio.com/}
@@ -22,4 +23,5 @@ python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --skip-cran-latest --out
 
 # Copy any dependencies from the system wide location to our local dependencies directory
 python $ROOTDIR/bin/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-2 --destination `pwd`/dependencies
+
 
