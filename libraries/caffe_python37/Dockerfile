@@ -1,5 +1,6 @@
 # Lightly modified from https://github.com/docker-library/python/blob/ab8b829cfefdb460ebc17e570332f0479039e918/3.7/stretch/Dockerfile
-FROM ubuntu:18.04
+#FROM ubuntu:18.04
+FROM nvidia/cuda
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get -y install gnupg && \
   DEBIAN_FRONTEND=noninteractive apt-get -y install kgpg
@@ -119,12 +120,15 @@ RUN set -ex; \
 ## Below this line is stuff that is specific to Caffe
 ## It is based on the instructions here: https://mc.ai/caffe-installation-on-ubuntu-18-04-lts-python-3-6/
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  caffe-cpu git protobuf-compiler \
-  libatlas-base-dev libopenblas-dev \
-  libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev \
-  libgflags-dev libgoogle-glog-dev liblmdb-dev libboost-all-dev \
-  python3-dev python3-opencv nvidia-cuda-toolkit nvidia-modprobe
+RUN apt-get update && apt-get -y install caffe-cpu
+
+RUN apt install -y python3-opencv
+RUN apt-get install -y libatlas-base-dev libopenblas-dev git \
+  libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler \
+  libgflags-dev libgoogle-glog-dev liblmdb-dev \
+  python3-dev nvidia-cuda-toolkit
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libboost-all-dev
+RUN pip3 install protobuf
 
 RUN git clone https://github.com/BVLC/caffe.git && \
     cd caffe/python && for req in wheel $(cat requirements.txt) pydot; do pip install $req; done && cd ..
@@ -141,8 +145,12 @@ RUN cd /caffe && cat Makefile.config.example \
   | python -c "import sys;print(sys.stdin.read().replace('/usr/local/lib /usr/lib', '/usr/local/lib /usr/lib/x86_64-linux-gnu/hdf5/serial'))" \
   | python -c "import sys;print(sys.stdin.read().replace('-gencode arch=compute_20,code=sm_20', '-gencode arch=compute_62,code=sm_62'))" \
   | python -c "import sys;print(sys.stdin.read().replace('-gencode arch=compute_20,code=sm_21', ''))" \
-  > Makefile.config && \
-  make all -j6 && make pycaffe -j6
+  > Makefile.config
+
+RUN cd /caffe && make all -j6 && make pycaffe -j6
 
 ENV PYTHONPATH /caffe/python:$PYTHONPATH
-RUN pip install --upgrade pip && pip install matplotlib algorithmia protobuf
+
+RUN pip install --upgrade pip && pip install python-dateutil>=2.5
+RUN pip install matplotlib algorithmia
+RUN apt-get install nvidia-modprobe
