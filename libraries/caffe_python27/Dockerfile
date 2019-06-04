@@ -1,31 +1,3 @@
-# Works on Docker nvidia/cuda   10.1-devel-ubuntu18.04
-
-FROM nvidia/cuda
-
-RUN apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        build-essential \
-        cmake \
-        git \
-        wget \
-        libatlas-base-dev \
-        libboost-all-dev \
-        libgflags-dev \
-        libgoogle-glog-dev \
-        libhdf5-serial-dev \
-        libleveldb-dev \
-        liblmdb-dev \
-        libopencv-dev \
-        libprotobuf-dev \
-        libsnappy-dev \
-        protobuf-compiler \
-        python-dev \
-        python-numpy \
-        python-pip python-tk\
-        python-setuptools \
-        python-scipy && \
-    rm -rf /var/lib/apt/lists/*
-
 RUN git clone https://github.com/BVLC/caffe.git && \
     cd caffe/python && for req in wheel $(cat requirements.txt) pydot; do pip install $req; done && cd .. && \
     mkdir build && cd build && \
