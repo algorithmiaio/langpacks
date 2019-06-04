@@ -1,5 +1,5 @@
 # Lightly modified from https://github.com/docker-library/python/blob/ab8b829cfefdb460ebc17e570332f0479039e918/3.7/stretch/Dockerfile
-FROM ubuntu:18.04
+
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y \
         build-essential \
