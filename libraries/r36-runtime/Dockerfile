@@ -1,1 +1,1 @@
-COPY --chown=0:0 r34-runtime/context/pipe /usr/local/bin/algorithmia-pipe
+COPY --chown=0:0 r36-runtime/context/pipe /usr/local/bin/algorithmia-pipe

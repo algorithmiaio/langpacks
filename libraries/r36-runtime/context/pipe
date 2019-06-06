@@ -1,8 +1,6 @@
-#!/bin/bash
-
 set -e
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+ROOTDIR=/opt/algorithmia
 
 CRAN_MIRROR=${CRAN_MIRROR:=http://cran.rstudio.com/}
 
