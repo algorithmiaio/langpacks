@@ -1,6 +1,12 @@
 {
     "artifacts": [
+<<<<<<< HEAD
         {"source":"/opt/algorithm", "destination":"/opt/algorithm/"},
 	{"source":"/home/algo/.Renviron", "destination":"/home/algo/.Renviron"}
+=======
+        {"source":"/home/algo/R", "destination":"/home/algo/R/"},
+        {"source":"/opt/algorithm", "destination":"/opt/algorithm/"},
+	{"source":/home/algo/.Renviron", "destination":"/home/algo/.Renviron"}
+>>>>>>> finished build op work
     ]
 }
