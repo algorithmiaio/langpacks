@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
+#FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
 RUN apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
@@ -30,4 +30,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt  install --no-install-recommends -y caffe
 RUN echo "alias python=python3.6">>~/.bashrc && \
   echo "alias pip=pip3">>~/.bashrc
 
+# this line ca be used to test the correct importing
 #python -c "import caffe;caffe.set_mode_gpu();import Algorithmia"
