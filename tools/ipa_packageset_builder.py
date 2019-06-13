@@ -6,10 +6,11 @@ from os.path import isfile
 DIR_PATH_TO_TEMPATES = "languages"
 DIR_PATH_TO_PACKAGES = "libraries"
 RUNNER_NAME = "Dockerfile.runner.j2"
+BUILDER_NAME = "Dockerfile.builder.j2"
 LANGSERVER_VERSION = "ce3f89098fddfaf4db8639a97ce3c0317abbd971"
 LANGSERVER_IMAGE ="algorithmiahq/langserver:{}".format(LANGSERVER_VERSION)
 RUNNER_PATH = path.join(DIR_PATH_TO_TEMPATES, RUNNER_NAME)
-
+BUILDER_PATH = path.join(DIR_PATH_TO_TEMPATES, BUILDER_NAME)
 class Package:
     def __init__(self, package_name, install_script, dockerfile_path):
         self.script = install_script
@@ -42,9 +43,11 @@ def check_if_exists(filepath):
     else:
         return None
 
-def build(base_image, package_dirs, output_file_path):
-
-    raw_template = get_template(RUNNER_PATH)
+def build(base_image, package_dirs, output_file_path, mode):
+    if(mode == "runner"):
+        raw_template = get_template(RUNNER_PATH)
+    else:
+        raw_template = get_template(BUILDER_PATH)
     packages = []
     for dir in package_dirs:
         dockerfile_path = path.join('', DIR_PATH_TO_PACKAGES, dir, "Dockerfile")
@@ -71,5 +74,6 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--base-image', dest='base_image', type=str, required=True)
     parser.add_argument('-o', '--output-filename', dest='output_path', required=True)
     parser.add_argument('-p', '--package', action='append',  dest='packages', required=True)
+    parser.add_argument('-m', '--mode', dest='mode', type=str, default='runner')
     args = parser.parse_args()
-    build(args.base_image, args.packages, args.output_path)
+    build(args.base_image, args.packages, args.output_path, args.mode)
