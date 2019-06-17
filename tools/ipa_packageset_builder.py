@@ -43,11 +43,11 @@ def check_if_exists(filepath):
     else:
         return None
 
-def build(base_image, package_dirs, output_prefix):
-    runtime_path = "{}-runtime.Dockerfile".format(output_prefix)
-    buildtime_path = "{}-buildtime.Dockerfile".format(output_prefix)
-    runner_template = get_template(RUNNER_PATH)
-    builder_template = get_template(BUILDER_PATH)
+def build(base_image, package_dirs, output_file_path, mode):
+    if(mode == "runner"):
+        raw_template = get_template(RUNNER_PATH)
+    else:
+        raw_template = get_template(BUILDER_PATH)
     packages = []
     for dir in package_dirs:
         dockerfile_path = path.join('', DIR_PATH_TO_PACKAGES, dir, "Dockerfile")
@@ -57,21 +57,14 @@ def build(base_image, package_dirs, output_prefix):
 
         package = Package(dir, installer_path, dockerfile_path)
         packages.append(package)
-    runtime_template = runner_template.render(
+    generated_template = raw_template.render(
         packages=packages,
         base_image=base_image,
         langpacks_version='',
         langserver_image=LANGSERVER_IMAGE)
-    buildtime_template = builder_template.render(
-        packages=packages,
-        base_image=base_image,
-        langpacks_version='',
-        langserver_image=LANGSERVER_IMAGE)
-    save_generated_template(runtime_template, runtime_path)
-    save_generated_template(buildtime_template, buildtime_path)
+    save_generated_template(generated_template, output_file_path)
 
-
-    print("completed template construction, files available at {} and {}".format(runtime_path, buildtime_path))
+    print("completed template construction, file available at {}".format(output_file_path))
 
 
 if __name__ == "__main__":
@@ -79,8 +72,8 @@ if __name__ == "__main__":
                                                  'Make sure to run this from the root directory.\n'
                                                  'Warning!! Order matters. Load your language packages first before frameworks.')
     parser.add_argument('-b', '--base-image', dest='base_image', type=str, required=True)
-    parser.add_argument('-o', '--output-prefix', dest='output_path_prefix', required=True)
-    parser.add_argument('-l', '--language', dest='language', required=True)
-    parser.add_argument('-d', '--dependency', dest='dependency', required=False)
+    parser.add_argument('-o', '--output-filename', dest='output_path', required=True)
+    parser.add_argument('-p', '--package', action='append',  dest='packages', required=True)
+    parser.add_argument('-m', '--mode', dest='mode', type=str, default='runner')
     args = parser.parse_args()
-    build(args.base_image, args.packages, args.output_path)
+    build(args.base_image, args.packages, args.output_path, args.mode)
