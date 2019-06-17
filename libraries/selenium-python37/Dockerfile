@@ -120,7 +120,6 @@ RUN wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x
   ln -s /usr/local/share/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/local/bin/
 
 # Chrome for Selenium
-# Chrome
 RUN apt-get update && \
   apt-get install unzip && \
   wget https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip && \
