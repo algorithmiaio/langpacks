@@ -114,10 +114,13 @@ RUN set -ex; \
         \) -exec rm -rf '{}' +; \
     rm -f get-pip.py
 
-# Selenium
+# PhantomJS for Selenium
 RUN wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 && \
   tar -xvjf phantomjs-2.1.1-linux-x86_64.tar.bz2 -C /usr/local/share/ && \
   ln -s /usr/local/share/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/local/bin/
+
+# Chrome for Selenium
+RUN apt-get install chromium-browser
 
 RUN pip install selenium
 RUN pip install Algorithmia
