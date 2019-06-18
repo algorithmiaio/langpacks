@@ -14,4 +14,4 @@ RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y  chromium-browser && \
   rm -rf /var/lib/apt/lists/*
 
-RUN pip install selenium
+RUN pip install selenium=3.141.0
