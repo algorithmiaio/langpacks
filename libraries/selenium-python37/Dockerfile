@@ -11,9 +11,8 @@ RUN apt-get update && \
   unzip chromedriver_linux64.zip && \
   cp chromedriver /usr/local/share/ && \
   ln -s /usr/local/share/chromedriver /usr/local/bin/ && \
-  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y  chromium-browser
+  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y  chromium-browser && \
+  rm -rf /var/lib/apt/lists/*
 
 RUN pip install selenium
 RUN pip install Algorithmia
-
-# python -c "import selenium;from selenium import webdriver;driver = webdriver.PhantomJS()"
