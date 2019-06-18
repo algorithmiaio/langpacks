@@ -97,6 +97,11 @@ def main(base_image, language_general_name, language_specific_name,
         shutil.rmtree(WORKSPACE_PATH)
         stop_and_kill_containers(client)
         raise e
+    except KeyboardInterrupt:
+        print("cleaning up")
+        shutil.rmtree(WORKSPACE_PATH)
+        stop_and_kill_containers(client)
+        print("done")
 
 
 if __name__ == "__main__":
@@ -104,11 +109,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Creates a simulation of the IPA / langserver / algorithm interface. \n'
                                                  'Use this to test new language, and new dependency packages.')
     parser.add_argument('-b', '--base-image', dest='base_image', type=str, default="ubuntu:16.04")
-    parser.add_argument('-lg', '--language-general-name', dest='language_general_name', required=True, type=str)
-    parser.add_argument('-ls', '--language-specific-name', dest='language_specific_name', required=True, type=str)
-    parser.add_argument('-t', '--template-type', dest='template_type', required=True, type=str)
-    parser.add_argument('-tn', '--template-name', dest='template_name', required=True, type=str)
-    parser.add_argument('-d', '--dependency', action="append", dest="dependencies", type=list)
+    parser.add_argument('-lg', '--language-general-name', dest='language_general_name', required=True)
+    parser.add_argument('-ls', '--language-specific-name', dest='language_specific_name', required=True)
+    parser.add_argument('-t', '--template-type', dest='template_type', required=True)
+    parser.add_argument('-tn', '--template-name', dest='template_name', required=True)
+    parser.add_argument('-d', '--dependency', action="append", dest="dependencies")
     args = parser.parse_args()
 
 
