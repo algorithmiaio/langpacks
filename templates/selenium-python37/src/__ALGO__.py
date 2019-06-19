@@ -13,8 +13,8 @@ def get_chrome():
     return driver
 
 def get_phantomjs():
-    # PhantomJS is already headless
-    driver = webdriver.PhantomJS()
+    # PhantomJS must put logs in a place where it has write permissions
+    driver = webdriver.PhantomJS(service_log_path="/tmp/ghostdriver.log")
     return driver
 
 # API calls will begin at the apply() method, with the request body passed as 'input'
