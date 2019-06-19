@@ -31,7 +31,7 @@ def apply(input):
     elem.clear()
     elem.send_keys("pycon")
     elem.send_keys(Keys.RETURN)
-    if 'No results found' not in driver.page_source:
+    if 'No results found' in driver.page_source:
         return {"status": "failure",
             "message": "Failed to find required text in page body"}
     driver.close()
