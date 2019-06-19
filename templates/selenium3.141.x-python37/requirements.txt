@@ -1,0 +1,2 @@
+algorithmia>=1.0.0,<2.0
+selenium>=3.141.0,<3.142.0  # if you change this, the algorithm will take longer to run and compile

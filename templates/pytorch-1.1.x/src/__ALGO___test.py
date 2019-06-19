@@ -5,4 +5,3 @@ def test_algorithm():
     result = apply(input)
     assert result == {"product": [[11., 11.], [25., 25.]]}
 
-test_algorithm()
