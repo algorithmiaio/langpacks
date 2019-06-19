@@ -26,6 +26,7 @@ def create_image(client, base_image, dependencies, workspace_path, mode):
     tag = str(uuid4())
     image_name = "{}.Dockerfile".format(tag)
     build(base_image, dependencies, "{}/{}".format(workspace_path, image_name), mode)
+    print("building {} image".format(mode))
     image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag)
     return image
 
@@ -34,12 +35,14 @@ def create_compile_image(client, builder_image, runner_image, workspace_path, co
     tag = str(uuid4())
     image_name = "{}.Dockerfile".format(tag)
     build_compile_image(builder_image, runner_image, config, "{}/{}".format(workspace_path, image_name))
+    print("building compiletime image (last build stage)")
     image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag)
     return image
 
 
 def run_compiler(client, compiler_image):
     # mount = Mount(target="/opt/algorithm", source=template_path, type="bind", read_only=False)
+    print("loading compiletime image into container")
     container = client.containers.run(image=compiler_image.id, ports={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)}, detach=True)
     return container
 
@@ -91,6 +94,7 @@ def main(base_image, language_general_name, language_specific_name,
         compile_image = create_compile_image(client, buildtime_image.id, runtime_image.id, WORKSPACE_PATH, config)
         container = run_compiler(client, compile_image)
         logs = container.attach(stream=True, logs=True, stdout=True, stderr=True)
+        print("container started, listening for requests on")
         for log in logs:
             print(log)
     except Exception as e:
@@ -108,14 +112,26 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Creates a simulation of the IPA / langserver / algorithm interface. \n'
                                                  'Use this to test new language, and new dependency packages.')
-    parser.add_argument('-b', '--base-image', dest='base_image', type=str, default="ubuntu:16.04")
-    parser.add_argument('-lg', '--language-general-name', dest='language_general_name', required=True)
-    parser.add_argument('-ls', '--language-specific-name', dest='language_specific_name', required=True)
-    parser.add_argument('-t', '--template-type', dest='template_type', required=True)
-    parser.add_argument('-tn', '--template-name', dest='template_name', required=True)
-    parser.add_argument('-d', '--dependency', action="append", dest="dependencies")
+    parser.add_argument('-b', '--base-image', dest='base_image', type=str,
+                        default="ubuntu:16.04", help="the linux base image to build your packageset on top of. Usually an ubuntu version."
+                                                     "Defaults to 'ubuntu:16.04'")
+    parser.add_argument('-g', '--language-general-name', dest='language_general_name', help="The general name for your language, "
+                                                                                            "if multiple minor versions can use the same runtime/buildtime."
+                                                                                            "For example: Python3 or Python2."
+                                                                                            "Defaults to the value defined for --language-specific-name")
+    parser.add_argument('-s', '--language-specific-name', dest='language_specific_name', required=True, help="The fully specified name of your language."
+                                                                                                             "For example: Python37. or csharp-dot-core2.")
+    parser.add_argument('-t', '--template-type', dest='template_type', required=True, help="The type of template we're using, this can be either:"
+                                                                                           "'dependency' - for frameworks/etc "
+                                                                                           "'language' - for new language implementations & modifications")
+    parser.add_argument('-n', '--template-name', dest='template_name', required=True, help="The name of your template directory."
+                                                                                           "For example: pytorch-1.0.0, orjava11.")
+    parser.add_argument('-d', '--dependency', action="append", dest="dependencies", help="A list builder of all non-language dependency packages that your algorithm needs."
+                                                                                         "Language core, buildtime & runtime are included automatically.")
     args = parser.parse_args()
 
+    if not args.language_general_name:
+        args.language_general_name = args.language_specific_name
 
     main(
         base_image=args.base_image,
@@ -125,5 +141,3 @@ if __name__ == "__main__":
         template_name=args.template_name,
         dependencies=args.dependencies
     )
-
-

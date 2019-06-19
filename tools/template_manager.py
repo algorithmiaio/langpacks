@@ -7,7 +7,7 @@ DIR_PATH_TO_PACKAGES = "libraries"
 RUNNER_NAME = "Dockerfile.runner.j2"
 BUILDER_NAME = "Dockerfile.builder.j2"
 COMPILE_NAME = "Dockerfile.compile.j2"
-LANGSERVER_VERSION = "b35efaa7d69d24efcd83e866b7445446f92eb0d6"
+LANGSERVER_VERSION = "b35efaa7d69d24efcd83e866b7445446f92eb0d6"  # Update this when we change how langserver works.
 LANGSERVER_IMAGE ="algorithmiahq/langserver:{}".format(LANGSERVER_VERSION)
 RUNNER_PATH = path.join(DIR_PATH_TO_TEMPATES, RUNNER_NAME)
 BUILDER_PATH = path.join(DIR_PATH_TO_TEMPATES, BUILDER_NAME)
@@ -57,10 +57,12 @@ def build_compile_image(builder_image_name, runner_image_name, config_data, outp
 
 
 def build(base_image, package_dirs, output_file_path, mode):
-    if(mode == "runtime"):
+    if mode == "runtime":
         raw_template = get_template(RUNNER_PATH)
-    else:
+    elif mode == "buildtime":
         raw_template = get_template(BUILDER_PATH)
+    else:
+        raise Exception("we did not recieve a valid 'mode', it must be either 'runtime' or 'buildtime'.")
     packages = []
     for dir in package_dirs:
         dockerfile_path = path.join(DIR_PATH_TO_PACKAGES, dir, "Dockerfile")
