@@ -20,7 +20,7 @@ def get_phantomjs():
 # API calls will begin at the apply() method, with the request body passed as 'input'
 # For more details, see algorithmia.com/developers/algorithm-development/languages
 def apply(input):
-     # note: you MUST have internet access enabled for this test work
+    # note: you MUST have internet access enabled for this test work
     driver = get_chrome()
     #driver = get_phantomjs()
     driver.get("http://www.python.org")
