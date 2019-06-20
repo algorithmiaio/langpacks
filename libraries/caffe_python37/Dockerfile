@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
+FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04
 
 RUN apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y gnupg kgpg
@@ -99,11 +99,8 @@ RUN set -ex; \
 #
 
 
-#work w Besir
-#apt-get update && apt-get install libprotobuf-dev protobuf-compiler libboost-all-dev libgflags-dev
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
-        cmake \
         git \
         wget \
         libatlas-base-dev \
@@ -116,9 +113,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libopencv-dev \
         libprotobuf-dev \
         libsnappy-dev \
-        protobuf-compiler
+        protobuf-compiler && \
+    rm -rf /var/lib/apt/lists/*
 
-# try to install boost for python36: https://askubuntu.com/questions/944035/installing-libboost-python-dev-for-python3-without-installing-python2-7
+# this part based on https://askubuntu.com/questions/944035/installing-libboost-python-dev-for-python3-without-installing-python2-7
 RUN cd /usr/src && \
  wget --no-verbose https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz && \
  tar xzf boost_1_65_1.tar.gz && \
@@ -126,7 +124,8 @@ RUN cd /usr/src && \
  ln -s /usr/local/include/python3.6m /usr/local/include/python3.6 && \
  ./bootstrap.sh --with-python=$(which python3) && \
  ./b2 install && \
- ldconfig
+ ldconfig && \
+ cd / && rm -rf /usr/src/*
 
 RUN git clone https://github.com/BVLC/caffe.git && \
    cd caffe/python && for req in wheel $(cat requirements.txt) pydot; do pip install $req; done && cd ..
@@ -148,91 +147,3 @@ make all -j$(nproc) && make pycaffe -j$(nproc)
 ENV CAFFE_ROOT /caffe
 ENV PYCAFFE_ROOT $CAFFE_ROOT/python
 ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
-
-
-#
-#
-#
-
-
-
-RUN apt-get update && apt-get install -y --no-install-recommends vim
-
-
-
-delete the libarch 20 stuff
-PYTHON_LIBRARIES python3.6m
-PYTHON_INCLUDE /usr/local/include/python3.6m  /usr/local/lib/python3.6/site-packages/numpy/core/include
-INCLUDE_DIRS += /usr/include/hdf5/serial
-LIBRARY_DIRS += /usr/lib/aarch64-linux-gnu/hdf5/serial /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/hdf5/serial
-
-
-export CAFFE_ROOT=/caffe
-export PYCAFFE_ROOT=$CAFFE_ROOT/python
-export PYTHONPATH=$PYCAFFE_ROOT:$PYTHONPATH
-
-
- rm /usr/local/include/python3.6 && \
- ldconfig && \
- cd / && rm -rf /usr/src/*
-
-
-PYTHON_LIB := /usr/lib
-
-
-
-
-
-PYTHON_LIBRARIES := boost_python3 python3.6m
-PYTHON_INCLUDE := /usr/local/include /usr/local/include/hdf5/serial/python3.6m \
- /usr/local/lib/python3.6/site-packages/numpy/core/include
-
- PYTHON_LIB := /usr/local/lib
-
-boost_python3 python3.6m
-cannot find -lboost_python3
-
-
-cannot find -lboost_python3
-
-ln -s libboost_python3.so libboost_python-py35.so
-ln -s lpython3.6m lpython3.5m
-
-ln -s libboost_python-py36.so libboost_python3.so
-
-
-make all -j4
-make pycaffe -j4
-
-export CAFFE_ROOT=/caffe
-export PYCAFFE_ROOT=$CAFFE_ROOT/python
-export PYTHONPATH=$PYCAFFE_ROOT:$PYTHONPATH
-
-
-
-
-
-RUN git clone https://github.com/BVLC/caffe.git && \
-    cd caffe/python && for req in wheel $(cat requirements.txt) pydot; do pip install $req; done && cd .. && \
-    mkdir build && cd build && \
-    cmake -DCPU_ONLY=0 .. && \
-    make -j"$(nproc)"
-ENV CAFFE_ROOT /caffe
-ENV PYCAFFE_ROOT $CAFFE_ROOT/python
-ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
-ENV PATH $CAFFE_ROOT/build/tools:$PYCAFFE_ROOT:$PATH
-RUN echo "$CAFFE_ROOT/build/lib" >> /etc/ld.so.conf.d/caffe.conf && ldconfig
-
-INCLUDE_DIRS += /usr/include/hdf5/serial
-
-
-
-
-
-#RUN echo "alias python=python3.6">>~/.bashrc && \
-#  echo "alias pip=pip3">>~/.bashrc
-
-RUN pip3 install Algorithmia
-
-# this line ca be used to test the correct importing
-#python -c "import caffe;caffe.set_mode_gpu();import Algorithmia"
