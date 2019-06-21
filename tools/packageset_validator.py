@@ -6,6 +6,7 @@ import shutil
 from uuid import uuid4
 import docker
 import json
+from pathlib import Path
 from template_manager import build, build_compile_image
 
 DIR_PATH_TO_PACKAGES = "libraries"
@@ -23,12 +24,17 @@ LOCAL_PORT = 9999
 
 
 def create_image(client, base_image, dependencies, workspace_path, mode):
-    tag = str(uuid4())
+    tag = "validator-{}".format(str(uuid4()))
     image_name = "{}.Dockerfile".format(tag)
     build(base_image, dependencies, "{}/{}".format(workspace_path, image_name), mode)
     print("building {} image".format(mode))
-    image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag)
-    return image
+    try:
+        image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag, rm=True)
+        return image
+    except docker.errors.BuildError as e:
+        for line in e.build_log:
+            if 'stream' in line:
+                print(line.strip())
 
 
 def create_compile_image(client, builder_image, runner_image, workspace_path, config):
@@ -36,8 +42,14 @@ def create_compile_image(client, builder_image, runner_image, workspace_path, co
     image_name = "{}.Dockerfile".format(tag)
     build_compile_image(builder_image, runner_image, config, "{}/{}".format(workspace_path, image_name))
     print("building compiletime image (last build stage)")
-    image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag)
-    return image
+    try:
+        image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag, rm=True)
+        return image
+    except docker.errors.BuildError as e:
+        for line in e.build_log:
+            if 'stream' in line:
+                print(line)
+        raise e
 
 
 def run_compiler(client, compiler_image):
@@ -48,24 +60,31 @@ def run_compiler(client, compiler_image):
 
 
 def prepare_workspace(workspace_path, template_path):
-    try:
-        algosource_path = path.join(workspace_path, "algosource")
-        shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
-        shutil.copytree(template_path, algosource_path)
-    except FileExistsError:
-        pass
-    return True
+    algosource_path = path.join(workspace_path, "algosource")
+    shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
+    shutil.copytree(template_path, algosource_path)
+    home = str(Path.home())
+    shutil.copytree(path.join(home, ".m2"), path.join(workspace_path, ".m2"))
 
 
 def stop_and_kill_containers(client):
-    containers = client.containers.list()
+    containers = client.containers.list(all=True, ignore_removed=True)
     for container in containers:
-        container.kill()
+        try:
+            container.remove(force=True)
+        except docker.errors.APIError:
+            pass
     return True
+
+def kill_dangling_images(client: docker.DockerClient):
+    images = client.images.list()
+    for image in images:
+        if len(image.tags) == 0:
+            client.images.remove(image.id, force=True)
 
 
 def main(base_image, language_general_name, language_specific_name,
-         template_type, template_name, dependencies):
+         template_type, template_name, dependencies, cleanup_after):
 
     client = docker.from_env()
 
@@ -99,12 +118,23 @@ def main(base_image, language_general_name, language_specific_name,
             print(log)
     except Exception as e:
         shutil.rmtree(WORKSPACE_PATH)
-        stop_and_kill_containers(client)
+        if cleanup_after:
+            stop_and_kill_containers(client)
+            kill_dangling_images(client)
         raise e
     except KeyboardInterrupt:
-        print("cleaning up")
         shutil.rmtree(WORKSPACE_PATH)
+        if cleanup_after:
+            print("cleaning up")
+            stop_and_kill_containers(client)
+            kill_dangling_images(client)
+            print("done")
+        return
+    shutil.rmtree(WORKSPACE_PATH)
+    if cleanup_after:
+        print("cleaning up")
         stop_and_kill_containers(client)
+        kill_dangling_images(client)
         print("done")
 
 
@@ -128,16 +158,19 @@ if __name__ == "__main__":
                                                                                            "For example: pytorch-1.0.0, orjava11.")
     parser.add_argument('-d', '--dependency', action="append", dest="dependencies", help="A list builder of all non-language dependency packages that your algorithm needs."
                                                                                          "Language core, buildtime & runtime are included automatically.")
+    parser.add_argument('--clean-up', dest='cleanup', type=bool, help="A boolean variable that if set, forces us to clean up docker containers and images created by this process.")
     args = parser.parse_args()
 
     if not args.language_general_name:
         args.language_general_name = args.language_specific_name
-
+    if not args.cleanup:
+        args.cleanup = False
     main(
         base_image=args.base_image,
         language_general_name=args.language_general_name,
         language_specific_name=args.language_specific_name,
         template_type=args.template_type,
         template_name=args.template_name,
-        dependencies=args.dependencies
+        dependencies=args.dependencies,
+        cleanup_after=args.cleanup
     )
