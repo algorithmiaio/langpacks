@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from os import path
-import os
+import os, sys
 import argparse
 import shutil
 from uuid import uuid4
@@ -53,7 +53,6 @@ def create_compile_image(client, builder_image, runner_image, workspace_path, co
 
 
 def run_compiler(client, compiler_image):
-    # mount = Mount(target="/opt/algorithm", source=template_path, type="bind", read_only=False)
     print("loading compiletime image into container")
     container = client.containers.run(image=compiler_image.id, ports={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)}, detach=True)
     return container
@@ -64,11 +63,11 @@ def prepare_workspace(workspace_path, template_path):
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
     shutil.copytree(template_path, algosource_path)
     home = str(Path.home())
-    shutil.copytree(path.join(home, ".m2"), path.join(workspace_path, ".m2"))
+    # shutil.copytree(path.join(home, ".m2"), path.join(workspace_path, ".m2"))
 
 
-def stop_and_kill_containers(client):
-    containers = client.containers.list(all=True, ignore_removed=True)
+def stop_and_kill_containers(client, all=False):
+    containers = client.containers.list(all=all, ignore_removed=True)
     for container in containers:
         try:
             container.remove(force=True)
@@ -119,8 +118,10 @@ def main(base_image, language_general_name, language_specific_name,
     except Exception as e:
         shutil.rmtree(WORKSPACE_PATH)
         if cleanup_after:
-            stop_and_kill_containers(client)
+            stop_and_kill_containers(client, True)
             kill_dangling_images(client)
+        else:
+            stop_and_kill_containers(client)
         raise e
     except KeyboardInterrupt:
         shutil.rmtree(WORKSPACE_PATH)
@@ -129,6 +130,8 @@ def main(base_image, language_general_name, language_specific_name,
             stop_and_kill_containers(client)
             kill_dangling_images(client)
             print("done")
+        else:
+            stop_and_kill_containers(client)
         return
     shutil.rmtree(WORKSPACE_PATH)
     if cleanup_after:
@@ -136,6 +139,8 @@ def main(base_image, language_general_name, language_specific_name,
         stop_and_kill_containers(client)
         kill_dangling_images(client)
         print("done")
+    else:
+        stop_and_kill_containers(client)
 
 
 if __name__ == "__main__":
