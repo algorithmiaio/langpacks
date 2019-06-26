@@ -1,4 +1,3 @@
-#!/bin/bash
 set -e
 
 ROOTDIR=/opt/algorithm
@@ -9,3 +8,4 @@ echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
 
 
 Rscript $ROOTDIR/src/Algorithm.r
+
