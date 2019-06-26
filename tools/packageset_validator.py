@@ -7,7 +7,7 @@ from uuid import uuid4
 import docker
 import json
 from pathlib import Path
-from template_manager import build, build_compile_image
+from template_manager import build, build_compile_image, build_compileLocal_image
 
 DIR_PATH_TO_PACKAGES = "libraries"
 DIR_PATH_TO_DEP_TEMPLATES = "templates"
@@ -37,10 +37,16 @@ def create_image(client, base_image, dependencies, workspace_path, mode):
                 print(line.strip())
 
 
-def create_compile_image(client, builder_image, runner_image, workspace_path, config):
+def create_compile_image(client, builder_image, runner_image, workspace_path, config, local_dest=None):
     tag = str(uuid4())
     image_name = "{}.Dockerfile".format(tag)
-    build_compile_image(builder_image, runner_image, config, "{}/{}".format(workspace_path, image_name))
+    full_image_path = "{}/{}".format(workspace_path, image_name)
+    if local_dest:
+        config['dest_path'] = local_dest
+        config['src_path'] = "dependency"
+        build_compileLocal_image(builder_image, runner_image, config, full_image_path)
+    else:
+        build_compile_image(builder_image, runner_image, config)
     print("building compiletime image (last build stage)")
     try:
         image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag, rm=True)
@@ -58,12 +64,11 @@ def run_compiler(client, compiler_image):
     return container
 
 
-def prepare_workspace(workspace_path, template_path):
+def prepare_workspace(workspace_path, template_path, local_src):
     algosource_path = path.join(workspace_path, "algosource")
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
     shutil.copytree(template_path, algosource_path)
-    home = str(Path.home())
-    # shutil.copytree(path.join(home, ".m2"), path.join(workspace_path, ".m2"))
+    shutil.copytree(local_src, path.join(workspace_path, "dependency"))
 
 
 def stop_and_kill_containers(client, all=False):
@@ -83,7 +88,7 @@ def kill_dangling_images(client: docker.DockerClient):
 
 
 def main(base_image, language_general_name, language_specific_name,
-         template_type, template_name, dependencies, cleanup_after):
+         template_type, template_name, dependencies, local_src, local_dest, cleanup_after):
 
     client = docker.from_env()
 
@@ -93,7 +98,7 @@ def main(base_image, language_general_name, language_specific_name,
         template_path = path.join(os.getcwd(), DIR_PATH_TO_LANGUAGES, template_name, "template")
     else:
         raise Exception("template type must be either 'dependency' or 'language")
-    prepare_workspace(WORKSPACE_PATH, template_path)
+    prepare_workspace(WORKSPACE_PATH, template_path, local_src)
 
     try:
         if dependencies:
@@ -109,7 +114,7 @@ def main(base_image, language_general_name, language_specific_name,
         with open(path.join(os.getcwd(), DIR_PATH_TO_LANGUAGES, language_general_name, "config.json")) as f:
             config = json.load(f)
 
-        compile_image = create_compile_image(client, buildtime_image.id, runtime_image.id, WORKSPACE_PATH, config)
+        compile_image = create_compile_image(client, buildtime_image.id, runtime_image.id, WORKSPACE_PATH, config, local_dest)
         container = run_compiler(client, compile_image)
         logs = container.attach(stream=True, logs=True, stdout=True, stderr=True)
         print("container started, listening for requests on")
@@ -163,13 +168,18 @@ if __name__ == "__main__":
                                                                                            "For example: pytorch-1.0.0, orjava11.")
     parser.add_argument('-d', '--dependency', action="append", dest="dependencies", help="A list builder of all non-language dependency packages that your algorithm needs."
                                                                                          "Language core, buildtime & runtime are included automatically.")
-    parser.add_argument('--clean-up', dest='cleanup', type=bool, help="A boolean variable that if set, forces us to clean up docker containers and images created by this process.")
+    parser.add_argument('-c', '--clean-up', dest='cleanup', type=bool, help="A boolean variable that if set, forces us to clean up docker containers and images created by this process.")
+    parser.add_argument('--local-dependency-src', dest='local_src', help="If using a local cached dependency for testing, is the path towards that dependency on your file system.")
+    parser.add_argument('--local-dependency-dest', dest='local_dest', help="If using a local cached dependency for testing, is the path where the dependency will live in the compileLocal image.")
+
     args = parser.parse_args()
 
     if not args.language_general_name:
         args.language_general_name = args.language_specific_name
     if not args.cleanup:
         args.cleanup = False
+    if not (args.local_src and args.local_dest) and (args.local_src or args.local_dest):
+        raise Exception("if you're using local dependencies, src & dest must be defined.")
     main(
         base_image=args.base_image,
         language_general_name=args.language_general_name,
@@ -177,5 +187,8 @@ if __name__ == "__main__":
         template_type=args.template_type,
         template_name=args.template_name,
         dependencies=args.dependencies,
-        cleanup_after=args.cleanup
+        local_src = args.local_src,
+        local_dest = args.local_dest,
+        cleanup_after=args.cleanup,
+
     )

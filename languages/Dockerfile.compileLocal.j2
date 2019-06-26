@@ -1,0 +1,15 @@
+FROM {{builder_image}} as builder
+USER 2222
+# Docker build commands don't resolve environment variables so need this to either be numeric or a build argument
+COPY --chown=2222:2222 algosource /opt/algorithm/
+COPY --chown=2222:2222 {{config.src_path}} {{config.dest_path}}
+ENV HOME=/home/algo
+RUN /usr/local/bin/algorithmia-build
+
+FROM {{runner_image}}
+{% for artifact in config.artifacts %}
+COPY --from=builder --chown=2222:2222 {{artifact.source}} {{artifact.destination}}
+{% endfor %}
+USER 2222
+WORKDIR /opt/algorithm
+ENTRYPOINT /bin/init-langserver

@@ -7,11 +7,13 @@ DIR_PATH_TO_PACKAGES = "libraries"
 RUNNER_NAME = "Dockerfile.runner.j2"
 BUILDER_NAME = "Dockerfile.builder.j2"
 COMPILE_NAME = "Dockerfile.compile.j2"
+COMPILELOCAL_NAME = "Dockerfile.compileLocal.j2"
 LANGSERVER_VERSION = "b35efaa7d69d24efcd83e866b7445446f92eb0d6"  # Update this when we change how langserver works.
 LANGSERVER_IMAGE ="algorithmiahq/langserver:{}".format(LANGSERVER_VERSION)
 RUNNER_PATH = path.join(DIR_PATH_TO_TEMPATES, RUNNER_NAME)
 BUILDER_PATH = path.join(DIR_PATH_TO_TEMPATES, BUILDER_NAME)
 COMPILE_PATH = path.join(DIR_PATH_TO_TEMPATES, COMPILE_NAME)
+COMPILELOCAL_PATH = path.join(DIR_PATH_TO_TEMPATES, COMPILELOCAL_NAME)
 
 class Package:
     def __init__(self, package_name, install_script, dockerfile_path):
@@ -54,6 +56,15 @@ def build_compile_image(builder_image_name, runner_image_name, config_data, outp
     )
     save_generated_template(generated_template, output_file_path)
     return output_file_path
+
+def build_compileLocal_image(builder_image_name, runner_image_name, config_data, output_file_path):
+    raw_template = get_template(COMPILELOCAL_PATH)
+    generated_template = raw_template.render(
+        builder_image=builder_image_name,
+        runner_image=runner_image_name,
+        config=config_data
+    )
+    save_generated_template(generated_template, output_file_path)
 
 
 def build(base_image, package_dirs, output_file_path, mode):
