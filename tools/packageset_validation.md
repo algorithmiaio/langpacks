@@ -62,3 +62,12 @@ optional arguments:
 
 ```
 
+
+## Testing
+Once you see that langserver is listening on port `9999`, you can send a `curl` request in another terminal. 
+example:
+```
+curl localhost:9999 -H 'Content-Type: application/json' -d '{"name": "Anthony"}'
+```
+If the response object is as expected, then the langserver, algorithm interface is working as expected! Congrats! :+1:
+

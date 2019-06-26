@@ -46,7 +46,7 @@ def create_compile_image(client, builder_image, runner_image, workspace_path, co
         config['src_path'] = "dependency"
         build_compileLocal_image(builder_image, runner_image, config, full_image_path)
     else:
-        build_compile_image(builder_image, runner_image, config)
+        build_compile_image(builder_image, runner_image, config, full_image_path)
     print("building compiletime image (last build stage)")
     try:
         image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag, rm=True)
@@ -64,11 +64,12 @@ def run_compiler(client, compiler_image):
     return container
 
 
-def prepare_workspace(workspace_path, template_path, local_src):
+def prepare_workspace(workspace_path, template_path, local_src=None):
     algosource_path = path.join(workspace_path, "algosource")
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
     shutil.copytree(template_path, algosource_path)
-    shutil.copytree(local_src, path.join(workspace_path, "dependency"))
+    if local_src:
+        shutil.copytree(local_src, path.join(workspace_path, "dependency"))
 
 
 def stop_and_kill_containers(client, all=False):
