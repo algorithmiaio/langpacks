@@ -7,7 +7,7 @@ from uuid import uuid4
 import docker
 import json
 from pathlib import Path
-from template_manager import build, build_compile_image, build_compileLocal_image
+from template_manager import build, build_compile_image
 
 DIR_PATH_TO_PACKAGES = "libraries"
 DIR_PATH_TO_DEP_TEMPLATES = "templates"
@@ -44,9 +44,7 @@ def create_compile_image(client, builder_image, runner_image, workspace_path, co
     if local_dest:
         config['dest_path'] = local_dest
         config['src_path'] = "dependency"
-        build_compileLocal_image(builder_image, runner_image, config, full_image_path)
-    else:
-        build_compile_image(builder_image, runner_image, config, full_image_path)
+    build_compile_image(builder_image, runner_image, config, full_image_path)
     print("building compiletime image (last build stage)")
     try:
         image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag, rm=True)
@@ -190,6 +188,5 @@ if __name__ == "__main__":
         dependencies=args.dependencies,
         local_src = args.local_src,
         local_dest = args.local_dest,
-        cleanup_after=args.cleanup,
-
+        cleanup_after=args.cleanup
     )
