@@ -7,7 +7,7 @@ from uuid import uuid4
 import docker
 import json
 from pathlib import Path
-from template_manager import generate_base_image, generate_compile_image
+from template_manager import generate_intermediate_image, generate_compile_image
 
 DIR_PATH_TO_PACKAGES = "libraries"
 DIR_PATH_TO_DEP_TEMPLATES = "templates"
@@ -23,9 +23,18 @@ LOCAL_PORT = 9999
 # pipe in your modified client into the docker containers.
 
 
-def build_image(dockerClient, dockerfile_name, workspace_path, image_tag):
+def build_image(docker_client, dockerfile_name, workspace_path, image_tag):
+    """
+    This function builds a docker image based on a defined dockerfile, it always removes intermediate containers to reduce system bloat.
+    Docker requires a workspace, where everything is located within. See "prepare_workspace" for more info.
+    :param docker_client: The docker python client
+    :param dockerfile_name: Name of the dockerfile in the root of the workspace
+    :param workspace_path: Path to the workspace (default is /tmp/testing)
+    :param image_tag: The desired image tag name (useful for demolition later)
+    :return: A docker image object (see docker sdk for more info)
+    """
     try:
-        image, _ = dockerClient.images.build(dockerfile=dockerfile_name, path=workspace_path, tag=image_tag, rm=True)
+        image, _ = docker_client.images.build(dockerfile=dockerfile_name, path=workspace_path, tag=image_tag, rm=True)
         return image
     except docker.errors.BuildError as e:
         for line in e.build_log:
@@ -34,65 +43,107 @@ def build_image(dockerClient, dockerfile_name, workspace_path, image_tag):
         raise e
 
 
-#
-def create_image(client, base_image, dependencies, workspace_path, mode):
+def create_intermediate_image(docker_client, base_image, dependencies, workspace_path, mode):
+    """
+    Creates either a buildtime or runtime image, based on mode. Uses function in 'template_manager' to auto-generate the
+    right dockerfile based on the provided context. For more info on the template files, check out
+    `Dockerfile.builder.j2` and `Dockerfile.runner.j2` in the languages directory.
+    :param docker_client: The docker python client
+    :param base_image: The base image type in which to stage your docker container from, defaults to "ubuntu:16.04", but can be any standard base image.
+    :param dependencies: A list of dependencies that this intermediate image depends on, excluding language components. (eg: pytorch-1.0.0, spacy-2.0.18, etc)
+    :param workspace_path: Path to the workspace (default is /tmp/testing)
+    :param mode: What type of intermediate image this is, either "runtime" or "buildtime".
+    :return: A docker image object (see docker sdk for more info)
+    """
     tag = "validator-{}-{}".format(str(mode), str(uuid4()))
     image_name = "{}.Dockerfile".format(tag)
     full_image_path = "{}/{}".format(workspace_path, image_name)
-    generate_base_image(base_image, dependencies, full_image_path, mode)
+    generate_intermediate_image(base_image, dependencies, full_image_path, mode)
     print("building {} image".format(mode))
-    return build_image(client, image_name, workspace_path, tag)
+    return build_image(docker_client, image_name, workspace_path, tag)
 
 
-#
-def create_compile_image(client, builder_image, runner_image, workspace_path,
-                         config, local_testing_destination=None):
-    tag = "validator-{}-{}".format("compile", str(uuid4()))
+def create_final_image(client, builder_image, runner_image, workspace_path,
+                       config, local_testing_destination=None):
+    """
+    Creates a final image, which uses multi-stage compilation (https://docs.docker.com/develop/develop-images/multistage-build/) which are pretty cool.
+    Very similar to the 'create_intermediate_image' but uses the build products as stages for the final product. For more info on the template file,
+    check out "Dockerfile.compile.j2' in the languages directory.
+    :param client: The docker python client
+    :param builder_image: The buildtime docker image object generated from 'create_intermediate_image'
+    :param runner_image: The runtime docker image object generated from 'create_intermediate_image'
+    :param workspace_path: Path to the workspace (default is /tmp/testing)
+    :param config: The desired languages config data stored in the config.json file (dictionary)
+    :param local_testing_destination: If you provide local system dependencies, this defines where that should be placed in the final docker image, before compilation.
+    :return: A docker image object (see docker sdk for more info)
+    """
+    tag = "validator-{}-{}".format("final", str(uuid4()))
     image_name = "{}.Dockerfile".format(tag)
     full_image_path = "{}/{}".format(workspace_path, image_name)
     if local_testing_destination:
         config['dest_path'] = local_testing_destination
         config['src_path'] = "dependency"
     generate_compile_image(builder_image, runner_image, config, full_image_path)
-    print("building compiletime image (last build stage)")
+    print("building final image")
     return build_image(client, image_name, workspace_path, tag)
 
-#
-def run_compiler(client, compiler_image):
-    print("loading compiletime image into container")
-    container = client.containers.run(image=compiler_image.id, ports={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)}, detach=True)
+def run_final(docker_client, final_image):
+    """
+    Loads the final image as a container, with port forwarding for langserver.
+    :param docker_client: The docker python client
+    :param final_image: The final image object created from 'create_final_image'
+    :return: A docker container object (see docker sdk for more info)
+    """
+    print("loading final image into container")
+    container = docker_client.containers.run(image=final_image.id, ports={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)}, detach=True)
     return container
 
 
-#
-def prepare_workspace(workspace_path, template_path, local_src=None):
+def prepare_workspace(workspace_path, template_path, local_cached_dependency_source_path=None):
+    """
+    Creates and prepares a workspace for docker, docker requires all used files by the docker build operation to be relative to this workspace directory.
+    If you desire a file to be copied into a docker image, but it's not in this directory - a file not found error will be thrown.
+    
+    Workspace is terminated upon termination of this script
+    :param workspace_path: System path, default is "/tmp/testing"
+    :param template_path: Relative path to your final image template, eg: languages/java11/template
+    :param local_cached_dependency_source_path: If you're using local dependencies for testing purposes, this is absolute the source path on your system, eg: /home/zeryx/.m2
+    :return: Nothing
+    """
     algosource_path = path.join(workspace_path, "algosource")
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
     shutil.copytree(template_path, algosource_path)
-    if local_src:
-        shutil.copytree(local_src, path.join(workspace_path, "dependency"))
+    if local_cached_dependency_source_path:
+        shutil.copytree(local_cached_dependency_source_path, path.join(workspace_path, "dependency"))
 
 
-#
-def stop_and_kill_containers(client, all=False):
-    containers = client.containers.list(all=all, ignore_removed=True)
+def stop_and_kill_containers(docker_client, all=False):
+    """
+    Kills all docker containers, if all is =true, it kills all containers whether running or not
+    :param docker_client: The docker python client
+    :param all: Boolean variable defining whether we destroy 'all' docker containers, or just running ones
+    :return: Nothing
+    """
+    containers = docker_client.containers.list(all=all, ignore_removed=True)
     for container in containers:
         try:
             container.remove(force=True)
         except docker.errors.APIError:
             pass
-    return True
 
 
-#
-def kill_dangling_images(client: docker.DockerClient):
-    images = client.images.list()
+def kill_dangling_images(docker_client):
+    """
+    Kills all dangling images, to free up disk space
+    :param docker_client: The docker python client
+    :return: Nothing
+    """
+    images = docker_client.images.list()
     for image in images:
         if len(image.tags) == 0:
-            client.images.remove(image.id, force=True)
+            docker_client.images.remove(image.id, force=True)
 
 
-#
 def main(base_image, language_general_name, language_specific_name,
          template_type, template_name, dependencies, local_src, local_dest, cleanup_after):
 
@@ -114,14 +165,14 @@ def main(base_image, language_general_name, language_specific_name,
             runtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "runtime")]
             buildtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "buildtime")]
 
-        runtime_image = create_image(client, base_image, runtime_dirs, WORKSPACE_PATH, "runtime")
-        buildtime_image = create_image(client, base_image, buildtime_dirs, WORKSPACE_PATH, "buildtime")
+        runtime_image = create_intermediate_image(client, base_image, runtime_dirs, WORKSPACE_PATH, "runtime")
+        buildtime_image = create_intermediate_image(client, base_image, buildtime_dirs, WORKSPACE_PATH, "buildtime")
 
         with open(path.join(os.getcwd(), DIR_PATH_TO_LANGUAGES, language_general_name, "config.json")) as f:
             config = json.load(f)
 
-        compile_image = create_compile_image(client, buildtime_image.id, runtime_image.id, WORKSPACE_PATH, config, local_dest)
-        container = run_compiler(client, compile_image)
+        compile_image = create_final_image(client, buildtime_image.id, runtime_image.id, WORKSPACE_PATH, config, local_dest)
+        container = run_final(client, compile_image)
         logs = container.attach(stream=True, logs=True, stdout=True, stderr=True)
         print("container started, listening for requests on")
         for log in logs:

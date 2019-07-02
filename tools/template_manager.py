@@ -60,7 +60,7 @@ def generatee_compile_image(builder_image_name, runner_image_name, config_data, 
     return output_file_path
 
 
-def generate_base_image(base_image, package_dirs, output_file_path, mode):
+def generate_intermediate_image(base_image, package_dirs, output_file_path, mode):
     if mode == "runtime":
         raw_template = get_template(RUNNER_PATH)
     elif mode == "buildtime":
