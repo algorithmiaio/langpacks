@@ -28,16 +28,19 @@ def get_dockerfile_as_string(file_path):
     output = stringified.split('\n')
     return output
 
+
 def get_template(template_path):
     with open(template_path, 'r') as fileobject:
         template_string = fileobject.read()
     template = Template(template_string)
     return template
 
+
 def save_generated_template(template, output_path):
     with open(output_path, 'w') as fileobject:
         fileobject.write(template)
     return output_path
+
 
 def check_if_exists(filepath):
     if isfile(filepath):
@@ -45,7 +48,8 @@ def check_if_exists(filepath):
     else:
         return None
 
-def build_compile_image(builder_image_name, runner_image_name, config_data, output_file_path):
+
+def generatee_compile_image(builder_image_name, runner_image_name, config_data, output_file_path):
     raw_template = get_template(COMPILE_PATH)
     generated_template = raw_template.render(
         builder_image=builder_image_name,
@@ -55,7 +59,8 @@ def build_compile_image(builder_image_name, runner_image_name, config_data, outp
     save_generated_template(generated_template, output_file_path)
     return output_file_path
 
-def build(base_image, package_dirs, output_file_path, mode):
+
+def generate_base_image(base_image, package_dirs, output_file_path, mode):
     if mode == "runtime":
         raw_template = get_template(RUNNER_PATH)
     elif mode == "buildtime":

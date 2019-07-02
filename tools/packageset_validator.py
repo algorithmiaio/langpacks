@@ -7,7 +7,7 @@ from uuid import uuid4
 import docker
 import json
 from pathlib import Path
-from template_manager import build, build_compile_image
+from template_manager import generate_base_image, generate_compile_image
 
 DIR_PATH_TO_PACKAGES = "libraries"
 DIR_PATH_TO_DEP_TEMPLATES = "templates"
@@ -23,45 +23,48 @@ LOCAL_PORT = 9999
 # pipe in your modified client into the docker containers.
 
 
-def create_image(client, base_image, dependencies, workspace_path, mode):
-    tag = "validator-{}".format(str(uuid4()))
-    image_name = "{}.Dockerfile".format(tag)
-    build(base_image, dependencies, "{}/{}".format(workspace_path, image_name), mode)
-    print("building {} image".format(mode))
+def build_image(dockerClient, dockerfile_name, workspace_path, image_tag):
     try:
-        image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag, rm=True)
+        image, _ = dockerClient.images.build(dockerfile=dockerfile_name, path=workspace_path, tag=image_tag, rm=True)
         return image
     except docker.errors.BuildError as e:
         for line in e.build_log:
             if 'stream' in line:
                 print(line.strip())
-
-
-def create_compile_image(client, builder_image, runner_image, workspace_path, config, local_dest=None):
-    tag = str(uuid4())
-    image_name = "{}.Dockerfile".format(tag)
-    full_image_path = "{}/{}".format(workspace_path, image_name)
-    if local_dest:
-        config['dest_path'] = local_dest
-        config['src_path'] = "dependency"
-    build_compile_image(builder_image, runner_image, config, full_image_path)
-    print("building compiletime image (last build stage)")
-    try:
-        image, _ = client.images.build(dockerfile=image_name, path=workspace_path, tag=tag, rm=True)
-        return image
-    except docker.errors.BuildError as e:
-        for line in e.build_log:
-            if 'stream' in line:
-                print(line)
         raise e
 
 
+#
+def create_image(client, base_image, dependencies, workspace_path, mode):
+    tag = "validator-{}-{}".format(str(mode), str(uuid4()))
+    image_name = "{}.Dockerfile".format(tag)
+    full_image_path = "{}/{}".format(workspace_path, image_name)
+    generate_base_image(base_image, dependencies, full_image_path, mode)
+    print("building {} image".format(mode))
+    return build_image(client, image_name, workspace_path, tag)
+
+
+#
+def create_compile_image(client, builder_image, runner_image, workspace_path,
+                         config, local_testing_destination=None):
+    tag = "validator-{}-{}".format("compile", str(uuid4()))
+    image_name = "{}.Dockerfile".format(tag)
+    full_image_path = "{}/{}".format(workspace_path, image_name)
+    if local_testing_destination:
+        config['dest_path'] = local_testing_destination
+        config['src_path'] = "dependency"
+    generate_compile_image(builder_image, runner_image, config, full_image_path)
+    print("building compiletime image (last build stage)")
+    return build_image(client, image_name, workspace_path, tag)
+
+#
 def run_compiler(client, compiler_image):
     print("loading compiletime image into container")
     container = client.containers.run(image=compiler_image.id, ports={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)}, detach=True)
     return container
 
 
+#
 def prepare_workspace(workspace_path, template_path, local_src=None):
     algosource_path = path.join(workspace_path, "algosource")
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
@@ -70,6 +73,7 @@ def prepare_workspace(workspace_path, template_path, local_src=None):
         shutil.copytree(local_src, path.join(workspace_path, "dependency"))
 
 
+#
 def stop_and_kill_containers(client, all=False):
     containers = client.containers.list(all=all, ignore_removed=True)
     for container in containers:
@@ -79,6 +83,8 @@ def stop_and_kill_containers(client, all=False):
             pass
     return True
 
+
+#
 def kill_dangling_images(client: docker.DockerClient):
     images = client.images.list()
     for image in images:
@@ -86,6 +92,7 @@ def kill_dangling_images(client: docker.DockerClient):
             client.images.remove(image.id, force=True)
 
 
+#
 def main(base_image, language_general_name, language_specific_name,
          template_type, template_name, dependencies, local_src, local_dest, cleanup_after):
 
