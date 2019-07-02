@@ -81,8 +81,8 @@ def create_final_image(client, builder_image, runner_image, workspace_path,
     image_name = "{}.Dockerfile".format(tag)
     full_image_path = "{}/{}".format(workspace_path, image_name)
     if local_testing_destination:
-        config['dest_path'] = local_testing_destination
-        config['src_path'] = "dependency"
+        config['local_dependency_dest_path'] = local_testing_destination
+        config['local_dependency_src_path'] = "dependency"
     generate_compile_image(builder_image, runner_image, config, full_image_path)
     print("building final image")
     return build_image(client, image_name, workspace_path, tag)
