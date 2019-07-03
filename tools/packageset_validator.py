@@ -135,7 +135,7 @@ def kill_dangling_images(docker_client):
     """
     Kills all dangling images, to free up disk space
     :param docker_client: The docker python client
-    :return: Nothing
+    :return: None
     """
     images = docker_client.images.list()
     for image in images:
