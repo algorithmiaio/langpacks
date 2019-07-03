@@ -3,6 +3,6 @@
 target/
 !target/release/langserver
 .idea/
-
-
+*/__pycache__
+ 
 *.iml

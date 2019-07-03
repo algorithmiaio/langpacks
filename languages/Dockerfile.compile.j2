@@ -2,6 +2,11 @@ FROM {{builder_image}} as builder
 USER 2222
 # Docker build commands don't resolve environment variables so need this to either be numeric or a build argument
 COPY --chown=2222:2222 algosource /opt/algorithm/
+
+{% if config.local_dependency_src_path is defined %}
+COPY --chown=2222:2222 {{config.local_dependency_src_path}} {{config.local_dependency_dest_path}}
+{% endif %}
+
 ENV HOME=/home/algo
 RUN /usr/local/bin/algorithmia-build
 
