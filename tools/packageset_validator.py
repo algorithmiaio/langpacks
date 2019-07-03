@@ -15,13 +15,13 @@ DIR_PATH_TO_LANGUAGES = "languages"
 WORKSPACE_PATH = "/tmp/testing"
 LOCAL_PORT = 9999
 
+"""
+This script creates your packageset docker images, and runs them the same way that langserver does. This allows us to fully replicate
+the runtime environment, and verify that your new package (whether it's a dependency based package, or language based) will function properly .
 
-# This script creates your packageset docker images, and runs them the same way that langserver does. This allows us to fully replicate
-# the runtime environment, and verify that your new package (whether it's a dependency based package, or language based) will function properly .
-
-# If you haven't deployed your modifications to the algorithmia-client, plese do so before. Otherwise you'll have to
-# pipe in your modified client into the docker containers.
-
+If you haven't deployed your modifications to the algorithmia-client, plese do so before. Otherwise you'll have to
+pipe in your modified client into the docker containers.
+"""
 
 def build_image(docker_client, dockerfile_name, workspace_path, image_tag):
     """
@@ -108,7 +108,7 @@ def prepare_workspace(workspace_path, template_path, local_cached_dependency_sou
     :param workspace_path: System path, default is "/tmp/testing"
     :param template_path: Relative path to your final image template, eg: languages/java11/template
     :param local_cached_dependency_source_path: If you're using local dependencies for testing purposes, this is absolute the source path on your system, eg: /home/zeryx/.m2
-    :return: Nothing
+    :return: None
     """
     algosource_path = path.join(workspace_path, "algosource")
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
@@ -122,7 +122,7 @@ def stop_and_kill_containers(docker_client, all=False):
     Kills all docker containers, if all is =true, it kills all containers whether running or not
     :param docker_client: The docker python client
     :param all: Boolean variable defining whether we destroy 'all' docker containers, or just running ones
-    :return: Nothing
+    :return: None
     """
     containers = docker_client.containers.list(all=all, ignore_removed=True)
     for container in containers:
