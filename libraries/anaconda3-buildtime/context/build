@@ -2,4 +2,6 @@
 
 set -e
 
-conda install 
+ROOTDIR=/opt/algorithm
+
+conda install --file $ROOTDIR/conda_requirements.txt
