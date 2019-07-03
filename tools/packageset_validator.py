@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 from os import path
-import os, sys
+import os
 import argparse
 import shutil
 from uuid import uuid4
 import docker
 import json
-from pathlib import Path
 from template_manager import generate_intermediate_image, generate_compile_image
 
 DIR_PATH_TO_PACKAGES = "libraries"
 DIR_PATH_TO_DEP_TEMPLATES = "templates"
 DIR_PATH_TO_LANGUAGES = "languages"
-WORKSPACE_PATH = "/tmp/testing"
+WORKSPACE_PATH = "/tmp/validator_cache"
 LOCAL_PORT = 9999
 
 """
@@ -29,7 +28,7 @@ def build_image(docker_client, dockerfile_name, workspace_path, image_tag):
     Docker requires a workspace, where everything is located within. See "prepare_workspace" for more info.
     :param docker_client: The docker python client
     :param dockerfile_name: Name of the dockerfile in the root of the workspace
-    :param workspace_path: Path to the workspace (default is /tmp/testing)
+    :param workspace_path: Path to the workspace (default is /tmp/validator_cache)
     :param image_tag: The desired image tag name (useful for demolition later)
     :return: A docker image object (see docker sdk for more info)
     """
@@ -51,7 +50,7 @@ def create_intermediate_image(docker_client, base_image, dependencies, workspace
     :param docker_client: The docker python client
     :param base_image: The base image type in which to stage your docker container from, defaults to "ubuntu:16.04", but can be any standard base image.
     :param dependencies: A list of dependencies that this intermediate image depends on, excluding language components. (eg: pytorch-1.0.0, spacy-2.0.18, etc)
-    :param workspace_path: Path to the workspace (default is /tmp/testing)
+    :param workspace_path: Path to the workspace (default is /tmp/validator_cache)
     :param mode: What type of intermediate image this is, either "runtime" or "buildtime".
     :return: A docker image object (see docker sdk for more info)
     """
@@ -72,7 +71,7 @@ def create_final_image(client, builder_image, runner_image, workspace_path,
     :param client: The docker python client
     :param builder_image: The buildtime docker image object generated from 'create_intermediate_image'
     :param runner_image: The runtime docker image object generated from 'create_intermediate_image'
-    :param workspace_path: Path to the workspace (default is /tmp/testing)
+    :param workspace_path: Path to the workspace (default is /tmp/validator_cache)
     :param config: The desired languages config data stored in the config.json file (dictionary)
     :param local_testing_destination: If you provide local system dependencies, this defines where that should be placed in the final docker image, before compilation.
     :return: A docker image object (see docker sdk for more info)
@@ -105,7 +104,7 @@ def prepare_workspace(workspace_path, template_path, local_cached_dependency_sou
     If you desire a file to be copied into a docker image, but it's not in this directory - a file not found error will be thrown.
     
     Workspace is terminated upon termination of this script
-    :param workspace_path: System path, default is "/tmp/testing"
+    :param workspace_path: System path, default is "/tmp/validator_cache"
     :param template_path: Relative path to your final image template, eg: languages/java11/template
     :param local_cached_dependency_source_path: If you're using local dependencies for testing purposes, this is absolute the source path on your system, eg: /home/zeryx/.m2
     :return: None
