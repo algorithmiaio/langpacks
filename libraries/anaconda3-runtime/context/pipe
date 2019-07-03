@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+ROOTDIR=/opt/algorithm
+
+python $ROOTDIR/src/Algorithm.py
