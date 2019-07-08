@@ -1,10 +1,10 @@
 import Algorithmia
-from Algorithmia import AlgorithmHandler
+from Algorithmia import Handler
 
 def apply(input):
     print("hello " + input)
 
 
 
-algo = AlgorithmHandler(apply)
+algo = Handler(apply)
 algo.serve()
