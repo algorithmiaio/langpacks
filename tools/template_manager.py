@@ -12,6 +12,7 @@ LANGSERVER_IMAGE ="algorithmiahq/langserver:{}".format(LANGSERVER_VERSION)
 RUNNER_PATH = path.join(DIR_PATH_TO_TEMPATES, RUNNER_NAME)
 BUILDER_PATH = path.join(DIR_PATH_TO_TEMPATES, BUILDER_NAME)
 COMPILE_PATH = path.join(DIR_PATH_TO_TEMPATES, COMPILE_NAME)
+
 class Package:
     def __init__(self, package_name, install_script, dockerfile_path):
         self.script = install_script
@@ -66,18 +67,13 @@ def generate_intermediate_image(base_image, package_dirs, output_file_path, mode
         raw_template = get_template(BUILDER_PATH)
     else:
         raise Exception("we did not recieve a valid 'mode', it must be either 'runtime' or 'buildtime'.")
-
-def build(base_image, package_dirs, output_file_path, mode):
-    if(mode == "runtime"):
-        raw_template = get_template(RUNNER_PATH)
-    else:
-        raw_template = get_template(BUILDER_PATH)
     packages = []
     for dir in package_dirs:
         dockerfile_path = path.join(DIR_PATH_TO_PACKAGES, dir, "Dockerfile")
         installer_path = path.join(DIR_PATH_TO_PACKAGES, dir, "install.sh")
         dockerfile_path = check_if_exists(dockerfile_path)
         installer_path = check_if_exists(installer_path)
+
         package = Package(dir, installer_path, dockerfile_path)
         packages.append(package)
     generated_template = raw_template.render(
@@ -87,4 +83,4 @@ def build(base_image, package_dirs, output_file_path, mode):
         langserver_image=LANGSERVER_IMAGE)
     save_generated_template(generated_template, output_file_path)
     print("completed template construction, file available at {}".format(output_file_path))
-
+    return output_file_path
