@@ -3,5 +3,6 @@
 set -e
 
 ROOTDIR=/opt/algorithm
+CONDAENV=conda_environment
 
-conda install --file $ROOTDIR/conda_requirements.txt
+conda env create --yes -n $CONDAENV -f $ROOTDIR/conda_requirements.yaml

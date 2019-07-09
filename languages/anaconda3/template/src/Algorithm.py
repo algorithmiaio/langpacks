@@ -5,6 +5,5 @@ def apply(input):
     print("hello " + input)
 
 
-
 algo = Handler(apply)
 algo.serve()

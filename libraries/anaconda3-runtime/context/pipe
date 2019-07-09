@@ -2,6 +2,8 @@
 
 set -e
 
+CONAENV=algorithm_environment
 ROOTDIR=/opt/algorithm
+source $CONDAENV activate
 
 python $ROOTDIR/src/Algorithm.py
