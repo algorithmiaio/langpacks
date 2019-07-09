@@ -49,7 +49,7 @@ def check_if_exists(filepath):
         return None
 
 
-def generatee_compile_image(builder_image_name, runner_image_name, config_data, output_file_path):
+def generate_compile_image(builder_image_name, runner_image_name, config_data, output_file_path):
     raw_template = get_template(COMPILE_PATH)
     generated_template = raw_template.render(
         builder_image=builder_image_name,
