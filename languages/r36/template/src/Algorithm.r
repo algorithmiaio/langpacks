@@ -27,6 +27,7 @@ load <- function() {
   # model_file_path <- client$file('data://path/to/my/modelFile.hd5)$getFile()$name
   # keras_model <- keras.load_model(model_path)
   # keras_model
+  NULL
 }
 
 # This code turns your library code into an algorithm that can run on the platform.

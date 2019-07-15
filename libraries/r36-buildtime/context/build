@@ -9,11 +9,11 @@ echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
 ROOTDIR=/opt/algorithm
 
 # First install the latest CRAN packages system wide so it can populate the shared cache
-python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --cran-latest --output-dependencies /tmp/cran-dependencies-1
+python $ROOTDIR/rip.py --file $ROOTDIR/packages.txt --cran-latest --output-dependencies /tmp/cran-dependencies-1
 
 
 # Copy the packages from the system wide location to our local dependencies directory
-python $ROOTDIR/bin/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-1 --destination `pwd`/dependencies
+python $ROOTDIR/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-1 --destination `pwd`/dependencies
 
 # Now when we install all other packages, we want them to go into the local dependencies directory
 echo "R_LIBS_USER=$ROOTDIR/dependencies" > ~/.Renviron
@@ -22,6 +22,6 @@ echo "R_LIBS_USER=$ROOTDIR/dependencies" > ~/.Renviron
 python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --skip-cran-latest --output-dependencies /tmp/cran-dependencies-2 --library `pwd`/dependencies
 
 # Copy any dependencies from the system wide location to our local dependencies directory
-python $ROOTDIR/bin/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-2 --destination `pwd`/dependencies
+python $ROOTDIR/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-2 --destination `pwd`/dependencies
 
 
