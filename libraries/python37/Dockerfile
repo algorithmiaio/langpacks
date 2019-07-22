@@ -15,7 +15,8 @@ RUN apt-get -y update && \
         libssl-dev \
         tk-dev \
         uuid-dev \
-        wget && \
+        wget \
+        git && \
     rm -rf /var/lib/apt/lists/*
 
 # MIT license from initial repo
