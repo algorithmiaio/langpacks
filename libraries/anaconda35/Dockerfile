@@ -1,5 +1,3 @@
-FROM debian:latest
-
 #  $ docker build . -t continuumio/anaconda3:latest -t continuumio/anaconda3:5.3.0
 #  $ docker run --rm -it continuumio/anaconda3:latest /bin/bash
 #  $ docker push continuumio/anaconda3:latest

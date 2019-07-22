@@ -1,9 +1,8 @@
 import Algorithmia
-from Algorithmia import Handler
 
 def apply(input):
-    print("hello " + input)
+    return "hello {}".format(str(input))
 
 
-algo = Handler(apply)
+algo = Algorithmia.handler(apply)
 algo.serve()

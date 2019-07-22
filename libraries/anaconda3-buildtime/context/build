@@ -5,4 +5,4 @@ set -e
 ROOTDIR=/opt/algorithm
 CONDAENV=conda_environment
 
-conda env create --yes -n $CONDAENV -f $ROOTDIR/conda_requirements.yaml
+conda env create -n $CONDAENV --file=$ROOTDIR/requirements.yaml -q --force

@@ -1,2 +1,0 @@
-# Each line of this file will be read as the input to a 'conda install' operation, with the environment being defined in 'anaconda_config.json'
-algorithmia
