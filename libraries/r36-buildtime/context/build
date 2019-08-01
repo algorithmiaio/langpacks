@@ -19,7 +19,7 @@ python $ROOTDIR/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file
 echo "R_LIBS_USER=$ROOTDIR/dependencies" > ~/.Renviron
 
 # Re-run the package installation but only take non-latest CRAN packages
-python $ROOTDIR/bin/rip.py --file $ROOTDIR/packages.txt --skip-cran-latest --output-dependencies /tmp/cran-dependencies-2 --library `pwd`/dependencies
+python $ROOTDIR/rip.py --file $ROOTDIR/packages.txt --skip-cran-latest --output-dependencies /tmp/cran-dependencies-2 --library `pwd`/dependencies
 
 # Copy any dependencies from the system wide location to our local dependencies directory
 python $ROOTDIR/copy-cran-packages.py --lib /usr/local/lib/R/site-library --file /tmp/cran-dependencies-2 --destination `pwd`/dependencies
