@@ -38,7 +38,7 @@ def build_image(docker_client, dockerfile_name, workspace_path, image_tag):
     except docker.errors.BuildError as e:
         for line in e.build_log:
             if 'stream' in line:
-                print(line.strip())
+                print(line)
         raise e
 
 
