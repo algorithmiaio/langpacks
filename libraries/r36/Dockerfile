@@ -20,18 +20,8 @@ RUN apt-get update \
 		libcurl4-gnutls-dev \
 		wget
 
-RUN Rscript -e "install.packages('rjson')" \
-    && Rscript -e "install.packages('base64enc')" \
-    && Rscript -e "install.packages('RCurl')" \
-    && Rscript -e "install.packages('pacman')"
-
-# We want pacman, rjson, and base64enc to be in the docker image. The others can be bind mounted
-# in the normal location which we now make sure is empty
-RUN echo "R_LIBS_SITE='/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library:/usr/local/lib/R/site-library-langserver'" >> /etc/R/Renviron
-RUN mv /usr/local/lib/R/site-library /usr/local/lib/R/site-library-langserver
+RUN Rscript -e "install.packages(c('rjson', 'base64enc', 'RCurl', 'pacman'))"
 
 # We want to allow the algo user to install packages system-wide
-RUN mkdir /usr/local/lib/R/site-library
 RUN chown algo -R /usr/local/lib/R/site-library
-
 
