@@ -3,9 +3,8 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-# Here are your anaconda defined dependencies, including the python version
-# If you wish to use a different python version, please adjust the value below
-- python=3.7
+# Here are where your anaconda dependencies can be defined
+- python
 # If you wish to use a specific version of pip, please adjust the value below
 - pip=19.0
 - pip:
