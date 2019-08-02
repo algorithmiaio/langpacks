@@ -8,4 +8,4 @@ echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
 
 ROOTDIR=/opt/algorithm
 
-python $ROOTDIR/rip.py --file $ROOTDIR/packages.txt
+python /usr/local/bin/rip.py --file $ROOTDIR/packages.txt
