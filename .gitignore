@@ -3,6 +3,7 @@
 target/
 !target/release/langserver
 .idea/
-*/__pycache__
- 
+*/__pycache__ 
 *.iml
+.Rproj.user
+.Rhistory
