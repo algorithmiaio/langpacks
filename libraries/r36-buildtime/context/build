@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+CRAN_MIRROR=${CRAN_MIRROR:=http://cran.rstudio.com/}
+
+# When installing from CRAN, use this mirror as a default
+echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
+
+ROOTDIR=/opt/algorithm
+
+python /usr/local/bin/rip.py --file $ROOTDIR/packages.txt

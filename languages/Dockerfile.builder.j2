@@ -10,6 +10,10 @@ LABEL langpacks_version={{langpacks_version}}
 ENV ALGO_UID=2222
 RUN adduser --disabled-password --gecos "" --uid $ALGO_UID algo
 
+
+RUN mkdir /opt/algorithm
+RUN chown $ALGO_UID:$ALGO_UID /opt/algorithm
+
 {% for package in packages %}
 {% if package.script is not none %}
 COPY {{package.script}} /tmp/{{package.script}}
@@ -23,12 +27,10 @@ RUN /tmp/{{package.script}}
 # The code below creates the /opt/algorithm directory writeable by algo user so that build/run scripts can create directories.
 # For example a compiled language like C# creates a bin directory for the compiled binary.
 
-RUN mkdir /opt/algorithm
-RUN chown $ALGO_UID:$ALGO_UID /opt/algorithm
-
 
 # WORKDIR does not respect the USER operation, which means that /opt/algorithm is owned by root unless previously created
 # https://github.com/moby/moby/issues/20295
 USER $ALGO_UID
 
 WORKDIR /opt/algorithm
+

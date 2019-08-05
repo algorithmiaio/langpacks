@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+ROOTDIR=/opt/algorithm
+
+CRAN_MIRROR=${CRAN_MIRROR:=http://cran.rstudio.com/}
+
+echo "options(repos=structure(c(CRAN=\"$CRAN_MIRROR\")))" > ~/.Rprofile
+
+Rscript $ROOTDIR/src/Algorithm.r
+
