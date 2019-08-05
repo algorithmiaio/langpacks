@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+CONDAENV=conda_environment
+ROOTDIR=/opt/algorithm
+
+. /opt/conda/etc/profile.d/conda.sh
+conda activate $CONDAENV
+
+python $ROOTDIR/src/Algorithm.py

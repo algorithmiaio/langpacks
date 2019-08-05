@@ -1,0 +1,7 @@
+{
+    "artifacts": [
+        {"source":"/home/algo/.conda", "destination":"/home/algo/.conda/"},
+	{"source":"/home/algo/.cache", "destination":"/home/algo/.cache/"},
+        {"source":"/opt/algorithm", "destination":"/opt/algorithm/"}
+    ]
+}
