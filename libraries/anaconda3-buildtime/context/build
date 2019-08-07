@@ -2,8 +2,8 @@
 
 set -e
 
-ROOTDIR=/opt/algorithm
 CONDAENV=/tmp/conda_environment
+ROOTDIR=/opt/algorithm
 
 # If additional components need to be compiled outside of the requirements.yml file, we recommend building a custom build file for that
 # requirement.
