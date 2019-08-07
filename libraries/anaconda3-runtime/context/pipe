@@ -2,8 +2,8 @@
 
 set -e
 
-ROOTDIR=/opt/algorithm
 CONDAENV=/tmp/conda_environment
+ROOTDIR=/opt/algorithm
 
 . /opt/conda/etc/profile.d/conda.sh
 conda activate $ANACONDA_ENV
