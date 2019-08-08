@@ -1,5 +1,6 @@
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
+ENV ANACONDA_ENV=/home/algo/anaconda_environment
 
 RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
@@ -12,7 +13,6 @@ RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificate
     apt-get clean \
     ; \
     rm -rf /var/lib/apt/lists/*
-
 
 RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh -O ~/anaconda.sh && \
     /bin/bash ~/anaconda.sh -b -p /opt/conda && \
