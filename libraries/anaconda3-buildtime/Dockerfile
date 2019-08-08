@@ -1,3 +1,3 @@
 COPY --chown=0:0 anaconda3-buildtime/context/build /usr/local/bin/algorithmia-build
-RUN conda create --prefix /tmp/conda_environment && \
-    chmod --recursive ugo+rw /tmp/conda_environment
+RUN conda create --prefix ANACONDA_ENV && \
+    chown algo:algo -R ANACONDA_ENV
