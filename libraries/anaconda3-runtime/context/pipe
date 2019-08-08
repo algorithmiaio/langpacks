@@ -6,6 +6,6 @@ ANACONDA_ENV=/home/algo/conda_environment
 ROOTDIR=/opt/algorithm
 
 . /opt/conda/etc/profile.d/conda.sh
-conda activate $ANACONDA_ENV
+conda activate ANACONDA_ENV
 
 python $ROOTDIR/src/Algorithm.py
