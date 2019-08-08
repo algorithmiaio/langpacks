@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+ANACONDA_ENV=/home/algo/conda_environment
+
+. /opt/conda/etc/profile.d/conda.sh
+conda env update --prefix $ANACONDA_ENV --file=environment.yml
+conda activate $ANACONDA_ENV
+pip install .
