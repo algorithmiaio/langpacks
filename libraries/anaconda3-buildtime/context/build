@@ -7,4 +7,4 @@ ROOTDIR=/opt/algorithm
 
 . /opt/conda/etc/profile.d/conda.sh
 
-conda env update --prefix ANACONDA_ENV --file=$ROOTDIR/requirements.yml -q
+conda env update --prefix ANACONDA_ENV --file=$ROOTDIR/requirements.yml
