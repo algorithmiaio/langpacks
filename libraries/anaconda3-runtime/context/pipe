@@ -2,7 +2,7 @@
 
 set -e
 
-CONDAENV=/tmp/conda_environment
+ANACONDA_ENV=/home/algo/conda_environment
 ROOTDIR=/opt/algorithm
 
 . /opt/conda/etc/profile.d/conda.sh
