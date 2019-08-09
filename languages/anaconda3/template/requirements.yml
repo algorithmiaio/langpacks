@@ -10,4 +10,4 @@ dependencies:
 - pip:
 # Add your pip dependencies (taken directly from pypi) here, we'll use the version of python and pip installed above
   - six>=1.12.0
-  - algorithmia>=1.2,<1.3
+  - algorithmia>=1.2,<2

@@ -2,9 +2,8 @@
 
 set -e
 
-CONDAENV=conda_environment
 ROOTDIR=/opt/algorithm
 
 . /opt/conda/etc/profile.d/conda.sh
 
-conda env create -n $CONDAENV --file=$ROOTDIR/requirements.yaml -q --force
+conda env update --prefix $ANACONDA_ENV --file=$ROOTDIR/requirements.yml
