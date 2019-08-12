@@ -4,6 +4,11 @@ set -e
 
 ROOTDIR=/opt/algorithm
 
-. /opt/conda/etc/profile.d/conda.sh
 
-conda env update --prefix $ANACONDA_ENV --file=$ROOTDIR/requirements.yml
+. /opt/conda/etc/profile.d/conda.sh
+if [ -z "$1" ]; then
+    conda env update --prefix "$ANACONDA_ENV" --file $ROOTDIR/requirements.yml;
+else
+    conda env update --prefix "$ANACONDA_ENV" --file "$1";
+    chown algo:algo -R $ANACONDA_ENV;
+fi

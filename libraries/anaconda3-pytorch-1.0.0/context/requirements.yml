@@ -1,0 +1,7 @@
+channels:
+    - conda-forge
+    - defaults
+    - pytorch
+dependencies:
+    - pytorch=1.0.0
+    - torchvision
