@@ -1,13 +1,10 @@
 channels:
 # Add your desired anaconda channels here
-- conda-forge
-- defaults
+  - conda-forge
+  - defaults
 dependencies:
 # Here are where your anaconda dependencies can be defined
-- python
-# If you wish to use a specific version of pip, please adjust the value below
-- pip=19.0
-- pip:
+  - pip:
 # Add your pip dependencies (taken directly from pypi) here, we'll use the version of python and pip installed above
-  - six>=1.12.0
-  - algorithmia>=1.2,<2
+    - six>=1.12.0
+    - algorithmia>=1.2,<2
