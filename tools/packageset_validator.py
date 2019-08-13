@@ -158,8 +158,8 @@ def main(base_image, language_general_name, language_specific_name,
 
     try:
         if dependencies:
-            runtime_dirs = [language_specific_name] + dependencies + ["{}-{}".format(language_general_name, "runtime")]
-            buildtime_dirs = [language_specific_name] + dependencies + ["{}-{}".format(language_general_name, "buildtime")]
+            runtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "runtime")] + dependencies
+            buildtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "buildtime")] + dependencies
         else:
             runtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "runtime")]
             buildtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "buildtime")]
