@@ -4,7 +4,6 @@ channels:
   - defaults
 dependencies:
 # Here are where your anaconda dependencies can be defined
-# If you wish to use a specific version of pip, please adjust the value below
   - pip:
 # Add your pip dependencies (taken directly from pypi) here, we'll use the version of python and pip installed above
     - six>=1.12.0
