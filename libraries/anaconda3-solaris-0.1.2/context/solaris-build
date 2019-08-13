@@ -6,3 +6,4 @@ set -e
 conda env update --prefix $ANACONDA_ENV --file=environment.yml
 conda activate $ANACONDA_ENV
 pip install .
+chown algo:algo -R $ANACONDA_ENV

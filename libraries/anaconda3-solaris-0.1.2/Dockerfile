@@ -3,5 +3,4 @@ RUN git clone https://github.com/CosmiQ/solaris.git /tmp/solaris && \
     chown -R algo:algo /tmp/solaris && \
     cd /tmp/solaris && \
     git checkout v0.1.2 && \
-    solaris-build && \
-    rm -rf /tmp/solaris*
+    solaris-build
