@@ -3,6 +3,8 @@
 set -e
 
 . /opt/conda/etc/profile.d/conda.sh
+
+cd $1
 conda env update --prefix $ANACONDA_ENV --file=environment.yml
 conda activate $ANACONDA_ENV
 pip install .

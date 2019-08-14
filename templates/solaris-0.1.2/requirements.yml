@@ -3,7 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-# solaris dependencies
+# solaris dependencies - don't change these unless you need to, plus it might break solaris
   - python=3.6
   - pip=19.0
   - shapely=1.6.4
