@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -eu
+
+. /opt/conda/etc/profile.d/conda.sh
+
+# $1 is the variable path to the local solaris-git directory on the system
+cd $1
+conda env update --prefix $ANACONDA_ENV --file=environment.yml
+conda activate $ANACONDA_ENV
+pip install .
+chown algo:algo -R $ANACONDA_ENV
