@@ -4,6 +4,20 @@
 
 *LangServer*: A server that serve a LangPack's `bin/pipe` runner in a way that emulates a light-weight version of the Algorithmia API.
 
+## LangServer
+
+Langserver could be simplified like this: it's about 1000 lines of code that emulates a simple API that looks/feels like our API server's API for calling an algo (lacking features like auth)
+
+It translates that HTTP standard into a STDIO-based input and a named pipe for output (defined in the langpack_guide.md)
+- it was important that multiple subsequent requests could reuse the same process
+- The focus was a standard that every language could easily implement. Having each language implement a web-server was considered, but there was uncertainty about how easy that would be for langs like R, and if we wanted to alter how it integrates with the rest of the backend, it'd need reimplemented multiple times (e.g. if we wanted to expose stdout/stderr via websockets, it would only need implemented in langserver, not each langpack)
+- I also considered other queues, e.g. posix message queues, but struggled to gain confidence it would work well for all languages (R again being a concern)
+- Ultimately, every language has very simple ways of interacting with files (incl stdio and named pipes), so stdio and a named pipe (fifo) were chosen for the simplicity to work with them in any lang. The fifo allowed us to leave stdout/stderr in tact.
+
+Weirder details:
+1) Langserver spins up 2 threads that collect stdout/stderr and recombined them into the result.
+2) Langserver has 2 modes: sync vs async. Basically, sync is how it was originally built, to be easy to debug as a simple web-server that looks like the API server. `async` mode was added to make it integrate with dockherder, so that dockherder could call it and forget about it until a callback informed dockherder that it was complete.
+
 ## Building LangServer(s) (Partially deprecated)
 
 Disclaimer: The intent was to prototype langserver in rust (because I knew it better), but finally write it in go (lower barrier to entry), but it turned into an official project before the rewrite happened. So, for now: start by installing [latest stable rust](https://www.rust-lang.org/downloads.html), and then:
