@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -eu
 
 ROOTDIR=/opt/algorithm
 # The argument provided to this script ($1) denotes the path to the yaml file which contains all of the necessary features
