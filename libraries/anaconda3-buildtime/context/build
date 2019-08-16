@@ -1,6 +1,9 @@
 #!/bin/bash
 
-set -e
+
+FILE="$1"
+
+set -eu
 
 ROOTDIR=/opt/algorithm
 # The argument provided to this script ($1) denotes the path to the yaml file which contains all of the necessary features
@@ -10,9 +13,9 @@ ROOTDIR=/opt/algorithm
 # requirement.
 
 . /opt/conda/etc/profile.d/conda.sh
-if [ -z "$1" ]; then
+if [ -z "$FILE" ]; then
     conda env update --prefix $ANACONDA_ENV --file $ROOTDIR/requirements.yml
 else
-    conda env update --prefix $ANACONDA_ENV --file $1
+    conda env update --prefix $ANACONDA_ENV --file $FILE
     chown algo:algo -R $ANACONDA_ENV
 fi
