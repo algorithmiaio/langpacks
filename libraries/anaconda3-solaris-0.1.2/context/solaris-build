@@ -2,7 +2,7 @@
 
 DIRECTORY="$1"
 
-set -eu
+set -e
 
 . /opt/conda/etc/profile.d/conda.sh
 
