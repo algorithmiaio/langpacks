@@ -4,30 +4,31 @@ channels:
   - defaults
 dependencies:
 # solaris dependencies - don't change these unless you need to, plus it might break solaris
-  - python=3.6
-  - pip=19.0
-  - shapely=1.6.4
-  - fiona=1.8.6
-  - pandas=0.24.2
-  - geopandas>=0.4.1
-  - opencv=3.4.4
-  - numpy=1.16.3
-  - gdal=2.4.1
-  - tqdm=4.31.1
-  - matplotlib=3.1.0
-  - rtree=0.8.3
-  - urllib3=1.24.3
-  - networkx=2.3
-  - rasterio=1.0.23
-  - scipy=1.2.1
-  - scikit-image=0.15.0
-  - tensorflow=1.13.1
-  - pytorch=1.1.0
-  - torchvision=0.3.0
-  - pyyaml=5.1
-  - affine=2.2.2
-  - albumentations>0.2.3
-  - rio-cogeo=1.0.0
+# All of the below are pre-installed and don't need to be explicitly referenced
+#  - python=3.6
+#  - pip=19.0
+#  - shapely=1.6.4
+#  - fiona=1.8.6
+#  - pandas=0.24.2
+#  - geopandas>=0.4.1
+#  - opencv=3.4.4
+#  - numpy=1.16.3
+#  - gdal=2.4.1
+#  - tqdm=4.31.1
+#  - matplotlib=3.1.0
+#  - rtree=0.8.3
+#  - urllib3=1.24.3
+#  - networkx=2.3
+#  - rasterio=1.0.23
+#  - scipy=1.2.1
+#  - scikit-image=0.15.0
+#  - tensorflow=1.13.1
+#  - pytorch=1.1.0
+#  - torchvision=0.3.0
+#  - pyyaml=5.1
+#  - affine=2.2.2
+#  - albumentations>0.2.3
+#  - rio-cogeo=1.0.0
   - pip:
 # Add your pip dependencies (taken directly from pypi) here, we'll use the version of python and pip installed above
     - six>=1.12.0
