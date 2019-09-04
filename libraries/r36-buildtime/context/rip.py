@@ -20,7 +20,7 @@ def main():
 
 
     if not os.path.isfile(args.file):
-        print 'ERROR: The package list file does not exist'
+        print('ERROR: The package list file does not exist')
         sys.exit(1)
 
     rscript = ['library("pacman")']
@@ -55,15 +55,15 @@ def main():
                 if not args.cran_latest:
                     rscript.append(line[3:])
             else:
-                print 'Unexpected line: "{}"'.format(line)
+                print('Unexpected line: "{}"'.format(line))
                 sys.exit(1)
 
     if len(rscript) == 1:
-        print 'There is nothing to install'
+        print('There is nothing to install')
         return
 
     commandArgs = ['Rscript', '-e', '; '.join(rscript)]
-    print 'Running: {}'.format(' '.join(commandArgs))
+    print('Running: {}'.format(' '.join(commandArgs)))
     subprocess.check_call(commandArgs)
 
     if args.output_dependencies is not None:
