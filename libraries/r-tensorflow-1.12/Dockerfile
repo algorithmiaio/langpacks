@@ -1,5 +1,5 @@
 # install miniconda, and set the appropriate path variables.
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.4.10-Linux-x86_64.sh -O ~/miniconda.sh && \
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.6.14-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda clean -tipsy && \
@@ -8,7 +8,8 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.4.10-Linux-x86
     echo "conda activate base" >> /etc/environment
 ENV PATH /opt/conda/bin:$PATH
 
-RUN /opt/conda/bin/pip install tensorflow==1.12 && \
+RUN conda install python=3.6 && \
+/opt/conda/bin/pip install tensorflow==1.12 && \
 /opt/conda/bin/pip install keras==2.1.4 && \
 /opt/conda/bin/pip install h5py==2.9.0
 
