@@ -63,7 +63,7 @@ def main():
         return
 
     commandArgs = ['Rscript', '-e', '; '.join(rscript)]
-    print ('Running: {}'.format(' '.join(commandArgs)))
+    print('Running: {}'.format(' '.join(commandArgs)))
     subprocess.check_call(commandArgs)
 
     if args.output_dependencies is not None:
