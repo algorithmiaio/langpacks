@@ -157,11 +157,10 @@ def main(base_image, language_general_name, language_specific_name,
     prepare_workspace(WORKSPACE_PATH, template_path, local_src)
 
     try:
+        runtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "runtime")]
         if dependencies:
-            runtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "runtime")] + dependencies
             buildtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "buildtime")] + dependencies
         else:
-            runtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "runtime")]
             buildtime_dirs = [language_specific_name, "{}-{}".format(language_general_name, "buildtime")]
 
         runtime_image = create_intermediate_image(client, base_image, runtime_dirs, WORKSPACE_PATH, "runtime")
