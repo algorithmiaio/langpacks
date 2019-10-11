@@ -46,5 +46,7 @@ COPY --from=builder_final --chown=2222:2222 /tmp/{{artifact.name}}_DEPOT /tmp/{{
 RUN python /tmp/unpack_dependencies.py /tmp/{{artifact.name}}_MANIFEST
 {% endfor %}
 
+USER 2222
+
 WORKDIR /opt/algorithm
 ENTRYPOINT /bin/init-langserver

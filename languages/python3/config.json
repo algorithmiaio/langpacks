@@ -1,6 +1,8 @@
 {
-    "artifacts": [
-        {"source":"/home/algo/.local", "destination":"/home/algo/.local/"},
+    "build_artifacts": [
         {"source":"/opt/algorithm", "destination":"/opt/algorithm/"}
+  ],
+    "dependency_artifacts": [
+      {"source":"/usr/local/lib/python*", "destination":"/usr/local/lib/python*"}
     ]
 }
