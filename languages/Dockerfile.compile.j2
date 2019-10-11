@@ -1,19 +1,49 @@
-FROM {{builder_image}} as builder
+FROM {{builder_image}} as builder_intermediate
 USER 2222
 # Docker build commands don't resolve environment variables so need this to either be numeric or a build argument
 COPY --chown=2222:2222 algosource /opt/algorithm/
+ADD --chown=2222:2222 https://gist.githubusercontent.com/zeryx/eee9083d4ca2a1a6362f524c04aa903e/raw/cb73e9d0c416d625ad74caf95c1bd323901a5b3a/export_deps.py /tmp/export_dependencies.py
 
-{% if config.local_dependency_src_path is defined %}
-COPY --chown=2222:2222 {{config.local_dependency_src_path}} {{config.local_dependency_dest_path}}
-{% endif %}
+#### Copying package set dependencies to runner, and collecting a list of those files
+
+FROM {{runner_image}} as runner_intermediate
+
+ADD --chown=2222:2222 https://gist.githubusercontent.com/zeryx/eee9083d4ca2a1a6362f524c04aa903e/raw/f649cc02a24377d3ef8a51ff6cbd9338c4d7ccc2/import_deps.py /tmp/unpack_dependencies.py
+
+{% for artifact in config.dependency_artifacts %}
+COPY --from=builder_intermediate --chown=2222:2222 {{artifact.source}} {{artifact.destination}}
+
+RUN find {{artifact.destination}} -maxdepth 10 -not -type d > /tmp/{{artifact.name}}_BEFORE
+{% endfor %}
+
+FROM builder_intermediate as builder_final
 
 ENV HOME=/home/algo
 RUN /usr/local/bin/algorithmia-build
 
-FROM {{runner_image}}
-{% for artifact in config.artifacts %}
-COPY --from=builder --chown=2222:2222 {{artifact.source}} {{artifact.destination}}
+{% for artifact in config.dependency_artifacts %}
+
+RUN find {{artifact.destination}} -maxdepth 10 -not -type d > /tmp/{{artifact.name}}_AFTER
+
+COPY --from=runner_intermediate --chown=2222:2222 /tmp/{{artifact.name}}_BEFORE /tmp/{{artifact.name}}_BEFORE
+RUN python /tmp/export_dependencies.py /tmp/{{artifact.name}}_BEFORE /tmp/{{artifact.name}}_AFTER /tmp/{{artifact.name}}_DEPOT /tmp/{{artifact.name}}_MANIFEST
 {% endfor %}
-USER 2222
+
+
+#### Copying user compile time dependencies & modified build artifacts to the final runner environment
+
+FROM runner_intermediate as runner_final
+
+{% for artifact in config.build_artifacts %}
+COPY --from=builder_final --chown=2222:2222 {{artifact.source}} {{artifact.destination}}
+{% endfor %}
+
+# We import all of the dependencies that we know have changed since last compile
+{% for artifact in config.dependency_artifacts %}
+COPY --from=builder_final --chown=2222:2222 /tmp/{{artifact.name}}_MANIFEST /tmp/{{artifact.name}}_MANIFEST
+COPY --from=builder_final --chown=2222:2222 /tmp/{{artifact.name}}_DEPOT /tmp/{{artifact.name}}_DEPOT/
+RUN python /tmp/unpack_dependencies.py /tmp/{{artifact.name}}_MANIFEST
+{% endfor %}
+
 WORKDIR /opt/algorithm
 ENTRYPOINT /bin/init-langserver
