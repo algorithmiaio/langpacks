@@ -4,6 +4,7 @@ import json
 from shutil import copy
 from uuid import uuid4
 
+
 def load_filenames_file(path):
     with open(path) as f:
         files = set(f.readlines())
@@ -29,8 +30,6 @@ def create_export_depot(diff_files, workspace_path, manifest_path):
         copy(original_file_path, temp_path)
     with open(manifest_path, 'w') as f:
         json.dump(manifest, f)
-
-
 
 
 if __name__ == "__main__":

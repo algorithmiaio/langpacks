@@ -13,8 +13,6 @@ def copy_from_manifest(manifest_data):
     source = manifest_data['source']
     destination = manifest_data['destination']
     dest_dir = '/'.join(destination.split('/')[:-1])
-    print(dest_dir)
-    print(destination)
     os.makedirs(dest_dir, exist_ok=True)
     try:
         copyfile(source, destination)
