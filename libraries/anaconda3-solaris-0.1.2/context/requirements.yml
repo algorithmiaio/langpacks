@@ -1,0 +1,11 @@
+channels:
+# Add your desired anaconda channels here
+  - conda-forge
+  - defaults
+dependencies:
+# Here are where your anaconda dependencies can be defined
+  - gdal=2.4.1
+  - rtree=0.8.3
+  - pip:
+# Add your pip dependencies (taken directly from pypi) here, we'll use the version of python and pip installed above
+    - solaris==0.1.2
