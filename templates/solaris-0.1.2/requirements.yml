@@ -1,7 +1,3 @@
-channels:
-  - pytorch
-  - conda-forge
-  - defaults
 dependencies:
 # solaris dependencies - don't change these unless you need to, plus it might break solaris
 # All of the below are pre-installed and don't need to be explicitly referenced
