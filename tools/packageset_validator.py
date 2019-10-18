@@ -49,7 +49,7 @@ def create_intermediate_image(docker_client, base_image, dependencies, workspace
     `Dockerfile.builder.j2` and `Dockerfile.runner.j2` in the languages directory.
     :param docker_client: The docker python client
     :param base_image: The base image type in which to stage your docker container from, defaults to "ubuntu:16.04", but can be any standard base image.
-    :param dependencies: A list of dependencies that this intermediate image depends on, excluding language components. (eg: python-torch-1.0.0, python-python-spacy-2.0.18, etc)
+    :param dependencies: A list of dependencies that this intermediate image depends on, excluding language components. (eg: python-torch-1.0.0, python-spacy-2.0.18, etc)
     :param workspace_path: Path to the workspace (default is /tmp/validator_cache)
     :param mode: What type of intermediate image this is, either "runtime" or "buildtime".
     :return: A docker image object (see docker sdk for more info)
