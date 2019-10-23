@@ -29,7 +29,7 @@ Packages right now have a flat hierarchy, which made some sense at inception - h
         * python37
         * java11
         * anaconda45
-* Examples:
+    * Examples:
         * python-3.7-base
         * python-2.7-anaconda-4.5-base
         * scala-2.11-sbt-1.3-base
