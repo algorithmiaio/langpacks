@@ -221,7 +221,7 @@ if __name__ == "__main__":
                                                                                            "'dependency' - for frameworks/etc "
                                                                                            "'language' - for new language implementations & modifications")
     parser.add_argument('-n', '--template-name', dest='template_name', required=True, help="The name of your template directory."
-                                                                                           "For example: pytorch-1.0.0, orjava11.")
+                                                                                           "For example: pytorch-1.0.0, or java11.")
     parser.add_argument('-d', '--dependency', action="append", dest="dependencies", help="A list builder of all non-language dependency packages that your algorithm needs."
                                                                                          "Language core, buildtime & runtime are included automatically.")
     parser.add_argument('-c', '--clean-up', dest='cleanup', type=bool, help="A boolean variable that if set, forces us to clean up docker containers and images created by this process.")
