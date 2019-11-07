@@ -2,7 +2,6 @@ name := "algorithm"
 organization := "algorithmia"
 version := "0.1"
 scalaVersion := "2.13.1"
-//mainClass in (Compile, run) := Some("com.algorithmia.Algorithm")
 
 val repoUrl = System.getProperty("repo.url", "http://git.algorithmia.com")
 
@@ -16,4 +15,3 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "3.0.1" % "test"
 )
 
-retrieveManaged := true
