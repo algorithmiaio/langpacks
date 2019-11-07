@@ -4,15 +4,16 @@ import com.algorithmia.handler.AbstractAlgorithm
 
 import scala.util.{Success, Try}
 
-class Algorithm extends AbstractAlgorithm[String, String]{
+class Algorithm extends AbstractAlgorithm[String, String] {
 
-  var someVariable: String = _
+  var someVariable: Option[String] = None
 
   override def apply(input: String): Try[String] = {
     Success(s"hello $input")
   }
-  override def load = {
-    someVariable = "loaded"
+
+  override def load = Try{
+    someVariable = Some("loaded")
     Success()
   }
 }
