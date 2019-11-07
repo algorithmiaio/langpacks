@@ -2,5 +2,5 @@
 
 set -e
 
-sbt run
+java -jar /opt/algorithm/target/algorithm-assembly.jar
 
