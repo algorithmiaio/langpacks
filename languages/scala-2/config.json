@@ -1,0 +1,8 @@
+{
+    "artifacts": [
+      {"source":"/home/algo/.ivy2", "destination":"/home/algo/.ivy2/"},
+	  {"source":"/home/algo/.sbt", "destination":"/home/algo/.sbt/"},
+      {"source":"/opt/algorithm", "destination":"/opt/algorithm"}
+    ]
+}
+
