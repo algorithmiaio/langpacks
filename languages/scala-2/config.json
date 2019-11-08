@@ -1,6 +1,6 @@
 {
     "artifacts": [
-      {"source":"/opt/algorithm/target/*/*.jar", "destination":"/opt/algorithm/target/algorithm-assembly.jar"}
+      {"source":"/opt/algorithm/target/universal/stage", "destination":"/opt/algorithm/stage/"}
     ]
 }
 

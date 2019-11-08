@@ -2,5 +2,4 @@
 
 set -e
 
-java -jar /opt/algorithm/target/algorithm-assembly.jar
-
+./stage/bin/algorithm
