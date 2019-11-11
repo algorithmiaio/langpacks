@@ -11,6 +11,6 @@ enablePlugins(JavaAppPackaging)
 
 libraryDependencies ++= Seq(
   "com.algorithmia" %% "algorithmia-scala" % "1.0.+",
-  "org.scalatest" %% "scalatest" % "3.0.1" % Test
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test
 )
 
