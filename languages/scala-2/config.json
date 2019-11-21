@@ -1,0 +1,6 @@
+{
+    "artifacts": [
+      {"source":"/opt/algorithm/target/universal/stage", "destination":"/opt/algorithm/stage/"}
+    ]
+}
+
