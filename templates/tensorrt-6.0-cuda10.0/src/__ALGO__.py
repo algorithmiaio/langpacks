@@ -7,9 +7,9 @@ from PIL import Image
 # For more details, see algorithmia.com/developers/algorithm-development/languages
 
 SIMD_ALGO = "util/SmartImageDownloader/0.2.14"
-MODEL_PATH = "data://zeryx/collection/mobilenetv2-1.0.onnx"
+MODEL_PATH = "data://algorithmiahq/collection/mobilenetv2-1.0.onnx"
 
-client = Algorithmia.client("simP1oZ9sfF7c1cBrYUQ08iBtdP1")
+client = Algorithmia.client()
 trt_engine = load(client, MODEL_PATH)
 
 
