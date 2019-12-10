@@ -7,10 +7,10 @@ from PIL import Image
 # For more details, see algorithmia.com/developers/algorithm-development/languages
 
 SIMD_ALGO = "util/SmartImageDownloader/0.2.14"
-MODEL_PATH = "data://algorithmiahq/collection/mobilenetv2-1.0.onnx"
+MODEL_PATH = "https://algorithmia-assets.s3.amazonaws.com/onnx/mobilenetv2-1.0.onnx"
 
 client = Algorithmia.client()
-trt_engine = load(client, MODEL_PATH)
+trt_engine = load(MODEL_PATH)
 
 
 def preprocess(image_path):

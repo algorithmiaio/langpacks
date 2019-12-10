@@ -1,6 +1,7 @@
 import tensorrt as trt
 import onnx
 import os
+import wget
 import pycuda.driver as cuda
 import pycuda.autoinit
 import tensorrt as trt
@@ -42,8 +43,11 @@ def allocate_buffers(engine):
     return inputs, outputs, bindings, stream
 
 
-def load(client, model_path):
-    local_path = client.file(model_path).getFile().name
+def load(model_path):
+    out_dir = "/tmp"
+    filename = model_path.split('/')[-1]
+    local_path = "{}/{}".format(out_dir, filename)
+    wget.download(model_path, local_path)
 
     """Takes an ONNX file and creates a TensorRT engine to run inference with"""
     with trt.Builder(TRT_LOGGER) as builder, builder.create_network() as network, \
