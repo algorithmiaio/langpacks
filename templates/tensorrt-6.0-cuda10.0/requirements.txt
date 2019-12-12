@@ -1,0 +1,8 @@
+algorithmia>=1.0.0,<2.0
+six
+numpy>=1.16.0,<2.0
+pycuda==2018.1.1
+Pillow>=5.2.0
+wget>=3.2
+tensorrt==6.0.1.5 #Not changable by the user, this is implemented at the service level - if you desire a different version, please contact support.
+onnx==1.5.0

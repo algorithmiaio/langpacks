@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+cp -LrR /tmp/TensorRT-$1/targets/x86_64-linux-gnu/lib/* /usr/lib/x86_64-linux-gnu/
+pip install /tmp/TensorRT-$1/python/tensorrt-$1-cp37-none-linux_x86_64.whl
+pip install /tmp/TensorRT-$1/uff/uff-0.6.5-py2.py3-none-any.whl
