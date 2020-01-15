@@ -1,4 +1,6 @@
 language: rust
+rust:
+  - 1.3.90
 
 script:
   - cargo build --release
