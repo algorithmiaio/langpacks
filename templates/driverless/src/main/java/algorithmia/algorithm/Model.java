@@ -18,8 +18,9 @@ public class Model {
     public Model(String mojoPath) throws Exception {
             System.out.println("loading model");
         ClassLoader cl = ClassLoader.getSystemClassLoader();
-
+        System.out.println("loaded classloader");
         URL[] urls = ((URLClassLoader)cl).getURLs();
+        System.out.println("got urls");
             for(URL url: urls){
                 System.out.println("classname: "+url.getFile());
             }
