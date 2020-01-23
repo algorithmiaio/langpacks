@@ -1,6 +1,5 @@
 package com.algorithmia.algorithm;
 
-import algorithmia.algorithm.Model;
 import com.algorithmia.development.*;
 import com.algorithmia.*;
 import com.google.gson.JsonObject;
@@ -59,7 +58,8 @@ class Algorithm extends AbstractAlgorithm<Object, String>{
     public void load() throws RuntimeException{
         try{
             AlgorithmiaClient client = Algorithmia.client("simaZLholIVq0jNYeqfxRAFKaIw1", "https://api.test.algorithmia.com");
-            String modelPath = client.file("data://zeryx/driverless/pipeline.mojo").getFile().getAbsolutePath();
+//            String modelPath = client.file("data://zeryx/driverless/pipeline.mojo").getFile().getAbsolutePath();
+            String modelPath = "/tmp/pipeline.mojo";
             String licensePath = client.file("data://zeryx/driverless/license.sig").getFile().getAbsolutePath();
             System.out.println(modelPath);
             System.out.println(licensePath);

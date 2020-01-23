@@ -43,10 +43,13 @@
         </dependency>
         <dependency>
             <groupId>ai.h2o</groupId>
-            <artifactId>mojo2-runtime</artifactId>
-            <version>1.5.4</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/mojo2-runtime.jar</systemPath>
+            <artifactId>mojo2-runtime-impl</artifactId>
+            <version>0.13.25</version>
+        </dependency>
+        <dependency>
+            <groupId>ai.h2o</groupId>
+            <artifactId>mojo2-runtime-api</artifactId>
+            <version>0.13.25</version>
         </dependency>
     </dependencies>
     <build>
