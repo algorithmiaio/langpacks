@@ -2,4 +2,4 @@
 
 set -e
 
-java -cp /bin/javaLangpack/algorithmia-langpack-1.0-SNAPSHOT.jar:target/dependencies/* com.algorithmia.Pipe
+java -cp "/bin/javaLangpack/algorithmia-langpack-1.0-SNAPSHOT.jar:target/dependencies/*" com.algorithmia.Pipe
