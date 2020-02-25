@@ -11,7 +11,7 @@ RUN apt-get update && \
   unzip chromedriver_linux64.zip && \
   cp chromedriver /usr/local/share/ && \
   ln -s /usr/local/share/chromedriver /usr/local/bin/ && \
-  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y  chromium-browser && \
+  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y  chromium-browser firefox && \
   rm -rf /var/lib/apt/lists/*
 
 RUN pip install "selenium>=3.141.0,<3.142.0"
