@@ -99,7 +99,7 @@ def run_algorithm_container(client, image, nvidia_support=False, **kwargs):
             'Capabilities': [['gpu'], ['nvidia'], ['compute'], ['compat32'], ['graphics'], ['utility'], ['video'],
                              ['display']],  # not sure which capabilities are really needed
             'Count': -1,  # enable all gpus
-            'NVIDIA_VISIBLE_DEVICES': '0,GPU-xxx',
+            'NVIDIA_VISIBLE_DEVICES': '-1',
         }
     else:
         device_request = None
@@ -109,7 +109,7 @@ def run_algorithm_container(client, image, nvidia_support=False, **kwargs):
     kwargs['image'] = image
     # kwargs['command'] = command
     kwargs['version'] = client.containers.client.api._version
-    kwargs['ports'] = {9999:9999}
+    kwargs['ports'] = {9999: 9999}
     create_kwargs = _create_container_args(kwargs)
     # modification to the original create function
     create_kwargs['host_config'] = client.api.create_host_config(port_bindings={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)})
