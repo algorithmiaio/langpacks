@@ -4,8 +4,12 @@ import os
 import argparse
 import shutil
 from uuid import uuid4
-import docker
 import json
+
+import docker
+from docker.models.images import Image
+from docker.models.containers import _create_container_args
+
 from template_manager import generate_intermediate_image, generate_compile_image
 
 DIR_PATH_TO_PACKAGES = "libraries"
@@ -86,17 +90,40 @@ def create_final_image(client, builder_image, runner_image, workspace_path,
     print("building final image")
     return build_image(client, image_name, workspace_path, tag)
 
-def run_final(docker_client, final_image):
-    """
-    Loads the final image as a container, with port forwarding for langserver.
-    :param docker_client: The docker python client
-    :param final_image: The final image object created from 'create_final_image'
-    :return: A docker container object (see docker sdk for more info)
-    """
-    print("loading final image into container")
-    container = docker_client.containers.run(image=final_image.id, ports={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)}, detach=True)
-    return container
 
+def run_algorithm_container(client, image, nvidia_support=False, **kwargs):
+
+    if nvidia_support:
+        device_request = {
+            'Driver': 'nvidia',
+            'Capabilities': [['gpu'], ['nvidia'], ['compute'], ['compat32'], ['graphics'], ['utility'], ['video'],
+                             ['display']],  # not sure which capabilities are really needed
+            'Count': -1,  # enable all gpus
+            'NVIDIA_VISIBLE_DEVICES': '-1',
+        }
+    else:
+        device_request = None
+
+    if isinstance(image, Image):
+        image = image.id
+    kwargs['image'] = image
+    # kwargs['command'] = command
+    kwargs['version'] = client.containers.client.api._version
+    kwargs['ports'] = {9999: 9999}
+    create_kwargs = _create_container_args(kwargs)
+    # modification to the original create function
+    create_kwargs['host_config'] = client.api.create_host_config(port_bindings={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)})
+
+    print(create_kwargs)
+    if device_request is not None:
+        create_kwargs['host_config']['DeviceRequests'] = [device_request]
+    # end modification
+    create_kwargs['detach'] = True
+    print(create_kwargs)
+
+    resp = client.api.create_container(**create_kwargs)
+    client.api.start(resp['Id'])
+    return resp['Id']
 
 def prepare_workspace(workspace_path, template_path, local_cached_dependency_source_path=None):
     """
@@ -144,7 +171,7 @@ def kill_dangling_images(docker_client):
 
 
 def main(base_image, language_general_name, language_specific_name,
-         template_type, template_name, dependencies, local_src, local_dest, cleanup_after):
+         template_type, template_name, dependencies, local_src, local_dest, cleanup_after, nvidia_support):
 
     client = docker.from_env()
 
@@ -171,9 +198,11 @@ def main(base_image, language_general_name, language_specific_name,
             config = json.load(f)
 
         compile_image = create_final_image(client, buildtime_image.id, runtime_image.id, WORKSPACE_PATH, config, local_dest)
-        container = run_final(client, compile_image)
-        logs = container.attach(stream=True, logs=True, stdout=True, stderr=True)
+        container = run_algorithm_container(client, compile_image, nvidia_support)
+        logs = client.api.attach(container, stream=True, logs=True, stdout=True, stderr=True)
         print("container started, listening for requests on")
+        print("for an example, try passing the following curl command in a separate terminal:\n")
+        print("curl localhost:9999 -H 'Content-Type: application/json' -d '{\name\": \"Anthony\"}'")
         for log in logs:
             print(log)
     except Exception as e:
@@ -227,6 +256,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--clean-up', dest='cleanup', type=bool, help="A boolean variable that if set, forces us to clean up docker containers and images created by this process.")
     parser.add_argument('--local-dependency-src', dest='local_src', help="If using a local cached dependency for testing, is the path towards that dependency on your file system.")
     parser.add_argument('--local-dependency-dest', dest='local_dest', help="If using a local cached dependency for testing, is the path where the dependency will live in the compileLocal image.")
+    parser.add_argument('--nvidia-support', type=bool, help="A boolean variable that if set, ensures that the final docker image is started with a nvidia-docker context. Requires 'nvidia-docker' to be installed.")
 
     args = parser.parse_args()
 
@@ -245,5 +275,6 @@ if __name__ == "__main__":
         dependencies=args.dependencies,
         local_src = args.local_src,
         local_dest = args.local_dest,
-        cleanup_after=args.cleanup
+        cleanup_after=args.cleanup,
+        nvidia_support=args.nvidia_support
     )
