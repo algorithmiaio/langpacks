@@ -15,8 +15,6 @@ mainClass in Compile := Some("algorithmia.Main")
 
 val repoUrl = System.getProperty("repo.url", "http://git.algorithmia.com")
 
-resolvers += "Maven Central" at "https://repo1.maven.org/maven2/org/"
-
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
