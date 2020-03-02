@@ -5,7 +5,8 @@ import argparse
 import shutil
 from uuid import uuid4
 import json
-from subprocess import check_output
+import pycurl
+from io import StringIO, BytesIO
 
 import docker
 from docker.models.images import Image
@@ -178,15 +179,30 @@ def run_tests(client, container, input_lines, expected_lines):
     test_status = True
     logs = client.api.attach(container, stream=True, logs=True, stdout=True, stderr=True)
     for log in logs:
-        if "Listening on port 9999." in log:
+        if b"Listening on port 9999" in log:
             break
     for input, expected in zip(input_lines, expected_lines):
-        cmd = """curl localhost:9999 -H 'Content-Type: application/json' -d '{}'""".format(input)
-        output = check_output(cmd.split(' '))
-        if output == expected:
+        buffer = BytesIO()
+        if input == " " or input == "" or expected == " " or expected == "":
+            break
+        c = pycurl.Curl()
+        c.setopt(pycurl.URL, "localhost:9999")
+        c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
+        c.setopt(pycurl.POST, 1)
+        c.setopt(pycurl.TIMEOUT_MS, 3000)
+        c.setopt(pycurl.READDATA, StringIO(input))
+        c.setopt(pycurl.POSTFIELDSIZE, len(input))
+        c.setopt(pycurl.WRITEDATA, buffer)
+        c.perform()
+        c.close()
+        output = buffer.getvalue()
+        output = json.loads(output)
+        expected = json.loads(expected)
+        if output['result'] == expected['result']:
             print("pass")
         else:
             print("fail")
+            print("output: {}\nexpected: {}".format(output, expected))
             test_status = False
     if test_status:
         print("All tests successful")
