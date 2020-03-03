@@ -8,6 +8,13 @@ The validator follows the same process that legit does when it instances and cre
 The validator builds all required docker images; the base image, builder and runner images, and then combines all of them in the compile image.
 This compile image is how, in IPA - we compile algorithm source code and execute that algorithm in a runner image.
 
+## Dependencies
+ensure that python dependencies in requirements.txt are installed
+
+### System dependencies
+libssl-dev
+libcurl4-openssl-dev
+
 ## How to execute
 Execute the packageset_validator from the root directory of langpacks. _this is important_.
 `./tools/packageset_validator.py -h`
