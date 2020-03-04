@@ -16,12 +16,3 @@ RUN git clone https://github.com/NVIDIA/apex /tmp/apex \
 	&& pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./ \
 	&& rm -rf /tmp/apex \
 	&& rm -rf /var/lib/apt/lists/*
-RUN apt-get autoremove --purge --allow-change-held-packages -y \
-		cuda-nvml-dev-$CUDA_PKG_VERSION \
-		cuda-command-line-tools-$CUDA_PKG_VERSION \
-		cuda-libraries-dev-$CUDA_PKG_VERSION \
-		cuda-minimal-build-$CUDA_PKG_VERSION \
-		libnccl-dev=$NCCL_VERSION-1+cuda10.1 \
-		libcublas-dev=10.2.1.243-1 \
-		libcudnn7=$CUDNN_VERSION-1+cuda10.1 \
-		libcudnn7-dev=$CUDNN_VERSION-1+cuda10.1
