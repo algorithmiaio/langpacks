@@ -1,61 +1,37 @@
 import Algorithmia
 import torch as th
-import apex
+from apex import amp
 
 """
 This package set comes preinstalled with Nvidia Apex 0.1
 
 Example Input:
 {
-    "matrix_a": [[0, 1], [1, 0]],
-    "matrix_b": [[25, 25], [11, 11]]
-}
-
-Expected Output:
-{
-    "product": [[11, 11], [25, 25]]
+    "vector": [
+    	[0, 1, 2, 3],
+    	[4, 5, 6, 7],
+    	[8, 9, 10, 11],
+    	[12, 13, 14, 15]
+    ]
 }
 """
+N, D_in, D_out = 1, 4, 4
 
-device = th.device('cuda:0' if th.cuda.is_available() else 'cpu')
+x = th.randn(N, D_in, device='cuda')
+y = th.randn(N, D_out, device='cuda')
 
-class InputObject:
-    def __init__(self, input_dict):
-        """
-        Creates an instance of the InputObject, which checks the format of data and throws exceptions if anything is
-        missing.
-        "matrix_a" and "matrix_b" must be the same shape.
-        :param A - Matrix A, converted from a json list into a torch cuda Tensor.
-        :param B - Matrix B, converted from a json list into a torch cuda Tensor.
-        """
-        if isinstance(input_dict, dict):
-            if {'matrix_a', 'matrix_b'} <= input_dict.keys():
-                self.A = convert(input_dict['matrix_a'])
-                self.B = convert(input_dict['matrix_b'])
-            else:
-                raise Exception("'matrix_a' and 'matrix_b' must be defined.")
-        else:
-            raise Exception('input must be a json object.')
-        if self.A.shape[-1] != self.B.shape[0]:
-            raise Exception('inner dimensions between A and B must be the same.\n A: {} B: {}'
-                .format(self.A.shape[-1], self.B.shape[0]))
+model = th.nn.Linear(D_in, D_out).cuda()
+optimizer = th.optim.SGD(model.parameters(), lr=1e-3)
 
+model, optimizer = amp.initialize(model, optimizer, opt_level="O1")
 
-def convert(list_array):
-    """
-    Converts a json list into a torch Tensor object.
-    """
-    th_tensor = th.tensor(list_array).float()
-    gpu_tensor = th_tensor.to(device)
-    return gpu_tensor
+def convert(vector):
+	th_tensor = th.tensor(vector).float()
+	gpu_tensor = th_tensor.cuda()
+	return gpu_tensor
 
 def apply(input):
-    """
-    Calculates the dot product of two matricies using pytorch, with a cudnn backend.
-    Returns the product as the output.
-    """
-    input = InputObject(input)
-    C = th.mm(input.A, input.B)
-    z = C.cpu().numpy().tolist()
-    output = {'product': z}
-    return output
+	x = convert(input["vector"])
+	res = model(x)
+	serialized_res = x.cpu().numpy().tolist()
+	return {"result": serialized_res}
