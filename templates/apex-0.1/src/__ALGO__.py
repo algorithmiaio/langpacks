@@ -15,10 +15,7 @@ Example Input:
     ]
 }
 """
-N, D_in, D_out = 1, 4, 4
-
-x = th.randn(N, D_in, device='cuda')
-y = th.randn(N, D_out, device='cuda')
+D_in, D_out = 4, 4
 
 model = th.nn.Linear(D_in, D_out).cuda()
 optimizer = th.optim.SGD(model.parameters(), lr=1e-3)
