@@ -199,10 +199,10 @@ def run_tests(client, container, input_lines, expected_lines):
         output = json.loads(output)
         expected = json.loads(expected)
         print(expected)
+        print(output)
         if output['result'] == expected['result']:
             print("pass")
         else:
-            print(output)
             print("fail")
             print("output: {}\nexpected: {}".format(output, expected))
             test_status = False
