@@ -248,7 +248,7 @@ def main(base_image, language_general_name, language_specific_name,
         container = run_algorithm_container(client, compile_image, nvidia_support, algorithmia_api_key)
 
         if automatic_testing:
-            input_file = path.join(template_path, "docker_test_input")
+            input_file = path.join(template_path,"docker_test_input")
             eval_file = path.join(template_path, "docker_test_output")
             test_inputs = load_lines(input_file)
             test_outputs = load_lines(eval_file)
