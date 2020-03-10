@@ -195,15 +195,14 @@ def run_tests(client, container, input_lines, expected_lines):
         c.setopt(pycurl.WRITEDATA, buffer)
         c.perform()
         c.close()
-        output = buffer.getvalue()
-        output = json.loads(output)
+        output = json.loads(buffer.getvalue())
         expected = json.loads(expected)
         print(expected)
         print(output)
         if 'result' in output and 'result' in expected:
             o = output['result']
             e = expected['result']
-            if o is e:
+            if o == e:
                 print("pass")
             else:
                 print("fail")
@@ -212,7 +211,7 @@ def run_tests(client, container, input_lines, expected_lines):
         elif 'error' in output and 'error' in expected:
             o = output['error']
             e = expected['error']
-            if o is e:
+            if o == e:
                 print("pass")
             else:
                 print("fail")
