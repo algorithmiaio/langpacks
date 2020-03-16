@@ -181,6 +181,7 @@ def run_tests(client, container, input_lines, expected_lines):
     for log in logs:
         if b"Listening on port 9999" in log:
             break
+    print("-- test start --")
     for input, expected in zip(input_lines, expected_lines):
         buffer = BytesIO()
         if input == " " or input == "" or expected == " " or expected == "":
@@ -197,8 +198,8 @@ def run_tests(client, container, input_lines, expected_lines):
         c.close()
         output = json.loads(buffer.getvalue())
         expected = json.loads(expected)
-        print(expected)
-        print(output)
+        print("expected: {}".format(expected))
+        print("actual: {}".format(output))
         if 'result' in output and 'result' in expected:
             o = output['result']
             e = expected['result']
@@ -206,7 +207,6 @@ def run_tests(client, container, input_lines, expected_lines):
                 print("pass")
             else:
                 print("fail")
-                print("output: {}\nexpected: {}".format(output, expected))
                 test_status = False
         elif 'error' in output and 'error' in expected:
             o = output['error']
@@ -215,12 +215,11 @@ def run_tests(client, container, input_lines, expected_lines):
                 print("pass")
             else:
                 print("fail")
-                print("output: {}\nexpected: {}".format(output, expected))
                 test_status = False
         else:
             print("Fail")
-            print("output: {}\nexpected: {}".format(output, expected))
             test_status = False
+    print("-- tests complete --")
     if test_status:
         print("All tests successful")
     else:
