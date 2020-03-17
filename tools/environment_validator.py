@@ -5,6 +5,8 @@ import argparse
 import shutil
 from uuid import uuid4
 import json
+import pycurl
+from io import StringIO, BytesIO
 
 import docker
 from docker.models.images import Image
@@ -91,7 +93,9 @@ def create_final_image(client, builder_image, runner_image, workspace_path,
     return build_image(client, image_name, workspace_path, tag)
 
 
-def run_algorithm_container(client, image, nvidia_support=False, **kwargs):
+def run_algorithm_container(client, image, nvidia_support, algorithmia_api_key):
+
+    raw_args = {}
 
     if nvidia_support:
         device_request = {
@@ -106,22 +110,23 @@ def run_algorithm_container(client, image, nvidia_support=False, **kwargs):
 
     if isinstance(image, Image):
         image = image.id
-    kwargs['image'] = image
+    raw_args['image'] = image
     # kwargs['command'] = command
-    kwargs['version'] = client.containers.client.api._version
-    kwargs['ports'] = {9999: 9999}
-    create_kwargs = _create_container_args(kwargs)
+    raw_args['version'] = client.containers.client.api._version
+    raw_args['ports'] = {9999: 9999}
+    container_args = _create_container_args(raw_args)
     # modification to the original create function
-    create_kwargs['host_config'] = client.api.create_host_config(port_bindings={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)})
+    container_args['host_config'] = client.api.create_host_config(port_bindings={LOCAL_PORT: ("127.0.0.1", LOCAL_PORT)})
 
-    print(create_kwargs)
     if device_request is not None:
-        create_kwargs['host_config']['DeviceRequests'] = [device_request]
+        container_args['host_config']['DeviceRequests'] = [device_request]
     # end modification
-    create_kwargs['detach'] = True
-    print(create_kwargs)
+    container_args['detach'] = True
+    if algorithmia_api_key:
+        container_args['environment'] = {}
+        container_args['environment']['ALGORITHMIA_API_KEY'] = algorithmia_api_key
 
-    resp = client.api.create_container(**create_kwargs)
+    resp = client.api.create_container(**container_args)
     client.api.start(resp['Id'])
     return resp['Id']
 
@@ -170,8 +175,66 @@ def kill_dangling_images(docker_client):
             docker_client.images.remove(image.id, force=True)
 
 
+def run_tests(client, container, input_lines, expected_lines):
+    test_status = True
+    logs = client.api.attach(container, stream=True, logs=True, stdout=True, stderr=True)
+    for log in logs:
+        if b"Listening on port 9999" in log:
+            break
+    print("-- test start --")
+    for input, expected in zip(input_lines, expected_lines):
+        buffer = BytesIO()
+        if input == " " or input == "" or expected == " " or expected == "":
+            break
+        c = pycurl.Curl()
+        c.setopt(pycurl.URL, "localhost:9999")
+        c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
+        c.setopt(pycurl.POST, 1)
+        c.setopt(pycurl.TIMEOUT_MS, 3000)
+        c.setopt(pycurl.READDATA, StringIO(input))
+        c.setopt(pycurl.POSTFIELDSIZE, len(input))
+        c.setopt(pycurl.WRITEDATA, buffer)
+        c.perform()
+        c.close()
+        output = json.loads(buffer.getvalue())
+        expected = json.loads(expected)
+        print("expected: {}".format(expected))
+        print("actual: {}".format(output))
+        if 'result' in output and 'result' in expected:
+            o = output['result']
+            e = expected['result']
+            if o == e:
+                print("pass")
+            else:
+                print("fail")
+                test_status = False
+        elif 'error' in output and 'error' in expected:
+            o = output['error']
+            e = expected['error']
+            if o == e:
+                print("pass")
+            else:
+                print("fail")
+                test_status = False
+        else:
+            print("Fail")
+            test_status = False
+    print("-- tests complete --")
+    if test_status:
+        print("All tests successful")
+    else:
+        print("At least one test failed")
+
+def load_lines(testing_file_path):
+    with open(testing_file_path) as f:
+        lines = f.read()
+    lines = lines.split("\n")
+    return lines
+
+
 def main(base_image, language_general_name, language_specific_name,
-         template_type, template_name, dependencies, local_src, local_dest, cleanup_after, nvidia_support):
+         template_type, template_name, dependencies, local_src, local_dest, cleanup_after, nvidia_support,
+         algorithmia_api_key, automatic_testing):
 
     client = docker.from_env()
 
@@ -198,13 +261,21 @@ def main(base_image, language_general_name, language_specific_name,
             config = json.load(f)
 
         compile_image = create_final_image(client, buildtime_image.id, runtime_image.id, WORKSPACE_PATH, config, local_dest)
-        container = run_algorithm_container(client, compile_image, nvidia_support)
-        logs = client.api.attach(container, stream=True, logs=True, stdout=True, stderr=True)
-        print("container started, listening for requests on")
-        print("for an example, try passing the following curl command in a separate terminal:\n")
-        print("curl localhost:9999 -H 'Content-Type: application/json' -d '{\name\": \"Anthony\"}'")
-        for log in logs:
-            print(log)
+        container = run_algorithm_container(client, compile_image, nvidia_support, algorithmia_api_key)
+
+        if automatic_testing:
+            input_file = path.join(template_path,"docker_test_input")
+            eval_file = path.join(template_path, "docker_test_output")
+            test_inputs = load_lines(input_file)
+            test_outputs = load_lines(eval_file)
+            run_tests(client, container, test_inputs, test_outputs)
+        else:
+            logs = client.api.attach(container, stream=True, logs=True, stdout=True, stderr=True)
+            print("container started, listening for requests on")
+            print("for an example, try passing the following curl command in a separate terminal:\n")
+            print("curl localhost:9999 -H 'Content-Type: application/json' -d '{\name\": \"Anthony\"}'")
+            for log in logs:
+                print(log)
     except Exception as e:
         shutil.rmtree(WORKSPACE_PATH)
         if cleanup_after:
@@ -257,6 +328,8 @@ if __name__ == "__main__":
     parser.add_argument('--local-dependency-src', dest='local_src', help="If using a local cached dependency for testing, is the path towards that dependency on your file system.")
     parser.add_argument('--local-dependency-dest', dest='local_dest', help="If using a local cached dependency for testing, is the path where the dependency will live in the compileLocal image.")
     parser.add_argument('--nvidia-support', type=bool, help="A boolean variable that if set, ensures that the final docker image is started with a nvidia-docker context. Requires 'nvidia-docker' to be installed.")
+    parser.add_argument('-k', '--algorithmia-api-key', type=str, help="A string value that when defined, provides the ALGORITHMIA_API_KEY environment variable to the algorithm runtimme, to enable algorithm client access.")
+    parser.add_argument('-a', '--automatic-testing', type=bool, help="A boolean variable that when set, runs any automatic test scripts found in the algorithm template, and provides the results to the console.")
 
     args = parser.parse_args()
 
@@ -276,5 +349,7 @@ if __name__ == "__main__":
         local_src = args.local_src,
         local_dest = args.local_dest,
         cleanup_after=args.cleanup,
-        nvidia_support=args.nvidia_support
+        nvidia_support=args.nvidia_support,
+        algorithmia_api_key=args.algorithmia_api_key,
+        automatic_testing=args.automatic_testing,
     )

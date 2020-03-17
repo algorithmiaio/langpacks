@@ -1,0 +1,2 @@
+{"result":"hello algorithmia"}
+{"error": {"type": "SystemError", "message": "Failed to build algorithm input from request: JSON error - expected value at line 1 column 1"}}
