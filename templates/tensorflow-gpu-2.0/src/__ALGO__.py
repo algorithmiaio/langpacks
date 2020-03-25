@@ -1,6 +1,7 @@
 import Algorithmia
 import tensorflow.keras.backend as K
 from tensorflow import convert_to_tensor
+import tensorflow as tf
 import numpy as np
 
 """
@@ -15,6 +16,11 @@ Expected Output:
     "product": [[11, 11], [25, 25]]
 }
 """
+
+# Configure Tensorflow to only use up to 30% of the GPU.
+gpus = tf.config.experimental.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(gpus[0], True)
+tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=3432)])
 
 class InputObject:
     def __init__(self, input_dict):

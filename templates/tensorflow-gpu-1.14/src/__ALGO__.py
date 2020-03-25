@@ -1,5 +1,7 @@
 import Algorithmia
 import tensorflow.keras.backend as K
+from tensorflow.keras.backend import set_session
+from tensorflow import ConfigProto, Session
 from tensorflow import convert_to_tensor
 import numpy as np
 
@@ -15,6 +17,13 @@ Expected Output:
     "product": [[11, 11], [25, 25]]
 }
 """
+
+# Configure Tensorflow to only use up to 30% of the GPU.
+config = ConfigProto()
+config.gpu_options.allow_growth=True
+config.gpu_options.per_process_gpu_memory_fraction = 0.30
+sess = Session(config=config)
+set_session(sess)
 
 class InputObject:
     def __init__(self, input_dict):
