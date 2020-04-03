@@ -12,7 +12,6 @@ jobs:
   # This workflow only contains a single job, however if you'd like you can split this processing across multiple jobs.
   algorithmia-ci:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
