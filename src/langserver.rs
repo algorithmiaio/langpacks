@@ -67,10 +67,15 @@ impl LangServer {
         let watched_runner = self.runner.clone();
         let watched_delete_signal = self.delete_signalled.clone();
         thread::spawn(move || {
+            let mut stdio = (String::new(), String::new());
             loop {
                 let status = {
                     let r = watched_runner.lock().expect("Failed to lock runner");
-                    r.check_exited()
+                    let status = r.check_exited();
+                    if status.is_some() {
+                        stdio = r.take_stdio();
+                    }
+                    status
                 };
 
                 let delete_signalled = watched_delete_signal.lock().unwrap();
@@ -78,7 +83,7 @@ impl LangServer {
                     if let Some(code) = status {
                         info!("{} {} LangServer monitor thread detected exit: {}", LOG_IDENTIFIER, "-", code);
                         if let Some(ref notifier) = notify_exited {
-                            let err = Error::UnexpectedExit(code);
+                            let err = Error::UnexpectedExit(code, stdio.0, stdio.1);
                             let message = StatusMessage::failure(err, Duration::new(0,0));
                             let _ = notifier.notify(message, None);
                         }

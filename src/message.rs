@@ -29,6 +29,10 @@ pub enum RunnerMessage {
 #[derive(Serialize)]
 pub struct Metadata {
     pub duration: f64,
+    //#[serde(skip_serializing_if="Option::is_none")]
+    //pub stdout: Option<String>,
+    //#[serde(skip_serializing_if="Option::is_none")]
+    //pub stderr: Option<String>,
     #[serde(skip_serializing_if="Option::is_none")]
     pub content_type: Option<String>,
 }

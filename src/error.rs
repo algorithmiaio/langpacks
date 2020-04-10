@@ -52,7 +52,7 @@ quick_error! {
             display("bad request: {}", err)
         }
 
-        UnexpectedExit(code: i32) {
+        UnexpectedExit(code: i32, stdout: String, stderr: String) {
             description("unexpected exit")
             display("exited with code {}", code)
         }
