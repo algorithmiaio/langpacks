@@ -83,8 +83,8 @@ impl LangServer {
                     if let Some(code) = status {
                         info!("{} {} LangServer monitor thread detected exit: {}", LOG_IDENTIFIER, "-", code);
                         if let Some(ref notifier) = notify_exited {
-                            let err = Error::UnexpectedExit(code, stdio.0, stdio.1);
-                            let message = StatusMessage::failure(err, Duration::new(0,0));
+                            let err = Error::UnexpectedExit(code, stdio.0.clone(), stdio.1.clone());
+                            let message = StatusMessage::failure(err, Duration::new(0,0), Some(stdio.0.clone()), Some(stdio.1.clone()));
                             let _ = notifier.notify(message, None);
                         }
                         if !is_async {

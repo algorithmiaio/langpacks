@@ -149,7 +149,8 @@ impl LangRunner {
             };
 
             // Augment output with duration and stdout
-            runner_state.into_message(duration)
+            let stdio = self.take_stdio();
+            runner_state.into_message(duration, Some(stdio.0), Some(stdio.1))
         };
 
         // We are now done with a request, we can set the request_id to none
