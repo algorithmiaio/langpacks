@@ -149,7 +149,8 @@ impl LangRunner {
             };
 
             // Augment output with duration and stdout
-            runner_state.into_message(duration)
+            let stdio = self.take_stdio();
+            runner_state.into_message(duration, Some(stdio.0), Some(stdio.1))
         };
 
         // We are now done with a request, we can set the request_id to none
@@ -225,7 +226,10 @@ impl LangRunnerProcess {
                 match line_result {
                     Ok(line) => {
                         match arc_stderr_buf.lock() {
-                            Ok(mut lines) => lines.push_str(&line),
+                            Ok(mut lines) => {
+                                lines.push_str(&line);
+                                lines.push('\n');
+                            }
 						    Err(err) => error!("{} {} Failed to get lock on stderr buffer: {}", LOG_IDENTIFIER, req_id, err),
                         }
                         info!("{} {} {}", "ALGOERR", req_id, line);
@@ -257,7 +261,10 @@ impl LangRunnerProcess {
                         break;
                     } else {
                         match arc_stdout_buf.lock() {
-                            Ok(mut lines) => lines.push_str(&line),
+                            Ok(mut lines) => {
+                                lines.push_str(&line);
+                                lines.push('\n');
+                            }
 						    Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
                         }
                         info!("{} {} {}", "ALGOOUT", req_id, &line);
