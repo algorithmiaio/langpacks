@@ -1,6 +1,6 @@
 use serde::ser::Serialize;
 use serde_json::{ser, Deserializer};
-use std::env;
+use std::{env, mem};
 use std::io::{self, Write, BufRead, BufReader};
 use std::ffi::CString;
 use std::fs::File;
@@ -34,6 +34,8 @@ pub struct LangRunner {
 struct LangRunnerProcess {
     stdin: Option<ChildStdin>,
     child: Mutex<Child>,
+    stdout_buf: Arc<Mutex<String>>,
+    stderr_buf: Arc<Mutex<String>>,
     exit_status: Mutex<Option<i32>>,
     request_id: Arc<RwLock<Option<String>>>,
 }
@@ -91,7 +93,8 @@ impl LangRunner {
                     let runner = arc_runner.read().expect("Failed to acquire read lock on runner");
                     if let Some(code) = runner.check_exited() {
                         warn!("{} {} LangRunner monitor thread detected exit: {}", LOG_IDENTIFIER, "-", code);
-                        if let Err(err) = tx.send(Err(Error::UnexpectedExit(code))) {
+                        let (stdout, stderr) = runner.take_stdio();
+                        if let Err(err) = tx.send(Err(Error::UnexpectedExit(code, stdout, stderr))) {
                             error!("{} {} FATAL: Channel receiver disconnected unexpectedly: {}", LOG_IDENTIFIER, "-", err);
                             process::exit(code); // Don't want to just panic a single thread and hang
                         }
@@ -106,6 +109,11 @@ impl LangRunner {
     pub fn write<T: Serialize>(&mut self, input: &T) -> Result<(), Error> {
         let mut runner = self.runner.write().expect("Failed to acquire write lock on runner");
         runner.write(input)
+    }
+
+    pub fn take_stdio(&self) -> (String, String) {
+        let runner = self.runner.read().expect("Failed to acquire read lock on runner");
+        runner.take_stdio()
     }
 
     pub fn set_request_id(&mut self, request_id: Option<String>) {
@@ -141,7 +149,8 @@ impl LangRunner {
             };
 
             // Augment output with duration and stdout
-            runner_state.into_message(duration)
+            let stdio = self.take_stdio();
+            runner_state.into_message(duration, Some(stdio.0), Some(stdio.1))
         };
 
         // We are now done with a request, we can set the request_id to none
@@ -183,6 +192,8 @@ impl LangRunnerProcess {
         };
 
         let request_id = Arc::new(RwLock::new(None));
+        let stdout_buf = Arc::new(Mutex::new(String::new()));
+        let stderr_buf = Arc::new(Mutex::new(String::new()));
 
         let mut child = Command::new(&path)
                                  .stdin(Stdio::piped())
@@ -205,20 +216,32 @@ impl LangRunnerProcess {
         // Spawn a thread to handle algorithm stderr - we do this here so we shouldn't get get stuck
         // waiting for stuff to be read from stderr when we are loading the algorithm
         let arc_request_id_err = request_id.clone();
+        let arc_stderr_buf = stderr_buf.clone();
         thread::spawn(move || {
             let reader = BufReader::new(stderr);
             for line_result in reader.lines() {
                 let req_id = arc_request_id_err
-                    .read().expect("failed to get read handle on request_id for stdout reading")
+                    .read().expect("failed to get read handle on request_id for stderr reading")
                     .clone().unwrap_or_else(|| "-".to_owned());
                 match line_result {
-                    Ok(line) => info!("{} {} {}", "ALGOERR", req_id, line),
+                    Ok(line) => {
+                        match arc_stderr_buf.lock() {
+                            Ok(mut lines) => {
+                                lines.push_str(&line);
+                                lines.push('\n');
+                            }
+						    Err(err) => error!("{} {} Failed to get lock on stderr buffer: {}", LOG_IDENTIFIER, req_id, err),
+                        }
+                        info!("{} {} {}", "ALGOERR", req_id, line);
+                    },
                     Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, req_id, err),
                 }
             }
         });
 
         let mut reader = BufReader::new(stdout);
+        let arc_stderr_buf = stderr_buf.clone();
+        let arc_stdout_buf = stdout_buf.clone();
         loop {
             let mut line = String::new();
             match reader.read_line(&mut line) {
@@ -226,7 +249,7 @@ impl LangRunnerProcess {
                     info!("{} {} Reached stdout EOF", LOG_IDENTIFIER, "-");
                     // Wait for exit return UnexpectedExit
                     let code = child.wait().ok().and_then(|exit| exit.code()).unwrap_or(UNKNOWN_EXIT);
-                    return Err(Error::UnexpectedExit(code));
+                    return Err(Error::UnexpectedExit(code, arc_stdout_buf.lock().unwrap().clone(), arc_stderr_buf.lock().unwrap().clone()));
                 }
                 Ok(_) => {
                     let _newline = line.pop();
@@ -237,6 +260,13 @@ impl LangRunnerProcess {
                         info!("{} {} {}", LOG_IDENTIFIER, req_id, &line);
                         break;
                     } else {
+                        match arc_stdout_buf.lock() {
+                            Ok(mut lines) => {
+                                lines.push_str(&line);
+                                lines.push('\n');
+                            }
+						    Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
+                        }
                         info!("{} {} {}", "ALGOOUT", req_id, &line);
                     }
                 }
@@ -255,7 +285,13 @@ impl LangRunnerProcess {
                     .read().expect("failed to get read handle on request_id for stdout reading")
                     .clone().unwrap_or_else(|| "-".to_owned());
                 match line_result {
-                    Ok(line) => info!("{} {} {}", "ALGOOUT", req_id, line),
+                    Ok(line) => {
+                        match arc_stdout_buf.lock() {
+                            Ok(mut lines) => lines.push_str(&line),
+						    Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
+                        }
+                        info!("{} {} {}", "ALGOOUT", req_id, line);
+                    }
                     Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, req_id, err),
                 }
             }
@@ -264,6 +300,8 @@ impl LangRunnerProcess {
         Ok(LangRunnerProcess {
             child: Mutex::new(child),
             stdin: Some(stdin),
+            stdout_buf,
+            stderr_buf,
             exit_status: Mutex::new(None),
             request_id: request_id.clone()
         })
@@ -284,6 +322,18 @@ impl LangRunnerProcess {
                 Err(Error::Unexpected("cannot write to closed runner stdin"))
             }
         }
+    }
+
+    // Reads the buffered stdout/stderr, emptying the buffer in the process
+    pub fn take_stdio(&self) -> (String, String) {
+        // Instead of copying data, we allocate new buffers, swap pointers, and return old buffers
+        let mut swap_stdout = String::new();
+        let mut swap_stderr = String::new();
+
+        mem::swap(&mut *self.stdout_buf.lock().unwrap(), &mut swap_stdout);
+        mem::swap(&mut *self.stderr_buf.lock().unwrap(), &mut swap_stderr);
+
+        (swap_stdout, swap_stderr)
     }
 
     pub fn check_exited(&self) -> Option<i32> {

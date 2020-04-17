@@ -55,22 +55,28 @@ fn main() {
 
     match listener_res {
         Ok(mut listener) => {
-            let _ = load_complete(Ok(()), duration).or_else(|_| listener.close());
+            let _ = load_complete(Ok(()), duration, None, None).or_else(|_| listener.close());
         }
         Err(err) => {
             error!("{} {} Failed to load: {}", LOG_IDENTIFIER, "-", err);
-            let _ = load_complete(Err(err), duration);
+            let _ = match err {
+                Error::UnexpectedExit(code, stdout, stderr) => load_complete(
+                    // Create a new UnexpectedExit since I don't know rust
+                    Err(Error::UnexpectedExit(code, stdout.clone(), stderr.clone())),
+                    duration, Some(stdout), Some(stderr)),
+                _ => load_complete(Err(err), duration, None, None),
+            };
         }
     };
 }
 
 
-fn load_complete(result: Result<(), Error>, duration: Duration) -> Result<(), Error> {
+fn load_complete(result: Result<(), Error>, duration: Duration, stdout: Option<String>, stderr: Option<String>) -> Result<(), Error> {
     // Optionally notify another service that the LangServer is alive and serving requests
     if let Some(notifier) = get_status_notifier() {
         let message = match result {
-            Ok(_) => StatusMessage::success(duration),
-            Err(err) => StatusMessage::failure(err, duration),
+            Ok(_) => StatusMessage::success(duration, stdout, stderr),
+            Err(err) => StatusMessage::failure(err, duration, stdout, stderr),
         };
         notifier.notify(message, None)?;
     }

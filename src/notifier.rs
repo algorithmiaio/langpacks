@@ -5,7 +5,6 @@ use std::time::Duration;
 use serde_json::ser;
 use serde::Serialize;
 use std::thread;
-use std::error::Error as StdError;
 use super::error::Error;
 
 #[derive(Clone)]
@@ -19,7 +18,7 @@ impl Notifier {
     pub fn parse(url: &str) -> Result<Notifier, Error> {
         match Url::parse(url) {
             Ok(parsed_url) => Ok(Notifier { url: parsed_url }),
-            Err(err) => Err(Error::UrlParseError(err.description().to_owned())),
+            Err(err) => Err(Error::UrlParseError(err.to_string())),
         }
     }
 

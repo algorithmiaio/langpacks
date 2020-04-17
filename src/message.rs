@@ -30,6 +30,10 @@ pub enum RunnerMessage {
 pub struct Metadata {
     pub duration: f64,
     #[serde(skip_serializing_if="Option::is_none")]
+    pub stdout: Option<String>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub stderr: Option<String>,
+    #[serde(skip_serializing_if="Option::is_none")]
     pub content_type: Option<String>,
 }
 
@@ -47,35 +51,37 @@ pub struct StatusMessage {
 }
 
 impl Metadata {
-    fn new(duration: Duration, content_type: Option<String>)
+    fn new(duration: Duration, content_type: Option<String>, stdout: Option<String>, stderr: Option<String>)
         -> Metadata {
         let duration_float = duration.as_secs() as f64 + (duration.subsec_nanos() as f64 / 1_000_000_000f64);
         Metadata {
             duration: duration_float,
             content_type: content_type,
+            stdout: stdout,
+            stderr: stderr,
         }
     }
 }
 
 impl RunnerState {
-    pub fn into_message(self, duration: Duration) -> RunnerMessage {
+    pub fn into_message(self, duration: Duration, stdout: Option<String>, stderr: Option<String>) -> RunnerMessage {
         match self {
             RunnerState::Completed(RunnerOutput::Success{ result, metadata }) => {
                 RunnerMessage::Success{
                     result: result,
-                    metadata: Metadata::new(duration, Some(metadata.content_type)),
+                    metadata: Metadata::new(duration, Some(metadata.content_type), stdout, stderr),
                 }
             }
             RunnerState::Completed(RunnerOutput::Failure{ error }) => {
                 RunnerMessage::Failure {
                     error: error,
-                    metadata: Metadata::new(duration, None),
+                    metadata: Metadata::new(duration, None, stdout, stderr),
                 }
             }
             RunnerState::Exited(err) => {
                 RunnerMessage::Failure {
                     error: ErrorMessage::exit(err),
-                    metadata: Metadata::new(duration, None),
+                    metadata: Metadata::new(duration, None, stdout, stderr),
                 }
             }
         }
@@ -95,7 +101,7 @@ impl RunnerMessage {
 }
 
 impl StatusMessage {
-    fn new(health_status: HealthStatus, load_time: Duration) -> StatusMessage {
+    fn new(health_status: HealthStatus, load_time: Duration, stdout: Option<String>, stderr: Option<String>) -> StatusMessage {
         let (status, error) = match health_status {
             HealthStatus::Success => ("Successful", None),
             HealthStatus::Failure(err) => ("Failed", Some(err)),
@@ -107,15 +113,17 @@ impl StatusMessage {
             metadata: Metadata {
                 duration: load_time.as_secs() as f64 + (load_time.subsec_nanos() as f64 / 1_000_000_000f64),
                 content_type: None,
+                stdout: stdout,
+                stderr: stderr,
             }
         }
     }
 
-    pub fn success(duration: Duration) -> StatusMessage {
-        StatusMessage::new(HealthStatus::Success, duration)
+    pub fn success(duration: Duration, stdout: Option<String>, stderr: Option<String>) -> StatusMessage {
+        StatusMessage::new(HealthStatus::Success, duration, stdout, stderr)
     }
 
-    pub fn failure(err: Error, duration: Duration) -> StatusMessage {
-        StatusMessage::new(HealthStatus::Failure(err), duration)
+    pub fn failure(err: Error, duration: Duration, stdout: Option<String>, stderr: Option<String>) -> StatusMessage {
+        StatusMessage::new(HealthStatus::Failure(err), duration, stdout, stderr)
     }
 }
