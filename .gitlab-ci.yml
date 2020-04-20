@@ -4,16 +4,6 @@ default:
 variables:
   CARGO_HOME: $CI_PROJECT_DIR/.cargo
 
-build:
-  stage: build
-  script:
-    - cargo build --release
-  cache:
-    key: deps
-    paths:
-      - .cargo
-      - target/debug/deps
-
 test:
   stage: test
   script:
@@ -22,4 +12,4 @@ test:
     key: deps
     paths:
       - .cargo
-      - target/debug/deps
+      - target/debug
