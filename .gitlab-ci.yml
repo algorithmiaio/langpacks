@@ -1,0 +1,12 @@
+default:
+    image: rust:1.39.0
+
+build:
+  stage: build
+  script:
+    - cargo build --release
+
+test:
+  stage: test
+  script:
+    - cargo test
