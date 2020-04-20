@@ -1,12 +1,25 @@
 default:
     image: rust:1.39.0
 
+variables:
+  CARGO_HOME: $CI_PROJECT_DIR/.cargo
+
 build:
   stage: build
   script:
     - cargo build --release
+  cache:
+    key: deps
+    paths:
+      - .cargo
+      - target/debug/deps
 
 test:
   stage: test
   script:
     - cargo test
+  cache:
+    key: deps
+    paths:
+      - .cargo
+      - target/debug/deps
