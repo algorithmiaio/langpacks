@@ -60,10 +60,6 @@ impl LangServer {
     // Monitor runner - exit if exit is encountered
     // Since this needs a lock on the runner, it won't run while we're calling the algorithm
     fn monitor_runner(&self, notify_exited: Option<Notifier>) {
-        let is_async = match self.mode {
-            LangServerMode::Sync => false,
-            LangServerMode::Async(..) => true,
-        };
         let watched_runner = self.runner.clone();
         let watched_delete_signal = self.delete_signalled.clone();
         thread::spawn(move || {
@@ -87,11 +83,7 @@ impl LangServer {
                             let message = StatusMessage::failure(err, Duration::new(0,0), Some(stdio.0.clone()), Some(stdio.1.clone()));
                             let _ = notifier.notify(message, None);
                         }
-                        if !is_async {
-                            process::exit(code);
-                        } else {
-                            break;
-                        }
+                        process::exit(code);
                     }
                 } else {
                     info!("{} {} Not sending status update on delete due to explicit delete", LOG_IDENTIFIER, "-");
