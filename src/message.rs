@@ -79,9 +79,18 @@ impl RunnerState {
                 }
             }
             RunnerState::Exited(err) => {
+                // If the err type was an UnexpectedExit then we would already have stdout and
+                // stderr from the error message so default to that instead
+                // The Error enum doesn't support .clone() so have to do some weird object
+                // re-creations here
+                let err_stdio = match err {
+                    Error::UnexpectedExit(code, stdout, stderr) =>
+                        (Error::UnexpectedExit(code, stdout.clone(), stderr.clone()), Some(stdout.clone()), Some(stderr.clone())),
+                    _ => (err, stdout, stderr)
+                };
                 RunnerMessage::Failure {
-                    error: ErrorMessage::exit(err),
-                    metadata: Metadata::new(duration, None, stdout, stderr),
+                    error: ErrorMessage::exit(err_stdio.0),
+                    metadata: Metadata::new(duration, None, err_stdio.1, err_stdio.2),
                 }
             }
         }

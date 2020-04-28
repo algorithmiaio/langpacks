@@ -149,6 +149,8 @@ impl LangRunner {
             };
 
             // Augment output with duration and stdout
+            // NB: This might yield empty strings if the stdio was already consumed, it's up to
+            // runner_state.into_message to do the right thing
             let stdio = self.take_stdio();
             runner_state.into_message(duration, Some(stdio.0), Some(stdio.1))
         };
@@ -230,7 +232,7 @@ impl LangRunnerProcess {
                                 lines.push_str(&line);
                                 lines.push('\n');
                             }
-						    Err(err) => error!("{} {} Failed to get lock on stderr buffer: {}", LOG_IDENTIFIER, req_id, err),
+                            Err(err) => error!("{} {} Failed to get lock on stderr buffer: {}", LOG_IDENTIFIER, req_id, err),
                         }
                         info!("{} {} {}", "ALGOERR", req_id, line);
                     },
@@ -265,7 +267,7 @@ impl LangRunnerProcess {
                                 lines.push_str(&line);
                                 lines.push('\n');
                             }
-						    Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
+                            Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
                         }
                         info!("{} {} {}", "ALGOOUT", req_id, &line);
                     }
@@ -288,7 +290,7 @@ impl LangRunnerProcess {
                     Ok(line) => {
                         match arc_stdout_buf.lock() {
                             Ok(mut lines) => lines.push_str(&line),
-						    Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
+                            Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
                         }
                         info!("{} {} {}", "ALGOOUT", req_id, line);
                     }
