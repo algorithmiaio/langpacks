@@ -287,7 +287,10 @@ impl LangRunnerProcess {
                 match line_result {
                     Ok(line) => {
                         match arc_stdout_buf.lock() {
-                            Ok(mut lines) => lines.push_str(&line),
+                            Ok(mut lines) => {
+                                lines.push_str(&line);
+                                lines.push('\n');
+                            },
 						    Err(err) => error!("{} {} Failed to get lock on stdout buffer: {}", LOG_IDENTIFIER, req_id, err),
                         }
                         info!("{} {} {}", "ALGOOUT", req_id, line);
