@@ -217,6 +217,7 @@ impl LangRunnerProcess {
         // waiting for stuff to be read from stderr when we are loading the algorithm
         let arc_request_id_err = request_id.clone();
         let arc_stderr_buf = stderr_buf.clone();
+        let arc_stdout_buf = stdout_buf.clone();
         thread::spawn(move || {
             let reader = BufReader::new(stderr);
             for line_result in reader.lines() {
@@ -231,7 +232,22 @@ impl LangRunnerProcess {
                                 lines.push('\n');
                             }
 						    Err(err) => error!("{} {} Failed to get lock on stderr buffer: {}", LOG_IDENTIFIER, req_id, err),
-                        }
+                        };
+                        // Add the output from stderr into the stdout buffer for
+                        // backward compatibility since there is an expectation that all stdout and
+                        // stderr output will be returned in one list, however we track stacktraces
+                        // specifically from stderr, and so consuming them as a single stream would
+                        // break that functionality.
+                        // While this approach means that while messages within each stream are ordered properly
+                        // messages between streams might be interleaved arbitrarily if they are
+                        // logged shortly after each other.
+                        match arc_stdout_buf.lock() {
+                            Ok(mut lines) => {
+                                lines.push_str(&line);
+                                lines.push('\n');
+                            }
+                            Err(err) => error!("{} {} Failed to get lock stdout buffer for stderr: {}", LOG_IDENTIFIER, req_id, err),
+                        };
                         info!("{} {} {}", "ALGOERR", req_id, line);
                     },
                     Err(err) => error!("{} {} Failed to read line: {}", LOG_IDENTIFIER, req_id, err),
