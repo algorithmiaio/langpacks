@@ -1,4 +1,5 @@
 {
+    "display_name": "Anaconda",
     "artifacts": [
       {"source":"/home/algo/.cache", "destination":"/home/algo/.cache/"},
       {"source":"/home/algo/anaconda_environment", "destination": "/home/algo/anaconda_environment/"},

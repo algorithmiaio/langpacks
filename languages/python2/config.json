@@ -1,4 +1,5 @@
 {
+    "display_name": "Python 2.x",
     "artifacts": [
         {"source":"/home/algo/.local", "destination":"/home/algo/.local/"},
         {"source":"/opt/algorithm", "destination":"/opt/algorithm/"}

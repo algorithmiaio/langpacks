@@ -1,4 +1,5 @@
 {
+    "display_name": "C#",
     "artifacts": [
         {"source":"/opt/algorithm/bin/Release/*/*", "destination":"/opt/algorithm/"},
         {"source":"/opt/algorithm/resources", "destination":"/opt/algorithm/resources/"},

@@ -1,4 +1,5 @@
 {
+    "display_name": "R",
     "artifacts": [
       {"source":"/opt/algorithm", "destination":"/opt/algorithm/"},
       {"source":"/usr/local/lib/R/site-library", "destination":"/usr/local/lib/R/site-library/"}
