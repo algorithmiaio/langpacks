@@ -1,4 +1,5 @@
 {
+    "display_name": "Scala 2.x & sbt 1.3.x",
     "artifacts": [
       {"source":"/opt/algorithm/target/universal/stage", "destination":"/opt/algorithm/stage/"}
     ]

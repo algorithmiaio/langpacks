@@ -1,4 +1,5 @@
 {
+    "display_name": "Java OpenJDK 11.0",
     "artifacts": [
         {"source":"/opt/algorithm/target/*.jar", "destination":"/opt/algorithm/target/algorithm.jar"},
         {"source":"/opt/algorithm/target/lib", "destination":"/opt/algorithm/target/lib/"}
