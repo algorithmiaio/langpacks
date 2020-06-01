@@ -1,19 +1,27 @@
 FROM {{builder_image}} as builder
-USER 2222
+
 # Docker build commands don't resolve environment variables so need this to either be numeric or a build argument
-COPY --chown=2222:2222 algosource /opt/algorithm/
+COPY --chown=algo:algo algosource /opt/algorithm/
 
 {% if config.local_dependency_src_path is defined %}
-COPY --chown=2222:2222 {{config.local_dependency_src_path}} {{config.local_dependency_dest_path}}
+COPY --chown=algo:algo {{config.local_dependency_src_path}} {{config.local_dependency_dest_path}}
 {% endif %}
 
 ENV HOME=/home/algo
+{% if config.local_dependency_src_path is defined %}
+# Custom CA certs won't be available when testing locally
+USER algo
 RUN /usr/local/bin/algorithmia-build
+{% else %}
+# customize-container.sh runs as root, then switches to user of less privilege
+USER root
+RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bin/algorithmia-build
+{% endif %}
 
 FROM {{runner_image}}
 {% for artifact in config.artifacts %}
-COPY --from=builder --chown=2222:2222 {{artifact.source}} {{artifact.destination}}
+COPY --from=builder --chown=algo:algo {{artifact.source}} {{artifact.destination}}
 {% endfor %}
-USER 2222
+USER algo
 WORKDIR /opt/algorithm
 ENTRYPOINT /bin/init-langserver
