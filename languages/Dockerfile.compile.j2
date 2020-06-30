@@ -16,7 +16,7 @@ RUN /usr/local/bin/algorithmia-build
 # customize-container.sh runs as root, then switches to user of less privilege
 USER root
 COPY mounted-scripts /opt/algorithmiaio/mounted-scripts
-COPY ca-certificates /opt/algorithmia
+COPY ca-certificates /opt/algorithmia/ca-certificates
 RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bin/algorithmia-build
 {% endif %}
 
