@@ -5,6 +5,7 @@ FROM {{base_image}}
 # Set options that should be defined everywhere
 ENV JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 ENV LANG C.UTF-8
+ARG DEBIAN_FRONTEND=noninteractive
 LABEL langpacks_version={{langpacks_version}}
 LABEL langserver_image={{langserver_image}}
 
