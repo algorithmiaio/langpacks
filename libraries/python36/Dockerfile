@@ -5,6 +5,8 @@ RUN apt-get -y update && \
         build-essential \
         ca-certificates \
         checkinstall \
+        gnupg \
+		gnupg2 \
         libbz2-dev \
         libc6-dev \
         libffi-dev \

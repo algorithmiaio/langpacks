@@ -16,6 +16,8 @@ RUN apt-get -y update && \
         tk-dev \
         uuid-dev \
         wget \
+        gnupg \
+		gnupg2 \
         git && \
     rm -rf /var/lib/apt/lists/*
 
