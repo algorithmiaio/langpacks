@@ -1,0 +1,3 @@
+algorithmia>=1.0.0,<2.0
+six
+spacy==2.0.18  # if you need a different version, please change this value - bear in mind however that it may take longer to compile.
