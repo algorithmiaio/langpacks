@@ -7,6 +7,8 @@ RUN apt-get -y update && \
         checkinstall \
         libbz2-dev \
         libc6-dev \
+        gnupg \
+		gnupg2 \
         libffi-dev \
         libgdbm-dev \
         libncursesw5-dev \
