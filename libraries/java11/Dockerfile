@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
             maven \
 		xz-utils \
 		fontconfig libfreetype6 \
-		openjdk-8-jdk-headless \
+		openjdk-11-jdk-headless \
 		&& rm -rf /var/lib/apt/lists/*
 
 # basic smoke test
