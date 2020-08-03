@@ -8,7 +8,7 @@ COPY --chown=algo:algo {{config.local_dependency_src_path}} {{config.local_depen
 {% endif %}
 
 ENV HOME=/home/algo
-{% if config.local_dependency_src_path is defined %}
+{% if local is defined %}
 # Custom CA certs won't be available when testing locally
 USER algo
 RUN /usr/local/bin/algorithmia-build
