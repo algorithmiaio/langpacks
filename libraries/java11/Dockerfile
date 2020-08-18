@@ -21,7 +21,3 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN javac --version; \
 	java --version
 
-
-ENV JAVA_VERSION 11.0.3
-ENV JAVA_BASE_URL https://github.com/AdoptOpenJDK/openjdk11-upstream-binaries/releases/download/jdk-11.0.3%2B7/OpenJDK11U-
-ENV JAVA_URL_VERSION 11.0.3_7
