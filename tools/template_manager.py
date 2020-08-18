@@ -54,7 +54,8 @@ def generate_compile_image(builder_image_name, runner_image_name, config_data, o
     generated_template = raw_template.render(
         builder_image=builder_image_name,
         runner_image=runner_image_name,
-        config=config_data
+        config=config_data,
+        local=True,
     )
     save_generated_template(generated_template, output_file_path)
     return output_file_path
