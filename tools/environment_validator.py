@@ -240,8 +240,10 @@ def main(base_image, language_general_name, language_specific_name,
 
     if template_type == "dependency":
         template_path = path.join(os.getcwd(), DIR_PATH_TO_DEP_TEMPLATES, template_name)
+        tld_path = path.join(os.getcwd(), DIR_PATH_TO_LANGUAGES, template_name)
     elif template_type == "language":
         template_path = path.join(os.getcwd(), DIR_PATH_TO_LANGUAGES, template_name, "template")
+        tld_path = path.join(os.getcwd(), DIR_PATH_TO_LANGUAGES, template_name)
     else:
         raise Exception("template type must be either 'dependency' or 'language")
     prepare_workspace(WORKSPACE_PATH, template_path, local_src)
@@ -264,8 +266,8 @@ def main(base_image, language_general_name, language_specific_name,
         container = run_algorithm_container(client, compile_image, nvidia_support, algorithmia_api_key)
 
         if automatic_testing:
-            input_file = path.join(template_path,"docker_test_input")
-            eval_file = path.join(template_path, "docker_test_output")
+            input_file = path.join(tld_path,"docker_test_input")
+            eval_file = path.join(tld_path, "docker_test_output")
             test_inputs = load_lines(input_file)
             test_outputs = load_lines(eval_file)
             run_tests(client, container, test_inputs, test_outputs)
