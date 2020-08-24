@@ -1,4 +1,9 @@
 FROM {{builder_image}} as builder
+ARG CRAN_MIRROR
+ARG IVY_MIRROR
+ARG MAVEN_MIRROR
+ARG NPM_REGISTRY
+ARG PYTHON_INDEX_URL
 
 # Docker build commands don't resolve environment variables so need this to either be numeric or a build argument
 COPY --chown=algo:algo algosource /opt/algorithm/
@@ -21,6 +26,12 @@ RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bi
 {% endif %}
 
 FROM {{runner_image}}
+ARG CRAN_MIRROR
+ARG IVY_MIRROR
+ARG MAVEN_MIRROR
+ARG NPM_REGISTRY
+ARG PYTHON_INDEX_URL
+
 {% for artifact in config.artifacts %}
 COPY --from=builder --chown=algo:algo {{artifact.source}} {{artifact.destination}}
 {% endfor %}
