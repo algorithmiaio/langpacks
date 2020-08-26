@@ -1,5 +1,5 @@
 {
-    "display_name": "C# .NET Core 2.x+",
+    "display_name": "C# .NET Core 2.x+ (Environments)",
     "artifacts": [
         {"source":"/opt/algorithm/bin/Release/*/*", "destination":"/opt/algorithm/"},
         {"source":"/opt/algorithm/resources", "destination":"/opt/algorithm/resources/"},
