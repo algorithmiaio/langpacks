@@ -13,9 +13,7 @@ scalaVersion := "2.11.11"
 
 mainClass in Compile := Some("algorithmia.Main")
 
-val repoUrl = System.getProperty("repo.url", "http://git.algorithmia.com")
-
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+resolvers += Resolver.typesafeRepo("releases")
 
 libraryDependencies ++= Seq(
   "com.algorithmia" % "algorithmia-client" % "1.0.+",
