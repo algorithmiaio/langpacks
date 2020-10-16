@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 class Algorithm extends AbstractAlgorithm[InputExample, String] {
   var loaded_state = new mutable.HashMap[String, Bundle[Transformer]]()
   val model_uri = "data://zeryx/databricks/simple-spark-pipeline.zip"
-  val client: AlgorithmiaClient = Algorithmia.client("simWKYsJU/gOwvomS2k2kyvvlvy1")
+  val client: AlgorithmiaClient = Algorithmia.client()
 
 
   override def load(): Try[Unit] = {
