@@ -32,10 +32,10 @@ class InputObject:
                 raise Exception("'matrix_a' and 'matrix_b' must be defined.")
         else:
             raise Exception("input must be a json object.")
-        if self.A.shape[-1] != self.B.shape[0]:
+        if len(self.A[-1]) != len(self.B[0]):
             raise Exception(
                 "inner dimensions between A and B must be the same.\n A: {} B: {}".format(
-                    self.A.shape[-1], self.B.shape[0]
+                    len(self.A[-1]), len(self.B[0])
                 )
             )
 
@@ -47,6 +47,6 @@ def apply(input):
     """
     input = InputObject(input)
     C = th.mm(input.A, input.B)
-    z = C.cpu().numpy().tolist()
+    z = C.numpy().tolist()
     output = {"product": z}
     return output
