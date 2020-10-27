@@ -21,23 +21,30 @@ class InputObject:
         Creates an instance of the InputObject, which checks the format of data and throws exceptions if anything is
         missing.
         "matrix_a" and "matrix_b" must be the same shape.
-        :param A - Matrix A, json list.
-        :param B - Matrix B, json list.
+        :param A - Matrix A, json list into a torch Tensor.
+        :param B - Matrix B, json list into a torch Tensor.
         """
         if isinstance(input_dict, dict):
             if {"matrix_a", "matrix_b"} <= input_dict.keys():
-                self.A = input_dict["matrix_a"]
-                self.B = input_dict["matrix_b"]
+                self.A = convert(input_dict["matrix_a"])
+                self.B = convert(input_dict["matrix_b"])
             else:
                 raise Exception("'matrix_a' and 'matrix_b' must be defined.")
         else:
             raise Exception("input must be a json object.")
-        if len(self.A[-1]) != len(self.B[0]):
+        if self.A.shape[-1] != self.B.shape[0]:
             raise Exception(
                 "inner dimensions between A and B must be the same.\n A: {} B: {}".format(
-                    len(self.A[-1]), len(self.B[0])
+                    self.A.shape[-1], self.B.shape[0]
                 )
             )
+
+
+def convert(list_array):
+    """
+    Converts a json list into a torch Tensor object.
+    """
+    return th.tensor(list_array).float()
 
 
 def apply(input):
