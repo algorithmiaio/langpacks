@@ -47,7 +47,7 @@ RUN apt-get -y update && \
 ENV PATH /usr/local/bin:$PATH
 
 ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
-ENV PYTHON_VERSION 3.9.0
+ENV PYTHON_VERSION 3.8.6
 
 # Setting keyserver per https://github.com/tianon/gosu/issues/17#issuecomment-203074866
 RUN set -ex \
