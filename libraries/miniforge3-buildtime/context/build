@@ -16,3 +16,5 @@ else
     mamba env update --prefix $ANACONDA_ENV --file $1
     chown algo:algo -R $ANACONDA_ENV
 fi
+
+/opt/conda/bin/conda clean -afy
