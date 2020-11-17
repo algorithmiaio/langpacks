@@ -27,7 +27,7 @@ RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bi
 
 FROM {{runner_image}}
 
-{% for artifact in config.artifacts %}
+{% for artifact in config.artifacts -%}
 COPY --from=builder --chown=algo:algo {{artifact.source}} {{artifact.destination}}
 {% endfor %}
 USER algo

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -xe
+
+ROOTDIR=/opt/algorithm
+# The argument provided to this script ($1) denotes the path to the yaml file which contains all of the necessary features
+# to update the anaconda environment.
+
+# If additional components need to be compiled outside of the requirements.yml file, we recommend building a custom build file for that
+# requirement.
+
+. /opt/conda/etc/profile.d/conda.sh
+if [ -z "$1" ]; then
+    mamba env update --prefix $ANACONDA_ENV --file $ROOTDIR/environment.yml
+else
+    mamba env update --prefix $ANACONDA_ENV --file $1
+    chown algo:algo -R $ANACONDA_ENV
+fi
