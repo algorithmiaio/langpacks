@@ -1,6 +1,6 @@
 {
     "display_name": "Python 3.x (Environments)",
-    "build_files": [
+    "req_files": [
         "requirements.txt"
     ],
     "artifacts": [

@@ -5,9 +5,9 @@ ARG MAVEN_MIRROR
 ARG NPM_REGISTRY
 ARG PYTHON_INDEX_URL
 
-{# If there is explicit build_files then we add those first and build based on those #}
-{%- if config.build_files is defined -%}
-{% for build_file in config.build_files -%}
+{# If there is explicit req_files then we add those first and build based on those #}
+{%- if config.req_files is defined -%}
+{% for build_file in config.req_files -%}
 # Installing dependecies before copying the whole
 COPY --chown=algo:algo algosource/{{ build_file }} /opt/algorithm/{{ build_file }}
 {%- endfor %}
@@ -34,8 +34,8 @@ COPY --chown=algo:algo {{config.local_dependency_src_path}} {{config.local_depen
 
 ENV HOME=/home/algo
 
-{# If there is no explicit build_files we build based on the algorithm source #}
-{% if config.build_files is not defined -%}
+{# If there is no explicit req_files we build based on the algorithm source #}
+{% if config.req_files is not defined -%}
 {% if local is defined -%}
 # Custom CA certs won't be available when testing locally
 USER algo

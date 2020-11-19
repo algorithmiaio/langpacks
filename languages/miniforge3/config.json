@@ -1,6 +1,6 @@
 {
     "display_name": "Miniforge 3.9x (Environments)",
-    "build_files": [
+    "req_files": [
         "environment.yml"
     ],
     "artifacts": [
