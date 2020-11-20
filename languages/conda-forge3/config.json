@@ -1,5 +1,5 @@
 {
-    "display_name": "Miniforge 3.9x (Environments)",
+    "display_name": "Python (Conda) Environments",
     "req_files": [
         "environment.yml"
     ],
