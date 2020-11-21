@@ -91,7 +91,7 @@ def create_intermediate_image(
     :param mode: What type of intermediate image this is, either "runtime" or "buildtime".
     :return: A docker image object (see docker sdk for more info)
     """
-    tag = "validator-{}:{}".format(str(mode), "-".join(dependencies))
+    tag = "validator-{}-{}".format(str(mode), "-".join(dependencies))
     image_name = "{}.Dockerfile".format(tag)
     full_image_path = "{}/{}".format(workspace_path, image_name)
     print("####################")
@@ -122,7 +122,7 @@ def create_final_image(
     :param local_testing_destination: If you provide local system dependencies, this defines where that should be placed in the final docker image, before compilation.
     :return: A docker image object (see docker sdk for more info)
     """
-    tag = "validator-{}:{}".format("final", "-".join(runtime_dirs))
+    tag = "validator-{}-{}".format("final", "-".join(runtime_dirs))
     image_name = "{}.Dockerfile".format(tag)
     full_image_path = "{}/{}".format(workspace_path, image_name)
     if local_testing_destination:
