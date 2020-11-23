@@ -1,6 +1,6 @@
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
-ENV ANACONDA_ENV=/home/algo/conda_environment
+ENV ANACONDA_ENV=/home/algo/anaconda_environment
 
 RUN apt-get update --fix-missing && \
     apt-get install -y wget bzip2 ca-certificates libglib2.0-0 libxext6 libsm6 libxrender1 git && \
@@ -19,4 +19,4 @@ RUN wget --quiet https://github.com/conda-forge/miniforge/releases/download/4.9.
     /opt/conda/bin/conda clean -afy && \
     chown -R $ALGO_UID:$ALGO_UID /opt/conda/
 
-COPY --chown=$ALGO_UID:$ALGO_UID conda-forge3-4.9.0/context/condarc /opt/conda/condarc
+COPY --chown=$ALGO_UID:$ALGO_UID anaconda49/context/condarc /opt/conda/condarc
