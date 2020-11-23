@@ -7,10 +7,10 @@ ARG PYTHON_INDEX_URL
 
 {# If there is explicit req_files then we add those first and build based on those #}
 {%- if config.req_files is defined -%}
+# Copying dependecies before copying the algo source
 {% for build_file in config.req_files -%}
-# Installing dependecies before copying the whole
 COPY --chown=algo:algo algosource/{{ build_file }} /opt/algorithm/{{ build_file }}
-{%- endfor %}
+{% endfor %}
 
 {% if local is defined -%}
 # Custom CA certs won't be available when testing locally
