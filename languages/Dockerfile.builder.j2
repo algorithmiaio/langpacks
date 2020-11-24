@@ -16,18 +16,20 @@ RUN mkdir /opt/algorithm
 RUN chown $ALGO_UID:$ALGO_UID /opt/algorithm
 
 {% for package in packages %}
+################################################################################
+# Section for package: {{ package.package_name }}
+################################################################################
 {% if package.script is not none %}
 COPY {{package.script}} /tmp/{{package.script}}
 RUN /tmp/{{package.script}}
 {% endif %}
-{% for line in package.dockerfile %}
+{% for line in package.dockerfile -%}
 {{line}}
 {% endfor %}
 {% endfor %}
 
 # The code below creates the /opt/algorithm directory writeable by algo user so that build/run scripts can create directories.
 # For example a compiled language like C# creates a bin directory for the compiled binary.
-
 
 # WORKDIR does not respect the USER operation, which means that /opt/algorithm is owned by root unless previously created
 # https://github.com/moby/moby/issues/20295
