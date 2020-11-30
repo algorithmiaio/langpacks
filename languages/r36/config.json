@@ -1,5 +1,8 @@
 {
     "display_name": "R 3.6.x (Environments)",
+      "req_files": [
+        "packages.txt"
+    ],
     "artifacts": [
       {"source":"/opt/algorithm", "destination":"/opt/algorithm/"},
       {"source":"/usr/local/lib/R/site-library", "destination":"/usr/local/lib/R/site-library/"}
