@@ -3,7 +3,7 @@ ENV PATH /opt/conda/bin:$PATH
 ENV ANACONDA_ENV=/home/algo/anaconda_environment
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y wget bzip2 ca-certificates libglib2.0-0 libxext6 libsm6 libxrender1 git && \
+    apt-get install -y wget bzip2 ca-certificates libglib2.0-0 libxext6 libsm6 libxrender1 liblzma-dev git && \
     apt-get clean
 
 RUN wget --quiet https://github.com/conda-forge/miniforge/releases/download/4.9.0-3/Miniforge3-4.9.0-3-Linux-x86_64.sh -O ~/miniforge.sh && \
