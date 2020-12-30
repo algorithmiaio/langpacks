@@ -18,6 +18,7 @@ RUN apt-get -y update && \
         wget \
         gnupg \
 		gnupg2 \
+		liblzma-dev \
         git && \
     rm -rf /var/lib/apt/lists/*
 

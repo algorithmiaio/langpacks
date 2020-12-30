@@ -1,12 +1,37 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
     <modelVersion>4.0.0</modelVersion>
     <groupId>algorithmia.__ALGO__</groupId>
     <artifactId>__ALGO__</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>__ALGO__</name>
-    <url>http://maven.apache.org</url>
+    <url>https://maven.apache.org</url>
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -17,13 +42,13 @@
         <dependency>
             <groupId>com.algorithmia</groupId>
             <artifactId>algorithmia-extras</artifactId>
-            <version>[1.0.1,)</version>
+            <version>[1.0.4,2.0)</version>
         </dependency>
 
         <dependency>
             <groupId>com.algorithmia</groupId>
             <artifactId>algorithmia-client</artifactId>
-            <version>[1.0.11,)</version>
+            <version>[1.0.15,2.0)</version>
         </dependency>
 
         <dependency>

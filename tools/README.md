@@ -1,28 +1,38 @@
 # Package set validation
 
+The `environment_validator.py` tool allows you to verify if a new package & template work as expected before deploying to test.
 
-The `packageset_validator.py` tool allows you to verify if a new package & template work as expected before deploying to test.
-The validator allows you to select either a language or dependency based template file for debugging purposes.
-
-The validator follows the same process that legit does when it instances and creates an algorithm. 
-The validator builds all required docker images; the base image, builder and runner images, and then combines all of them in the compile image.
-This compile image is how, in IPA - we compile algorithm source code and execute that algorithm in a runner image.
+- The validator allows you to select either a language or dependency based template file for debugging purposes.
+- The validator follows the same process that legit does when it instances and creates an algorithm.
+- The validator builds all required docker images; the base image, builder and runner images, and then combines all of them in the compile image.
+- This compile image is how, in IPA - we compile algorithm source code and execute that algorithm in a runner image.
 
 ## Dependencies
-ensure that python dependencies in requirements.txt are installed
 
-### System dependencies
-libssl-dev
-libcurl4-openssl-dev
+System dependencies:
+
+- libssl-dev
+- libcurl4-openssl-dev
+
+Ensure that python dependencies in requirements.txt are installed
+
+```
+pip install -r requirements.txt
+```
 
 ## How to execute
-Execute the packageset_validator from the root directory of langpacks. _this is important_.
-`./tools/packageset_validator.py -h`
+
+**Important**: Execute the `environment_validator.py` from the root directory of langpacks:
+
+```
+./tools/environment_validator.py -h
+```
 
 ### Parameter definitions
+
 ```
-$ ./tools/packageset_validator.py -h
-usage: packageset_validator.py [-h] [-b BASE_IMAGE] [-g LANGUAGE_GENERAL_NAME]
+$ ./tools/environment_validator.py -h
+usage: environment_validator.py [-h] [-b BASE_IMAGE] [-g LANGUAGE_GENERAL_NAME]
                                -s LANGUAGE_SPECIFIC_NAME -t TEMPLATE_TYPE -n
                                TEMPLATE_NAME [-d DEPENDENCIES] [-c CLEANUP]
                                [--local-dependency-src LOCAL_SRC]
@@ -69,12 +79,14 @@ optional arguments:
 
 ```
 
-
 ## Testing
-Once you see that langserver is listening on port `9999`, you can send a `curl` request in another terminal. 
+
+Once you see that langserver is listening on port `9999`, you can send a `curl` request in another terminal.
 example:
+
 ```
 curl localhost:9999 -H 'Content-Type: application/json' -d '{"name": "Anthony"}'
 ```
+
 If the response object is as expected, then the langserver, algorithm interface is working as expected! Congrats! :+1:
 

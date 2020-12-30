@@ -1,0 +1,4 @@
+algorithmia>=1.0.0,<2.0
+six
+numpy>=1.16.0,<2.0
+torch>=1.7.0,<1.8.0  # you can use a different pytorch version, however please bear in mind that it may take longer to compile and load.

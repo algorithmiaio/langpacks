@@ -1,8 +1,11 @@
 {
-    "display_name": "Anaconda 3.5x",
+    "display_name": "Conda (Environments) - beta",
+    "req_files": [
+        "environment.yml"
+    ],
     "artifacts": [
-      {"source":"/home/algo/.cache", "destination":"/home/algo/.cache/"},
-      {"source":"/home/algo/anaconda_environment", "destination": "/home/algo/anaconda_environment/"},
-      {"source":"/opt/algorithm", "destination":"/opt/algorithm/"}
+        {"source":"/home/algo/.cache", "destination":"/home/algo/.cache/"},
+        {"source":"/home/algo/anaconda_environment", "destination": "/home/algo/anaconda_environment/"},
+        {"source":"/opt/algorithm", "destination":"/opt/algorithm/"}
     ]
 }
