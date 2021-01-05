@@ -4,3 +4,4 @@ import Algorithmia
 # For more details, see algorithmia.com/developers/algorithm-development/languages
 def apply(input):
     return "hello {}".format(input)
+
