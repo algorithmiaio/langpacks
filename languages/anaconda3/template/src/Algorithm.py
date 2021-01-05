@@ -34,7 +34,7 @@ def load():
 
 # This code turns your library code into an algorithm that can run on the platform.
 # If you intend to use loading operations, remember to pass a `load` function as a second variable.
-algo = Algorithmia.handler(apply, load)
+algo = Algorithmia.ADK(apply, load)
 # The 'serve()' function actually starts the algorithm, you can follow along in the source code
 # to see how everything works.
 # If executed locally, this will start a command prompt that will expect a string or json payload as input.
