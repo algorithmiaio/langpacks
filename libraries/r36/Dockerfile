@@ -18,7 +18,8 @@ RUN apt-get update \
     ca-certificates \
     git \
     libcurl4-gnutls-dev \
-    wget
+    wget \
+    libv8-dev
 
 RUN Rscript -e "install.packages(c('rjson', 'base64enc', 'RCurl', 'pacman'))"
 
