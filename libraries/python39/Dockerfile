@@ -96,7 +96,7 @@ RUN set -ex; \
     \
     wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'; \
     \
-    python get-pip.py \
+    python3 get-pip.py \
     --disable-pip-version-check \
     --no-cache-dir \
     "pip==$PYTHON_PIP_VERSION" \
