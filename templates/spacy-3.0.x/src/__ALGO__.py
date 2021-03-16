@@ -3,7 +3,7 @@ import spacy
 
 """
 This package set comes preinstalled with every available small language package provided by spacy.
-Pick your language from the following list: 'en', 'es', 'pt', 'fr', 'it', 'de, and 'nl', and add the suffix '_core_news_sm' to it.
+Pick your language from the following list:'en','es', 'pt', 'fr', 'it', 'de, and 'nl', and add the suffix '_core_news_sm' to it if it's not english.
 You may change the language at runtime, but bear in mind that you'll get hit with some performance loss.
 
 Example Input:
@@ -18,7 +18,7 @@ Expected Output:
 }
 """
 
-LANG = "en_core_news_sm"
+LANG = "en_core_web_sm"
 
 def load_spacy_lang(language):
     lang_model = spacy.load(language)
