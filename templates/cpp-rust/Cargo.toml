@@ -1,0 +1,11 @@
+[package]
+name = "algorithmia-pipe"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+algorithmia = { version = "3.0.0-beta.3", features = ["handler"] }
+serde = { version = "1.0", features = ["derive"] }
+
+[build-dependencies]
+cc = "1.0"

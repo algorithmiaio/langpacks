@@ -1,14 +1,12 @@
 [package]
 name = "__ALGO__"
 version = "0.1.0"
-
-# The lib name is hard-coded into pipe.rs
-[lib]
-name = "algorithm"
+edition = "2018"
 
 [dependencies]
-algorithmia = "2.0.0"
-base64 = "0.3.0"
-serde = "0.9.0"
-serde_derive = "0.9.0"
-serde_json = "0.9.0"
+# algorithmia = { version = "3.0.0-beta", features = ["entrypoint"] }
+algorithmia = { git = "https://github.com/anowell/algorithmia-rust.git", features = ["handler"] }
+base64 = "0.11"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
