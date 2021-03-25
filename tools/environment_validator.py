@@ -17,7 +17,7 @@ from template_manager import generate_intermediate_image, generate_compile_image
 DIR_PATH_TO_PACKAGES = "libraries"
 DIR_PATH_TO_DEP_TEMPLATES = "templates"
 DIR_PATH_TO_LANGUAGES = "languages"
-WORKSPACE_PATH = "~/validator_cache"
+WORKSPACE_PATH = "validator_cache"
 LOCAL_PORT = 9999
 
 """
