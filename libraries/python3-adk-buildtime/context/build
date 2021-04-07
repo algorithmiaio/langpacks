@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "$PYTHON_INDEX_URL" ]]; then
+	extra_args="-i $PYTHON_INDEX_URL"
+else
+	extra_args=""
+fi
+
+pip3 install --user $extra_args -r requirements.txt
