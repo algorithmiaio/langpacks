@@ -91,16 +91,14 @@ def call_algorithm(request, algorithm):
 
 
 if __name__ == "__main__":
+    import sys
+    sys.path.append("./")
+    
     if os.path.exists("src/Algorithm.py"):
         __import__('src.Algorithm')
     else:
         with open('algorithmia.conf') as config_file:
             config = json.load(config_file)
-
-        import sys
-
-        sys.path.append("./")
-
         algorithm = __import__('src.' + config['algoname'], fromlist=["apply"])
 
         FIFO_PATH = '/tmp/algoout'
