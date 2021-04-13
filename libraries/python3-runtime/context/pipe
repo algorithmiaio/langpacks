@@ -92,7 +92,7 @@ def call_algorithm(request, algorithm):
 
 if __name__ == "__main__":
     if os.path.exists("src/Algorithm.py"):
-        import src.Algorithm
+        __import__('src.Algorithm')
     else:
         with open('algorithmia.conf') as config_file:
             config = json.load(config_file)
