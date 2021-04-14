@@ -1,19 +1,42 @@
-FROM {{builder_image}} as builder
+FROM {{ builder_image }} as builder
 ARG CRAN_MIRROR
 ARG IVY_MIRROR
 ARG MAVEN_MIRROR
 ARG NPM_REGISTRY
 ARG PYTHON_INDEX_URL
 
+{# If there is explicit req_files then we add those first and build based on those #}
+{%- if config.req_files is defined -%}
+# Copying dependecies before copying the algo source
+{% for build_file in config.req_files -%}
+COPY --chown=algo:algo algosource/{{ build_file }} /opt/algorithm/{{ build_file }}
+{% endfor %}
+
+{% if local is defined -%}
+# Custom CA certs won't be available when testing locally
+USER algo
+RUN /usr/local/bin/algorithmia-build
+{%- else -%}
+# customize-container.sh runs as root, then switches to user of less privilege
+USER root
+COPY mounted-scripts /opt/algorithmiaio/mounted-scripts
+COPY ca-certificates /opt/algorithmia/ca-certificates
+RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bin/algorithmia-build
+{%- endif %}
+{%- endif %}
+
 # Docker build commands don't resolve environment variables so need this to either be numeric or a build argument
 COPY --chown=algo:algo algosource /opt/algorithm/
 
-{% if config.local_dependency_src_path is defined %}
+{% if config.local_dependency_src_path is defined -%}
 COPY --chown=algo:algo {{config.local_dependency_src_path}} {{config.local_dependency_dest_path}}
-{% endif %}
+{%- endif %}
 
 ENV HOME=/home/algo
-{% if local is defined %}
+
+{# If there is no explicit req_files we build based on the algorithm source #}
+{% if config.req_files is not defined -%}
+{% if local is defined -%}
 # Custom CA certs won't be available when testing locally
 USER algo
 RUN /usr/local/bin/algorithmia-build
@@ -23,11 +46,13 @@ USER root
 COPY mounted-scripts /opt/algorithmiaio/mounted-scripts
 COPY ca-certificates /opt/algorithmia/ca-certificates
 RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bin/algorithmia-build
-{% endif %}
+{%- endif %}
+{%- endif %}
 
-FROM {{runner_image}}
+################################################################################
+FROM {{ runner_image }}
 
-{% for artifact in config.artifacts %}
+{% for artifact in config.artifacts -%}
 COPY --from=builder --chown=algo:algo {{artifact.source}} {{artifact.destination}}
 {% endfor %}
 USER algo

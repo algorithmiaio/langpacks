@@ -1,6 +1,6 @@
 # Package set validation
 
-The `packageset_validator.py` tool allows you to verify if a new package & template work as expected before deploying to test.
+The `environment_validator.py` tool allows you to verify if a new package & template work as expected before deploying to test.
 
 - The validator allows you to select either a language or dependency based template file for debugging purposes.
 - The validator follows the same process that legit does when it instances and creates an algorithm.
@@ -22,17 +22,18 @@ pip install -r requirements.txt
 
 ## How to execute
 
-**Important**: Execute the `packageset_validator.py` from the root directory of langpacks:
+**Important**: Execute the `environment_validator.py` from the root directory of langpacks:
 
 ```
-./tools/packageset_validator.py -h
+./tools/environment_validator.py -h
+
 ```
 
 ### Parameter definitions
 
 ```
-$ ./tools/packageset_validator.py -h
-usage: packageset_validator.py [-h] [-b BASE_IMAGE] [-g LANGUAGE_GENERAL_NAME]
+$ ./tools/environment_validator.py -h
+usage: environment_validator.py [-h] [-b BASE_IMAGE] [-g LANGUAGE_GENERAL_NAME]
                                -s LANGUAGE_SPECIFIC_NAME -t TEMPLATE_TYPE -n
                                TEMPLATE_NAME [-d DEPENDENCIES] [-c CLEANUP]
                                [--local-dependency-src LOCAL_SRC]

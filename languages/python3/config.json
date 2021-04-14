@@ -1,5 +1,8 @@
 {
     "display_name": "Python 3.x (Environments)",
+    "req_files": [
+        "requirements.txt"
+    ],
     "artifacts": [
         {"source":"/home/algo/.local", "destination":"/home/algo/.local/"},
         {"source":"/opt/algorithm", "destination":"/opt/algorithm/"}
