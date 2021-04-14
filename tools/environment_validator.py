@@ -134,7 +134,7 @@ def prepare_workspace(workspace_path, template_path, local_cached_dependency_sou
     """
     Creates and prepares a workspace for docker, docker requires all used files by the docker build operation to be relative to this workspace directory.
     If you desire a file to be copied into a docker image, but it's not in this directory - a file not found error will be thrown.
-    
+
     Workspace is terminated upon termination of this script
     :param workspace_path: System path, default is "/tmp/validator_cache"
     :param template_path: Relative path to your final image template, eg: languages/java11/template
@@ -142,6 +142,8 @@ def prepare_workspace(workspace_path, template_path, local_cached_dependency_sou
     :return: None
     """
     algosource_path = path.join(workspace_path, "algosource")
+    if os.path.exists(workspace_path):
+        shutil.rmtree(workspace_path)
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
     shutil.copytree(template_path, algosource_path)
     if local_cached_dependency_source_path:
