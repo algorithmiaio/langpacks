@@ -199,6 +199,8 @@ def prepare_workspace(
     if os.path.exists(workspace_path):
         shutil.rmtree(workspace_path)
     algosource_path = path.join(workspace_path, "algosource")
+    if os.path.exists(workspace_path):
+        shutil.rmtree(workspace_path)
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
     shutil.copytree(template_path, algosource_path)
     if local_cached_dependency_source_path:
