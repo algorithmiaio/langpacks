@@ -7,7 +7,7 @@ from Algorithmia import ADK
 def apply(input, globals):
     # If your apply function uses state that's loaded into memory via load, you can pass that loaded state to your apply
     # function by defining an additional "globals" parameter in your apply function.
-    return "hello {} {}".format(str(input), str(globals['payload']))
+    return "{} {}".format(str(globals['greeting']), str(input))
 
 
 def load():
@@ -17,7 +17,7 @@ def load():
     # during runtime.
     # Any variables returned here, will be passed as the secondary argument to your 'algorithm' function
     globals = {}
-    globals['payload'] = "Loading has been completed."
+    globals['greeting'] = "Hello"
     return globals
 
 
