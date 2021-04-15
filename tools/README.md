@@ -26,6 +26,7 @@ pip install -r requirements.txt
 
 ```
 ./tools/environment_validator.py -h
+
 ```
 
 ### Parameter definitions
