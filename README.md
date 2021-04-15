@@ -1,52 +1,52 @@
 # LangPacks
 
-*LangPack*: A language specific package the encompasses steps to setup, build, and run language-specific algorithms.
+*LangPack*: A language-specific package that encompasses steps to set up, build, and run language-specific algorithms.
 
-*LangServer*: A server that serve a LangPack's `bin/pipe` runner in a way that emulates a light-weight version of the Algorithmia API.
+*LangServer*: A server that serves a LangPack's `bin/pipe` runner in a way that emulates a light-weight version of the Algorithmia API.
 
 ## LangServer
 
-Langserver could be simplified like this: it's about 1000 lines of code that emulates a simple API that looks/feels like our API server's API for calling an algo (lacking features like auth)
+LangServer could be simplified like this: it's about 1000 lines of code that emulates a simple API that looks/feels like our API server's API for calling an algo (lacking features like auth).
 
-It translates that HTTP standard into a STDIO-based input and a named pipe for output (defined in the langpack_guide.md)
-- it was important that multiple subsequent requests could reuse the same process
-- The focus was a standard that every language could easily implement. Having each language implement a web-server was considered, but there was uncertainty about how easy that would be for langs like R, and if we wanted to alter how it integrates with the rest of the backend, it'd need reimplemented multiple times (e.g. if we wanted to expose stdout/stderr via websockets, it would only need implemented in langserver, not each langpack)
-- I also considered other queues, e.g. posix message queues, but struggled to gain confidence it would work well for all languages (R again being a concern)
-- Ultimately, every language has very simple ways of interacting with files (incl stdio and named pipes), so stdio and a named pipe (fifo) were chosen for the simplicity to work with them in any lang. The fifo allowed us to leave stdout/stderr in tact.
+It translates that HTTP standard into a STDIO-based input and a named pipe for output (defined in the langpack_guide.md). Some considerations:
+- It was important that multiple subsequent requests could reuse the same process.
+- The focus was a standard that every language could easily implement. Having each language implement a web-server was considered, but there was uncertainty about how easy that would be for langs like R, and if we wanted to alter how it integrates with the rest of the back end, it'd need to be reimplemented multiple times (e.g., if we wanted to expose stdout/stderr via websockets, it would only need to be implemented in LangServer, not each LangPack).
+- I also considered other queues, e.g., posix message queues, but struggled to gain confidence it would work well for all languages (R again being a concern).
+- Ultimately, every language has very simple ways of interacting with files (including stdio and named pipes), so stdio and a named pipe (fifo) were chosen for the simplicity to work with them in any language. The fifo choice allowed us to leave stdout/stderr intact.
 
 Weirder details:
-1) Langserver spins up 2 threads that collect stdout/stderr and recombined them into the result.
-2) Langserver has 2 modes: sync vs async. Basically, sync is how it was originally built, to be easy to debug as a simple web-server that looks like the API server. `async` mode was added to make it integrate with dockherder, so that dockherder could call it and forget about it until a callback informed dockherder that it was complete.
+1) LangServer spins up 2 threads that collect stdout/stderr and recombine them into the result.
+2) LangServer has 2 modes: sync vs. async. Basically, sync is how it was originally built, to be easy to debug as a simple web-server that looks like the API server. `async` mode was added to make it integrate with dockherder, so that dockherder could call it and forget about it until a callback informed dockherder that it was complete.
 
 ## Building LangServer(s) (Partially deprecated)
 
-Disclaimer: The intent was to prototype langserver in rust (because I knew it better), but finally write it in go (lower barrier to entry), but it turned into an official project before the rewrite happened. So, for now: start by installing [latest stable rust](https://www.rust-lang.org/downloads.html), and then:
+Disclaimer: The intent was to prototype LangServer in Rust (because I knew it better), but finally write it in Go (lower barrier to entry), but it turned into an official project before the rewrite happened. So, for now: start by installing [latest stable Rust](https://www.rust-lang.org/downloads.html), and then:
 
 ```
-bin/build langserver     # just builds the base langserver images (default)
+bin/build langserver     # just builds the base LangServer images (default)
 bin/build <lang>         # builds language-specific image (and deps)
 bin/build all            # builds all images for all langpacks
-bin/build single-runner  # builds 1 image containing the langserver runner and running setup on all langpacks
-bin/build single-builder # builds 1 image containing the langserver builder and running setup on all langpacks
+bin/build single-runner  # builds 1 image containing the LangServer runner and running setup on all langpacks
+bin/build single-builder # builds 1 image containing the LangServer builder and running setup on all langpacks
 bin/build single         # builds the single-runner and single-builder
 ```
 
 Note: the initial plan is to NOT use these images, but they are helpful for implementing and testing langpacks locally, as well as provide some "code documentation" for how setup/build/pipe/langserver all fit together.
 
 ## Building LangServer with Libraries
-We're in the process of refactoring the way that images get generated and algorithms are compiled.  The initial approach would create an `algorithm.zip` that contains a compiled binary (or source for interpreted languages) along with any dependencies needed.  Additionally, a number of libraries were installed side-by-side which made it difficult to debug in certain scenarios or independently evolve various languages.  In particular, some libraries required certain variables set during install/compilation but not during execution and it was difficult to determine what variables or even system packages were needed for what libraries in particular.
+We're in the process of refactoring the way that images get generated and algorithms are compiled. The initial approach would create an `algorithm.zip` that contains a compiled binary (or source for interpreted languages) along with any dependencies needed. Additionally, a number of libraries were installed side-by-side which made it difficult to debug in certain scenarios or independently evolve various languages. In particular, some libraries required certain variables set during install/compilation but not during execution and it was difficult to determine what variables or even system packages were needed for what libraries in particular.
 
-The new process (still experimental) involves templating a Dockerfile based on a set of desired `libraries` (which could be language runtimes/buildtimes, services, or deep-learning frameworks) and then building an image with just that subset of libraries.  Ideally, libraries' install.sh script should be able to run on an Ubuntu 16.04 host/VM the same as it could during docker build time (this greatly eases creating the install script).
+The new process (still experimental) involves templating a Dockerfile based on a set of desired `libraries` (which could be language runtimes/buildtimes, services, or deep-learning frameworks) and then building an image with just that subset of libraries. Ideally, libraries' install.sh script should be able to run on an Ubuntu 16.04 host/VM the same as it could during Docker build time (this greatly eases creating the install script).
 
-Algorithms no longer have a single `bin/build` script but two separate scripts, one to `install-dependencies` (which would do an appropriate pip/npm/cargo/etc install/fetch) and one to `install-algorithm` which compiles or bundles the algorithm source to `/opt/algorithmia`.
+Algorithms no longer have a single `bin/build` script but two separate scripts, one to `install-dependencies` (which would do an appropriate pip/npm/cargo/etc. install/fetch) and one to `install-algorithm` which compiles or bundles the algorithm source to `/opt/algorithmia`.
 
-Templating and building a dockerfile:
+Templating and building a Dockerfile:
 ```
 $ ./bin/build-template --help
 usage: build-template [-h] [-l LIBRARY] [-p TEMPLATE] -t TAG [-o OUTPUT]
                       [-u USER_ID]
 
-Creates a dockerfile, templating in any needed files and environment variables
+Creates a Dockerfile, templating in any needed files and environment variables
 to set up different libraries. Libraries will be installed _in order
 specified_ so if one needs to be installed before another, then list them in
 that order on the command line
@@ -65,9 +65,9 @@ optional arguments:
   -h, --help            show this help message and exit
   -l LIBRARY, --library LIBRARY
                         library directories to include in generating this
-                        dockerfile
+                        Dockerfile
   -p TEMPLATE, --template TEMPLATE
-                        location of the dockerfile template file
+                        location of the Dockerfile template file
   -t TAG, --tag TAG     tag to label the docker image once produced
   -o OUTPUT, --output OUTPUT
                         name of file to write output to
@@ -122,4 +122,3 @@ docker run --rm -it -v `pwd`:/tmp/algorithm -p 9999:9999 algorithmia/langserver-
 Bonus 🌮🌮tacos🌮🌮 for you if you write a LangPack.
 
 More to come...
-
