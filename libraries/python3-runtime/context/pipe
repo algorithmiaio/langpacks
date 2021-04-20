@@ -4,11 +4,19 @@ import json
 import sys
 import traceback
 import six
-import os
 from six.moves import input
 
+with open('algorithmia.conf') as config_file:
+    config = json.load(config_file)
 
-def main(algorithm):
+import sys
+sys.path.append("./")
+
+algorithm = __import__('src.'+config['algoname'], fromlist=["apply"])
+
+FIFO_PATH = '/tmp/algoout'
+
+def main():
     print('PIPE_INIT_COMPLETE')
     sys.stdout.flush()
 
@@ -19,7 +27,7 @@ def main(algorithm):
             break
 
         request = json.loads(line)
-        response_string = get_response(request, algorithm)
+        response_string = get_response(request)
 
         # Flush stdout before writing back response
         sys.stdout.flush()
@@ -28,16 +36,14 @@ def main(algorithm):
             f.write(response_string)
             f.write('\n')
 
-
 def is_binary(arg):
     if six.PY3:
         return isinstance(arg, base64.bytes_types)
     return isinstance(arg, bytearray)
 
-
-def get_response(request, algorithm):
+def get_response(request):
     try:
-        result = call_algorithm(request, algorithm)
+        result = call_algorithm(request)
         if is_binary(result):
             content_type = 'binary'
             result = base64.b64encode(result)
@@ -72,14 +78,12 @@ def get_response(request, algorithm):
 
     return response_string
 
-
 def wrap_binary_data(data):
     if six.PY3:
         return bytes(data)
     return bytearray(data)
 
-
-def call_algorithm(request, algorithm):
+def call_algorithm(request):
     if request['content_type'] in ['text', 'json']:
         data = request['data']
     elif request['content_type'] == 'binary':
@@ -89,17 +93,5 @@ def call_algorithm(request, algorithm):
 
     return algorithm.apply(data)
 
-
-if __name__ == "__main__":
-    import sys
-    sys.path.append("./")
-
-    if os.path.exists("src/Algorithm.py"):
-        __import__('src.Algorithm')
-    else:
-        with open('algorithmia.conf') as config_file:
-            config = json.load(config_file)
-        algorithm = __import__('src.' + config['algoname'], fromlist=["apply"])
-
-        FIFO_PATH = '/tmp/algoout'
-        main(algorithm)
+if __name__ == '__main__':
+    main()
