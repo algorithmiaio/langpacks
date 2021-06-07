@@ -11,6 +11,11 @@ from six import string_types
 import io, csv, os, sys, re
 
 
+"""
+Example payload:
+{"input":"http://www.africau.edu/images/default/sample.pdf", "output":"sample.png", "collection":"data://.algo/temp"}
+"""
+
 class AlgorithmError(Exception):
     def __init__(self, value):
         self.value = value
