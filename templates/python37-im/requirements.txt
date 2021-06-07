@@ -1,5 +1,4 @@
 algorithmia>=1.0.0,<2.0
-fpdf==1.7.2
-prettytable==2.1.0
+six
 wand==0.6.6
 pillow==8.2.0
