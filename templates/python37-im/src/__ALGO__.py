@@ -1,15 +1,9 @@
 import Algorithmia
-from fpdf import FPDF
 from PIL import Image
 import shutil
-from prettytable import PrettyTable
 from wand.image import Image as Magic
-import subprocess
-import posixpath
 import urllib
 from six import string_types
-import io, csv, os, sys, re
-
 
 """
 Example payload:
@@ -68,8 +62,6 @@ def downloadFile(urlData):
 
 def saveFileToData(local, outName, collection):
     out = collection + '/' + outName
-    print(out)
-    print(local)
     client.file(out).putFile(local)
     return out
 
