@@ -1,6 +1,6 @@
 ## https://cran.r-project.org/bin/linux/ubuntu/README.html
 
-RUN apt-get update && apt-get install -y ca-certificates apt-transport-https \
+RUN apt-get update && apt-get install -y ca-certificates apt-transport-https gnupg2 \
   && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
 
 #This means that we'll be using R 3.6 going forwards and this deb is version locked

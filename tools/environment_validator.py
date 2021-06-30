@@ -17,7 +17,7 @@ from template_manager import generate_intermediate_image, generate_compile_image
 DIR_PATH_TO_PACKAGES = "libraries"
 DIR_PATH_TO_DEP_TEMPLATES = "templates"
 DIR_PATH_TO_LANGUAGES = "languages"
-WORKSPACE_PATH = "/tmp/validator_cache"
+WORKSPACE_PATH = "~/validator_cache"
 LOCAL_PORT = 9999
 
 """
@@ -85,7 +85,7 @@ def create_intermediate_image(
     right dockerfile based on the provided context. For more info on the template files, check out
     `Dockerfile.builder.j2` and `Dockerfile.runner.j2` in the languages directory.
     :param docker_client: The docker python client
-    :param base_image: The base image type in which to stage your docker container from, defaults to "ubuntu:16.04", but can be any standard base image.
+    :param base_image: The base image type in which to stage your docker container from, defaults to "ubuntu:20.04", but can be any standard base image.
     :param dependencies: A list of dependencies that this intermediate image depends on, excluding language components. (eg: pytorch-1.0.0, spacy-2.0.18, etc)
     :param workspace_path: Path to the workspace (default is /tmp/validator_cache)
     :param mode: What type of intermediate image this is, either "runtime" or "buildtime".
@@ -199,6 +199,8 @@ def prepare_workspace(
     if os.path.exists(workspace_path):
         shutil.rmtree(workspace_path)
     algosource_path = path.join(workspace_path, "algosource")
+    if os.path.exists(workspace_path):
+        shutil.rmtree(workspace_path)
     shutil.copytree(path.join(os.getcwd(), "libraries"), workspace_path)
     shutil.copytree(template_path, algosource_path)
     if local_cached_dependency_source_path:
@@ -423,9 +425,9 @@ if __name__ == "__main__":
         "--base-image",
         dest="base_image",
         type=str,
-        default="ubuntu:16.04",
+        default="ubuntu:20.04",
         help="the linux base image to build your packageset on top of. Usually an ubuntu version."
-        "Defaults to 'ubuntu:16.04'",
+        "Defaults to 'ubuntu:20.04'",
     )
     parser.add_argument(
         "-g",
