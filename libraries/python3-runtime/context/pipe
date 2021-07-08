@@ -94,11 +94,12 @@ if __name__ == "__main__":
     import sys
     sys.path.append("./")
 
-    if os.path.exists("src/Algorithm.py"):
-        __import__('src.Algorithm')
+    with open('algorithmia.conf') as config_file:
+        config = json.load(config_file)
+
+    if os.path.exists(".adk"):
+        __import__('src.' + config['algoname'])
     else:
-        with open('algorithmia.conf') as config_file:
-            config = json.load(config_file)
         algorithm = __import__('src.' + config['algoname'], fromlist=["apply"])
 
         FIFO_PATH = '/tmp/algoout'
