@@ -10,3 +10,4 @@ target/
 .cargo
 __pycache__
 *.pyc
+venv

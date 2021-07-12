@@ -1,0 +1,9 @@
+algorithmia>=1.0.0,<2.0
+six
+urllib3
+joblib
+pandas==0.24.2
+python-docx==0.8.7
+PyPDF2
+reportlab==3.4.0
+crayons==0.2.0
