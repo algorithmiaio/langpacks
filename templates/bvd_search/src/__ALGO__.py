@@ -496,8 +496,8 @@ def generatePDF(search_name, results):
 
 
     doc.build(Story)
-    
-    outfile = "data://.algo/mshterk/BVD_Search/temp/KYC_Profile_" + str(name) + "_" + curr_time + '.pdf'
+
+    outfile = "data://.my/bvc/KYC_Profile_" + str(name) + "_" + curr_time + '.pdf'
     # tempfile_PDF = WORKING_DIR + str(name) + "_" + curr_time + '.pdf'
     
     client.file(outfile).putFile(pdf_fname)
