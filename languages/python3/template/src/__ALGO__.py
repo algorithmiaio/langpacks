@@ -10,8 +10,8 @@
 
 * The `ADK.init` method is what actually starts the algorithm. To explore further, see the source code linked above.
 
-* If the `apply` function uses state that's loaded into memory via a `load` function, you can pass that
-  loaded state to your `apply` function by defining an optional `globals` parameter, i.e.:
+* If your algorithm relies on in-memory data (e.g., large model files) that are the same every time the algorithm
+  is executed, you can load those data into a `globals` object in a `load` function and pass that to `apply`, i.e.:
 
       ...
       def apply(input, globals):
