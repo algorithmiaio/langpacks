@@ -2,7 +2,8 @@ from Algorithmia import ADK
 
 
 # API calls will begin at the apply() method, with the request body passed as 'input'
-# For more details, see algorithmia.com/developers/algorithm-development/languages
+#For more information on algorithm development check here: https://algorithmia.com/developers/algorithm-development/languages/python#what-is-an-algorithm-development-kit-adk
+# For more information on the Algorithm Development Kit: https://github.com/algorithmiaio/algorithmia-adk-python
 
 def apply(input):
     # If your apply function uses state that's loaded into memory via load, you can pass that loaded state to your apply
