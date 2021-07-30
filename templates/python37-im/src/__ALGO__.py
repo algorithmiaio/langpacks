@@ -24,6 +24,7 @@ def convert_image(remote_file, client, output_extension):
                     image_name = unique_prefix + '_' + str(page + 1) + '.' + output_extension
                     image.save(filename='/tmp/' + image_name)
                     local_images.append(image_name)
+    os.remove(local_file)
     return local_images
 
 
