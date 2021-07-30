@@ -14,6 +14,8 @@ def convert_image(remote_file, client, output_extension):
     unique_prefix = str(uuid4())  # unique name to assign to temporary local files
     local_images = []  # list to hold the resulting names of images
     with client.file(remote_file).getFile() as f:
+        local_file = f.name
+    with open(local_file, 'rb') as f:
         with Magic(blob=f.read(), resolution=200) as image_stream:
             page_count = len(image_stream.sequence)
             for page in range(page_count):
