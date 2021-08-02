@@ -24,8 +24,7 @@ def convert_image(remote_file, client, output_extension):
             raise Exception(str(line))
     for file in os.listdir("/tmp"):
         if file.startswith(unique_prefix):
-            path = "/tmp/" + str(file)
-            local_images.append(path)
+            local_images.append(str(file))
 
     # with open(local_file, 'rb') as f:
     #     with Magic(blob=f.read(), resolution=200) as image_stream:
