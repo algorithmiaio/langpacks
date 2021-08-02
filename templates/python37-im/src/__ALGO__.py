@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE
 from uuid import uuid4
 import os
 
-ALGO_IMAGE_DIRECTORY = 'data://zeryx/collection/'
+ALGO_IMAGE_DIRECTORY = 'data://zeryx/magick/'
 
 client = Algorithmia.client()
 
