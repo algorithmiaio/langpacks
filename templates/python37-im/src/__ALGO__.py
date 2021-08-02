@@ -17,7 +17,7 @@ def convert_image(remote_file, client, output_extension):
     with client.file(remote_file).getFile() as f:
         local_file = f.name
     output_prefix = "/tmp/" + unique_prefix
-    proc = Popen(f"convert --density {resolution} {local_file} {output_prefix}-%03d.{output_extension}")
+    proc = Popen(f"convert --density {resolution} {local_file} {output_prefix}-%03d.{output_extension}".split(' '), stdout=PIPE, stderr=PIPE)
     output, err = proc.communicate()
     for line in err.decode('utf-8').splitlines():
         if "Exception" in line:
