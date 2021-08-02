@@ -23,6 +23,7 @@ def convert_image(remote_file, client, output_extension):
         if "Exception" in line:
             raise Exception(str(line))
     for file in os.listdir("/tmp"):
+        print(file)
         if file.startswith(output_prefix):
             local_images.append(str(file))
 
