@@ -14,6 +14,7 @@ def convert_image(remote_file, client, output_extension):
     unique_prefix = str(uuid4())  # unique name to assign to temporary local files
     local_images = []  # list to hold the resulting names of images
     resolution = 200
+
     with client.file(remote_file).getFile() as f:
         local_file = f.name
     output_prefix = "/tmp/" + unique_prefix
