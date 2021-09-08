@@ -1,0 +1,5 @@
+algorithmia>=1.0.0,<2.0
+six
+
+# if you need a different version, please change this value - bear in mind that it may take longer to compile.
+tensorflow>=2.4,<2.5
