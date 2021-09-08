@@ -24,7 +24,7 @@ COPY mounted-scripts /opt/algorithmiaio/mounted-scripts
 COPY ca-certificates /opt/algorithmia/ca-certificates
 # Update JAVA_TOOL_OPTIONS with those required for this specific build which might include proxy variables
 ENV JAVA_TOOL_OPTIONS "$JAVA_TOOL_OPTIONS_BUILD $JAVA_TOOL_OPTIONS"
-RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bin/algorithmia-build
+RUN /opt/algorithmiaio/mounted-scripts/customize-container-v2.sh algo /usr/local/bin/algorithmia-build
 {%- endif %}
 {%- endif %}
 
@@ -48,7 +48,7 @@ RUN /usr/local/bin/algorithmia-build
 USER root
 COPY mounted-scripts /opt/algorithmiaio/mounted-scripts
 COPY ca-certificates /opt/algorithmia/ca-certificates
-RUN /opt/algorithmiaio/mounted-scripts/customize-container.sh algo /usr/local/bin/algorithmia-build
+RUN /opt/algorithmiaio/mounted-scripts/customize-container-v2.sh algo /usr/local/bin/algorithmia-build
 {%- endif %}
 {%- endif %}
 
