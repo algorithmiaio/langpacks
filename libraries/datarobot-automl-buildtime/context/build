@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -euo pipefail
+
+cp /opt/algorithm/model.mlpkg /opt/ml/model/model
