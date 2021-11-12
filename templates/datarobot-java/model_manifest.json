@@ -1,0 +1,9 @@
+{
+  "required_files": [
+    {
+      "name": "sentiment_model",
+      "source_uri": "data://demo/datarobot_models/618e9e830d2eca5ba9cd1014.jar"
+    }
+  ],
+  "optional_files": []
+}

@@ -1,0 +1,1 @@
+{"required_files": [{"name": "sentiment_model", "source_uri": "data://demo/datarobot_models/618e9e830d2eca5ba9cd1014.jar", "md5_checksum": "6ebc07d2f1f0edffef1bc6aff24c7b93"}], "optional_files": [], "timestamp": "1636737821.9979346", "lock_checksum": "80d2a2056950f038eea78c8bb6f8c8a2"}
