@@ -26,14 +26,17 @@ def load(model_data):
 def apply(input, state):
     java_model, client, gateway = state
     row_map = gateway.jvm.java.util.HashMap()
+    labels = list(java_model.getClassLabels())
     with client.file(input).getFile() as f:
         parser = csv.reader(f)
         headers = next(parser)
         for h, v in zip(headers, parser):
             row_map.put(h, v)
-    result = java_model.score(row_map)
-    return result
-
+    results = java_model.score(row_map)
+    output = {}
+    for result in results.keys():
+        output[result] = results[result]
+    return output
 
 
 algo = ADK(apply, load)
