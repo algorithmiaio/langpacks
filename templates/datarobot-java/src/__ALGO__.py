@@ -1,6 +1,8 @@
 import csv
 import Algorithmia
 from Algorithmia import ADK
+import pandas as pd
+import numpy as np
 from py4j.java_gateway import JavaGateway, launch_gateway
 
 def load(model_data):
@@ -28,10 +30,10 @@ def apply(input, state):
     row_map = gateway.jvm.java.util.HashMap()
     labels = list(java_model.getClassLabels())
     with client.file(input).getFile() as f:
-        parser = csv.reader(f)
-        headers = next(parser)
-        for h, v in zip(headers, parser):
+        data = pd.read_csv(f)
+        for h, v in zip(data.columns, data.loc[0].values.astype(np.str).tolist()):
             row_map.put(h, v)
+        java_model.score(row_map)
     results = java_model.score(row_map)
     output = {}
     for result in results.keys():
