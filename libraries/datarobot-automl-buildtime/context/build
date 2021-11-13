@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-cp /opt/algorithm/model.mlpkg /opt/ml/model/model
+cp /opt/algorithm/model.mlpkg /opt/ml/model/model.mlpkg

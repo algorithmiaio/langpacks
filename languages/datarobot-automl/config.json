@@ -1,6 +1,6 @@
 {
     "display_name": "DataRobot AutoML",
     "artifacts": [
-        {"source":"/home/algo/*.mlpkg", "destination":"/opt/ml/model/model"}
+        {"source":"/opt/ml/model/*.mlpkg", "destination":"/opt/ml/model/model"}
     ]
 }
