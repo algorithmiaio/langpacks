@@ -7,7 +7,7 @@ ARG PYTHON_INDEX_URL
 ARG JAVA_TOOL_OPTIONS_BUILD
 
 {# If there is explicit req_files then we add those first and build based on those #}
-{%- if config.req_files is defined -%}
+{% if config.req_files is defined -%}
 # Copying dependecies before copying the algo source
 {% for build_file in config.req_files -%}
 COPY --chown=algo:algo algosource/{{ build_file }} /opt/algorithm/{{ build_file }}
