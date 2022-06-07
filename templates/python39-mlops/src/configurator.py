@@ -12,7 +12,7 @@ with open(f'{agents_dir}/conf/mlops.agent.conf.yaml') as f:
 documents['mlopsUrl'] = DATAROBOT_ENDPOINT
 documents['apiToken'] = DATAROBOT_API_TOKEN
 with open(f'{agents_dir}/conf/mlops.agent.conf.yaml', 'w') as f:
-    yaml.dump(documents)
+    yaml.dump(documents, f)
 
 subprocess.call(f'{agents_dir}/bin/start-agent.sh')
 check = subprocess.Popen([f'{agents_dir}/bin/status-agent.sh'], stdout=subprocess.PIPE)
