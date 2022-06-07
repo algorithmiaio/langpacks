@@ -1,5 +1,5 @@
 RUN mkdir -p /opt/mlops-agent
-RUN https://james-s-public.s3.amazonaws.com/mlops-agent.tar.gz
+RUN wget https://james-s-public.s3.amazonaws.com/mlops-agent.tar.gz
 RUN tar -xvjf mlops-agent.tar.gz -C /opt/mlops-agent
 RUN pip install /opt/mlops-agent/lib/datarobot_mlops-*.whl
 
