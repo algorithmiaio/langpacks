@@ -2,7 +2,7 @@ from Algorithmia import ADK
 from datarobot.mlops.mlops import MLOps
 import os
 import pandas as pd
-from .src import configurator
+from .configurator import *
 
 os.environ["MLOPS_DEPLOYMENT_ID"] = "6126e05f97b19e6599ac1f39"
 os.environ["MLOPS_MODEL_ID"] = "6126df6a78aa5cb610acea36"
