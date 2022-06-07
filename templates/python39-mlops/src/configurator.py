@@ -9,8 +9,8 @@ DATAROBOT_ENDPOINT = "https://app.datarobot.com"
 
 with open(f'{agents_dir}/conf/mlops.agent.conf.yaml') as f:
     documents = yaml.load(f, Loader=yaml.FullLoader)
-    documents['mlopsUrl'] = DATAROBOT_ENDPOINT
-    documents['apiToken'] = DATAROBOT_API_TOKEN
+documents['mlopsUrl'] = DATAROBOT_ENDPOINT
+documents['apiToken'] = DATAROBOT_API_TOKEN
 with open(f'{agents_dir}/conf/mlops.agent.conf.yaml', 'w') as f:
     yaml.dump(documents)
 
