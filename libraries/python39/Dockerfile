@@ -19,6 +19,8 @@ RUN apt-get -y update && \
     gnupg \
     gnupg2 \
     liblzma-dev \
+    libjpeg-dev \
+    zlib1g-dev \
     git && \
     rm -rf /var/lib/apt/lists/*
 
