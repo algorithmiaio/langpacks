@@ -1,4 +1,4 @@
-RUN mkdir -p /opt/mlops-agent && \
+RUN mkdir -p /opt/mlops-agent && mkdir -p /tmp/ta \
     wget https://james-s-public.s3.amazonaws.com/mlops-agent.tar.gz && \
     tar -xvf mlops-agent.tar.gz -C /opt/mlops-agent && \
     rm -rf /tmp/mlops-agent.tar.gz
@@ -9,3 +9,4 @@ RUN touch /opt/mlops-agent/datarobot_mlops_package-8.1.2/logs/mlops.agent.log &&
      touch /opt/mlops-agent/datarobot_mlops_package-8.1.2/logs/mlops.agent.out
 
 RUN chmod 777 /opt/mlops-agent/datarobot_mlops_package-8.1.2/logs/*
+RUN chmod 777 /tmp/ta
