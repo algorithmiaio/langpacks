@@ -7,7 +7,6 @@ from .configurator import *
 os.environ["MLOPS_DEPLOYMENT_ID"] = "6126e05f97b19e6599ac1f39"
 os.environ["MLOPS_MODEL_ID"] = "6126df6a78aa5cb610acea36"
 os.environ["MLOPS_SPOOLER_TYPE"] = "FILESYSTEM"
-os.mkdir("/tmp/ta")
 os.environ["MLOPS_FILESYSTEM_DIRECTORY"] = "/tmp/ta"
 mlops = MLOps().init()
 
