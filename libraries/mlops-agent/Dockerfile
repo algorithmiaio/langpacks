@@ -1,4 +1,4 @@
-RUN mkdir -p /opt/mlops-agent && mkdir -p /tmp/ta \
+RUN mkdir -p /opt/mlops-agent && mkdir -p /tmp/ta  && \
     wget https://james-s-public.s3.amazonaws.com/mlops-agent.tar.gz && \
     tar -xvf mlops-agent.tar.gz -C /opt/mlops-agent && \
     rm -rf /tmp/mlops-agent.tar.gz
