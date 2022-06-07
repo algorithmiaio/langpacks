@@ -5,4 +5,4 @@ RUN mkdir -p /opt/mlops-agent && \
 RUN pip install /opt/mlops-agent/datarobot_mlops_package-8.1.2/lib/datarobot_mlops-8.1.2-py2.py3-none-any.whl
 RUN chmod 777 /opt/mlops-agent/datarobot_mlops_package-8.1.2/bin/*
 RUN chmod 777 /opt/mlops-agent/datarobot_mlops_package-8.1.2/conf/*
-RUN chmod 777 /opt/mlops-agent/datarobot_mlops_package-8.1.2/logs/*
+RUN chmod 777 /opt/mlops-agent/datarobot_mlops_package-8.1.2/logs
