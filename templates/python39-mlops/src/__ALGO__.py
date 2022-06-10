@@ -11,7 +11,7 @@ os.environ["MLOPS_FILESYSTEM_DIRECTORY"] = "/tmp/ta"
 mlops = MLOps().init()
 
 
-def apply():
+def apply(input):
     df = pd.DataFrame(columns=['id', 'values'])
     df.loc[0] = ["abcd", 0.25]
     association_ids = df.iloc[:, 0].tolist()
