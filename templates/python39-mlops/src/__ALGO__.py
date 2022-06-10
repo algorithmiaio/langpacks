@@ -5,7 +5,7 @@ import pandas as pd
 from .configurator import *
 
 os.environ["MLOPS_DEPLOYMENT_ID"] = "62a37099f993234a20b8f46d"
-os.environ["MLOPS_MODEL_ID"] = "62a37099f993234a20b8f46d"
+os.environ["MLOPS_MODEL_ID"] = "62a36f90805ee21240a661cc"
 os.environ["MLOPS_SPOOLER_TYPE"] = "FILESYSTEM"
 os.environ["MLOPS_FILESYSTEM_DIRECTORY"] = "/tmp/ta"
 mlops = MLOps().init()
