@@ -18,5 +18,5 @@ def apply(input, state):
     return reporting_predictions
 
 
-algorithm = ADK(apply, load, mlops=True)
+algorithm = ADK(apply, load)
 algorithm.init("Algorithmia")
