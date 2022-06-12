@@ -1,4 +1,5 @@
 algorithmia>=1.0.0,<2.0
+--index-url https://test.pypi.org/simple/ algorithmia-adk==1.2.16
 datarobot-drum==1.9.3
 datarobot==2.27.2
 datarobot-mlops==8.0.7

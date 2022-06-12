@@ -19,4 +19,4 @@ def apply(input, state):
 
 
 algorithm = ADK(apply, load)
-algorithm.init("Algorithmia")
+algorithm.init("Algorithmia", mlops=True)
