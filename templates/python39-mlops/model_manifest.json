@@ -1,7 +1,7 @@
 {
   "mlops": {
-    "model_id": "",
-    "deployment_id": "",
+    "model_id": "6126df6a78aa5cb610acea36",
+    "deployment_id": "6126e05f97b19e6599ac1f39",
     "datarobot_api_endpoint": "https://app.datarobot.com"
   },
   "required_models" : [],
