@@ -1,0 +1,4 @@
+algorithmia>=1.0.0,<2.0
+datarobot-mlops==8.0.7
+pyaml==21.10.1
+pillow<9.0
