@@ -1,5 +1,5 @@
 {
   "model_id": "YOUR_MODEL_ID",
   "deployment_id": "YOUR_DEPLOYMENT_ID",
-  "datarobot_api_endpoint": "https://app.datarobot.com"
+  "datarobot_mlops_service_url": "https://app.datarobot.com"
 }
