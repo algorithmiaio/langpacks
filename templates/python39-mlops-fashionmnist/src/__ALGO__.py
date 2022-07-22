@@ -6,12 +6,12 @@ from time import time
 import pandas as pd
 from PIL import Image
 from src.labels import labels_map
-
+import os
 
 # The model itself is stored in an Algorithmia Data Collection
 def load(state):
     # We load the model in this way to ensure that the model is loaded only once
-    model_path = state.client("data://.my/mnist_models/fashion_mnist_model.t5").getFile(as_path=True)
+    model_path = state.client.file(os.environ['MODEL_PATH']).getFile(as_path=True)
     state['model'] = torch.jit.load(model_path)
     state['mlops'] = MLOps().init()
     state['labels'] = labels_map
