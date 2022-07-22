@@ -39,4 +39,4 @@ def apply(input, state):
 
 
 algorithm = ADK(apply, load)
-algorithm.init("data://.my/mnist_examples/sandal.png", mlops=True)
+algorithm.init(mlops=True)
