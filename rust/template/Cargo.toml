@@ -8,7 +8,7 @@ name = "algorithm"
 
 [dependencies]
 algorithmia = "2.0.0"
-base64 = "0.3.0"
+base64 = "0.5.2"
 serde = "0.9.0"
 serde_derive = "0.9.0"
 serde_json = "0.9.0"
