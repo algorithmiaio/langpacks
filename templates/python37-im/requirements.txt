@@ -1,4 +1,4 @@
 algorithmia>=1.0.0,<2.0
 six
 wand==0.6.6
-pillow==8.2.0
+pillow==10.0.1
